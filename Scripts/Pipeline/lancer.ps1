@@ -13,13 +13,23 @@ param(
 )
 . "$PSScriptRoot/commun.ps1"
 
+function Start-Jeu([string]$Executable, [string[]]$Arguments) {
+    # Le jeu est une application à fenêtre : PowerShell ne l'attend pas et ne reçoit pas son code de
+    # retour si on l'appelle directement. Start-Process -Wait attend la fermeture du jeu.
+    $ligne = ($Arguments | ForEach-Object { '"' + ($_ -replace '"', '\"') + '"' }) -join ' '
+    $parametres = @{ FilePath = $Executable; Wait = $true; PassThru = $true }
+    if ($ligne) { $parametres['ArgumentList'] = $ligne }
+    $processus = Start-Process @parametres
+    if ($processus.ExitCode -ne 0) { throw "Le jeu s'est terminé avec le code $($processus.ExitCode)." }
+}
+
 if ($Export) {
     $exe = Join-Path $Racine 'Build/windows/IbnKhaldoun.exe'
     if (-not (Test-Path $exe)) { & (Join-Path $PSScriptRoot 'exporter.ps1') }
     $argumentsExport = @()
     if ($Scene) { $argumentsExport = @('--', "--scene=$Scene") }
-    & $exe @argumentsExport
-    exit $LASTEXITCODE
+    Start-Jeu $exe $argumentsExport
+    return
 }
 
 $extension = if ($EstWindows) { 'libibn.windows.template_debug.x86_64.dll' } else { 'libibn.linux.template_debug.x86_64.so' }
@@ -34,5 +44,4 @@ if ($scenesManquantes.Count -gt 0) { & (Join-Path $PSScriptRoot 'construire.ps1'
 
 $arguments = @('--path', $Jeu)
 if ($Scene) { $arguments += @('--', "--scene=$Scene") }
-& $GodotEditeur @arguments
-exit $LASTEXITCODE
+Start-Jeu $GodotEditeur $arguments
