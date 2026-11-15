@@ -1,3 +1,4 @@
+class_name PipelineRunner
 extends Node
 ## Singleton « Pipeline » : exécute les tâches automatisées demandées après « -- » sur la ligne de commande.
 ##
@@ -6,6 +7,13 @@ extends Node
 ##   --mode=benchmark  --scene=<res://…> --viewpoints=<res://…> --out=<dossier absolu>
 ##                     --budgets=<res://…> [--warmup=3] [--duration=20] [--no-budgets]
 ##   --mode=flythrough --scene=<res://…> --viewpoints=<res://…> [--duration=10]   (avec --write-movie)
+##   --mode=walk       --scene=<res://…> --route=<res://…/route_joueur.json> --out=<dossier absolu>
+##                     --budgets=<res://…> [--warmup=3] [--no-budgets]
+##   --mode=flythrough --scene=<res://…> --route=<res://…/route_joueur.json> [--duration=<maximum>]
+##
+## Avec --route, le joueur (groupe « player ») marche le long du parcours, piloté par les actions
+## d'entrée (PlayerRouteDriver) ; la caméra de la scène n'est pas touchée (elle suit le joueur).
+## En mode walk, la mesure dure exactement le parcours ; en vidéo, --duration l'écourte s'il est donné.
 ##
 ## Codes de sortie : 0 succès, 2 arguments invalides, 3 budget dépassé, 4 erreur d'exécution.
 ## Ces modes sont lancés par les scripts de Scripts/Pipeline/, jamais à la main.
@@ -27,6 +35,12 @@ func is_active() -> bool:
 	return not _mode.is_empty()
 
 
+## Remplace les arguments lus sur la ligne de commande (tests du pipeline).
+func configure(args: Dictionary[String, String]) -> void:
+	_args = args
+	_mode = args.get("mode", "")
+
+
 func _ready() -> void:
 	_args = CommandLine.parse(OS.get_cmdline_user_args())
 	_mode = _args.get("mode", "")
@@ -42,6 +56,8 @@ func _run() -> void:
 
 
 func _execute() -> int:
+	if _mode == "walk" or (_mode == "flythrough" and _args.has("route")):
+		return await _execute_route()
 	var scene_path: String = _require_arg("scene")
 	var viewpoints_path: String = _require_arg("viewpoints")
 	if scene_path.is_empty() or viewpoints_path.is_empty():
@@ -70,7 +86,7 @@ func _execute() -> int:
 		"flythrough":
 			return await _flythrough(camera, viewpoints)
 		_:
-			push_error("Pipeline : mode inconnu « %s » (capture, benchmark, flythrough)." % _mode)
+			push_error("Pipeline : mode inconnu « %s » (capture, benchmark, flythrough, walk)." % _mode)
 			return EXIT_BAD_ARGS
 
 
@@ -107,14 +123,18 @@ func _capture(camera: Camera3D, viewpoints: Array[Viewpoint]) -> int:
 	return EXIT_RUNTIME if failures > 0 else EXIT_OK
 
 
-func _benchmark(camera: Camera3D, viewpoints: Array[Viewpoint], scene_path: String) -> int:
+## Mesure image par image. Sans pilote : la caméra parcourt les points de vue pendant --duration.
+## Avec un pilote : le joueur marche le long de son parcours et la mesure dure exactement ce parcours.
+func _benchmark(camera: Camera3D, viewpoints: Array[Viewpoint], scene_path: String, driver: PlayerRouteDriver = null) -> int:
+	var walking: bool = driver != null
 	var out_dir: String = _require_arg("out")
 	var check_budgets: bool = not _args.has("no-budgets")
 	var budgets_path: String = _require_arg("budgets") if check_budgets else ""
 	if out_dir.is_empty() or (check_budgets and budgets_path.is_empty()):
 		return EXIT_BAD_ARGS
 	var warmup: float = _float_arg("warmup", 3.0)
-	var duration: float = _float_arg("duration", 20.0)
+	# En mode walk, la durée maximale du parcours dimensionne la mémoire des mesures.
+	var duration: float = driver.get_route().max_duration if walking else _float_arg("duration", 20.0)
 	if warmup < 0.0 or duration <= 0.0:
 		push_error("Pipeline : --warmup doit être positif et --duration strictement positif.")
 		return EXIT_BAD_ARGS
@@ -140,7 +160,9 @@ func _benchmark(camera: Camera3D, viewpoints: Array[Viewpoint], scene_path: Stri
 		push_error("Pipeline : impossible de réserver %d mesures (durée trop longue ?)." % capacity)
 		return EXIT_RUNTIME
 
-	camera.global_transform = viewpoints[0].transform
+	if not walking:
+		camera.global_transform = viewpoints[0].transform
+	# Pendant le préchauffage, le joueur attend au départ sans aucune action pressée.
 	var warmup_end: int = Time.get_ticks_usec() + int(warmup * 1000000.0)
 	while Time.get_ticks_usec() < warmup_end:
 		await get_tree().process_frame
@@ -150,13 +172,19 @@ func _benchmark(camera: Camera3D, viewpoints: Array[Viewpoint], scene_path: Stri
 	var previous: int = start
 	var video_mem_max: float = 0.0
 	var static_mem_max: float = 0.0
+	if walking:
+		driver.begin()
 	while true:
 		await get_tree().process_frame
 		var now: int = Time.get_ticks_usec()
 		var elapsed: int = now - start
-		if elapsed >= duration_usec:
+		if walking:
+			if not driver.is_running():
+				break
+		elif elapsed >= duration_usec:
 			break
-		camera.global_transform = Viewpoints.sample(viewpoints, float(elapsed) / float(duration_usec))
+		else:
+			camera.global_transform = Viewpoints.sample(viewpoints, float(elapsed) / float(duration_usec))
 		var frame_ms: float = float(now - previous) / 1000.0
 		previous = now
 		var cpu_ms: float = RenderingServer.viewport_get_measured_render_time_cpu(viewport_rid) + RenderingServer.get_frame_setup_time_cpu()
@@ -164,11 +192,16 @@ func _benchmark(camera: Camera3D, viewpoints: Array[Viewpoint], scene_path: Stri
 		var draw_calls: int = int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
 		var primitives: int = int(Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME))
 		if not recorder.add_frame(frame_ms, cpu_ms, gpu_ms, draw_calls, primitives):
+			if walking:
+				driver.stop()
 			push_error("Pipeline : mesure refusée (capacité atteinte ou valeur invalide) à l'image %d." % recorder.get_count())
 			return EXIT_RUNTIME
 		video_mem_max = maxf(video_mem_max, Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED))
 		static_mem_max = maxf(static_mem_max, Performance.get_monitor(Performance.MEMORY_STATIC))
 
+	var route_failed: bool = walking and driver.has_failed()
+	if route_failed:
+		push_error(driver.get_failure_message())
 	var summary: Dictionary = recorder.compute_summary()
 	if summary.is_empty():
 		push_error("Pipeline : aucune image mesurée.")
@@ -177,8 +210,21 @@ func _benchmark(camera: Camera3D, viewpoints: Array[Viewpoint], scene_path: Stri
 	summary["video_mem_mb_max"] = video_mem_max / BYTES_PER_MEBIBYTE
 	summary["static_mem_mb_max"] = static_mem_max / BYTES_PER_MEBIBYTE
 	summary["scene"] = scene_path
+	summary["mode"] = _mode
 	summary["warmup_s"] = warmup
-	summary["duration_s"] = duration
+	if walking:
+		var route: PlayerRoute = driver.get_route()
+		summary["route"] = route.source
+		summary["route_status"] = driver.get_status_name()
+		summary["route_waypoints"] = route.points.size()
+		summary["route_waypoints_reached"] = driver.get_reached_count()
+		summary["route_length_m"] = route.get_length()
+		summary["route_walked_m"] = driver.get_distance_walked()
+		summary["route_time_s"] = driver.get_elapsed()
+		summary["duration_s"] = float(previous - start) / 1000000.0
+	else:
+		summary["route"] = _args.get("viewpoints", "")
+		summary["duration_s"] = duration
 	summary["window"] = "%dx%d" % [size.x, size.y]
 	summary["scaling_3d_mode"] = int(ProjectSettings.get_setting("rendering/scaling_3d/mode"))
 	summary["scaling_3d_scale"] = float(ProjectSettings.get_setting("rendering/scaling_3d/scale"))
@@ -198,6 +244,8 @@ func _benchmark(camera: Camera3D, viewpoints: Array[Viewpoint], scene_path: Stri
 	if not _write_csv(out_dir.path_join("images.csv"), recorder):
 		return EXIT_RUNTIME
 	print("MESURE %s" % JSON.stringify(summary))
+	if route_failed:
+		return EXIT_RUNTIME
 	if not violations.is_empty():
 		for violation: String in violations:
 			push_error("Budget dépassé : %s" % violation)
@@ -216,6 +264,76 @@ func _flythrough(camera: Camera3D, viewpoints: Array[Viewpoint]) -> int:
 		await get_tree().process_frame
 		elapsed += get_process_delta_time()
 		camera.global_transform = Viewpoints.sample(viewpoints, minf(elapsed / duration, 1.0))
+	return EXIT_OK
+
+
+func _execute_route() -> int:
+	var scene_path: String = _require_arg("scene")
+	var route_path: String = _require_arg("route")
+	if scene_path.is_empty() or route_path.is_empty():
+		return EXIT_BAD_ARGS
+	if _mode == "walk" and _args.has("duration"):
+		push_error("Pipeline : --duration ne s'applique pas au mode walk (la mesure dure le parcours du joueur).")
+		return EXIT_BAD_ARGS
+	var route: PlayerRoute = PlayerRoute.load_file(route_path)
+	if route == null:
+		return EXIT_BAD_ARGS
+	var missing: PackedStringArray = PlayerRouteDriver.missing_actions(route)
+	if not missing.is_empty():
+		push_error("Pipeline : actions d'entrée absentes pour le parcours %s : %s." % [route_path, ", ".join(missing)])
+		return EXIT_RUNTIME
+	var err: Error = get_tree().change_scene_to_file(scene_path)
+	if err != OK:
+		push_error("Pipeline : impossible de charger %s (%s)." % [scene_path, error_string(err)])
+		return EXIT_RUNTIME
+	await get_tree().process_frame
+	await get_tree().process_frame
+	return await run_route(route, scene_path)
+
+
+## Fait marcher le joueur de la scène courante le long du parcours, selon le mode (walk : mesure ;
+## flythrough : vidéo). Appelé après le chargement de la scène ; appelé directement par les tests.
+func run_route(route: PlayerRoute, scene_path: String) -> int:
+	var camera: Camera3D = get_viewport().get_camera_3d()
+	if camera == null:
+		push_error("Pipeline : la scène %s ne contient aucune caméra active." % scene_path)
+		return EXIT_RUNTIME
+	var problem: String = PlayerRouteDriver.player_problem(get_tree())
+	if not problem.is_empty():
+		push_error("Pipeline : %s (%s)." % [problem, scene_path])
+		return EXIT_RUNTIME
+	var driver := PlayerRouteDriver.new()
+	driver.setup(route, PlayerRouteDriver.find_player(get_tree()))
+	add_child(driver)
+	driver.place_at_start()
+	var code: int = EXIT_RUNTIME
+	if _mode == "walk":
+		var no_viewpoints: Array[Viewpoint] = []
+		code = await _benchmark(camera, no_viewpoints, scene_path, driver)
+	else:
+		code = await _flythrough_route(driver)
+	driver.stop()
+	remove_child(driver)
+	driver.free()
+	return code
+
+
+## Vidéo du joueur qui marche le long de son parcours (jusqu'au bout, ou pendant --duration au plus).
+func _flythrough_route(driver: PlayerRouteDriver) -> int:
+	var limit: float = _float_arg("duration", 0.0)
+	if _args.has("duration") and limit <= 0.0:
+		push_error("Pipeline : --duration doit être strictement positif.")
+		return EXIT_BAD_ARGS
+	var elapsed: float = 0.0
+	driver.begin()
+	while driver.is_running():
+		await get_tree().process_frame
+		elapsed += get_process_delta_time()
+		if limit > 0.0 and elapsed >= limit:
+			driver.stop()
+	if driver.has_failed():
+		push_error(driver.get_failure_message())
+		return EXIT_RUNTIME
 	return EXIT_OK
 
 
