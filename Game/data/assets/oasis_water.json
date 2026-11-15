@@ -1,0 +1,16 @@
+{
+  "description": "Réglages de l'eau de l'oasis (OasisWater). Aucun contenu codé en dur dans le script.",
+  "shader": "res://world/desert/oasis_water.gdshader",
+  "segments": 48,
+  "surface_height_m": -0.15,
+  "shallow_color": [0.18, 0.55, 0.52, 0.55],
+  "deep_color": [0.03, 0.2, 0.3, 0.9],
+  "foam_color": [0.9, 0.95, 0.95, 1.0],
+  "wave_speed": 0.35,
+  "wave_scale": 0.9,
+  "wave_height_m": 0.03,
+  "normal_strength": 0.6,
+  "edge_width": 0.12,
+  "roughness": 0.08,
+  "budget": { "max_triangles": 200, "max_draw_calls": 1, "max_ms_per_frame": 0.2 }
+}

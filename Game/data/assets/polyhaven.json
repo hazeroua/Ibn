@@ -12,6 +12,18 @@
       "resolution": "1k",
       "maps": { "diff": "Diffuse", "nor_gl": "nor_gl", "rough": "Rough" },
       "usage": "Pierre des collines : pentes du terrain et rochers (MVP 1)"
+    },
+    {
+      "id": "aerial_sand",
+      "resolution": "1k",
+      "maps": { "diff": "Diffuse", "nor_gl": "nor_gl", "rough": "Rough" },
+      "usage": "Sable des dunes du désert (MVP 2)"
+    },
+    {
+      "id": "rock_boulder_dry",
+      "resolution": "1k",
+      "maps": { "diff": "Diffuse", "nor_gl": "nor_gl", "rough": "Rough" },
+      "usage": "Roche des rochers du désert (MVP 2)"
     }
   ]
 }

@@ -1,0 +1,39 @@
+{
+  "description": "Modèles du désert générés par Scripts/Blender/generer_props_desert.py (un fichier .glb par modèle et par niveau de détail) dans res://assets/desert/. Budgets de triangles vérifiés par res://tests/unit/test_props_models.gd.",
+  "directory": "res://assets/desert/",
+  "lod_distances_m": [0.0, 60.0, 180.0],
+  "imposter_distance_m": 450.0,
+  "models": {
+    "rocher": {
+      "variants": ["a", "b", "c"],
+      "seeds": [11, 23, 37],
+      "radius_m": [1.6, 1.1, 2.2],
+      "squash": [0.7, 0.55, 0.85],
+      "subdivisions": [3, 2, 1],
+      "max_triangles": [330, 90, 24],
+      "colors": { "base": [0.52, 0.41, 0.3], "top": [0.66, 0.54, 0.4] },
+      "surface": "pierre"
+    },
+    "palmier": {
+      "variants": ["a", "b"],
+      "seeds": [5, 19],
+      "height_m": [7.5, 9.5],
+      "lean_m": [0.9, 1.6],
+      "trunk_segments": [8, 4, 2],
+      "trunk_sides": [8, 6, 4],
+      "frond_count": [11, 8, 6],
+      "frond_segments": [4, 3, 1],
+      "max_triangles": [700, 300, 110],
+      "colors": { "trunk": [0.4, 0.3, 0.2], "frond": [0.27, 0.42, 0.18] }
+    },
+    "imposteur_palmier": {
+      "height_m": 8.5,
+      "width_m": 6.0,
+      "max_triangles": 12,
+      "colors": { "trunk": [0.4, 0.3, 0.2], "frond": [0.27, 0.42, 0.18] }
+    }
+  },
+  "water": {
+    "settings": "res://data/assets/oasis_water.json"
+  }
+}
