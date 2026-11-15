@@ -59,6 +59,11 @@ function Invoke-Godot {
         [switch]$IgnorerErreursAffichees
     )
     $executable = if ($Editeur) { $Script:GodotEditeur } else { $Script:GodotConsole }
+    if ($env:CI -eq 'true' -and $Arguments -notcontains '--headless' -and $Arguments -notcontains '--audio-driver') {
+        # Les machines d'intégration continue n'ont pas de carte son : pilote audio factice.
+        # Sur la machine de développement, le son reste actif pendant les mesures (il fait partie du coût réel).
+        $Arguments = @('--audio-driver', 'Dummy') + $Arguments
+    }
     Write-Host "  > godot $($Arguments -join ' ')" -ForegroundColor DarkGray
     $ancien = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'

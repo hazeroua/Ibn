@@ -148,7 +148,7 @@ Exemple de mission (format à finaliser au MVP 6) :
 | Mesurer les performances | Scène de mesure qui joue un parcours scripté et écrit un rapport CSV (images par seconde, temps par image, mémoire, appels de dessin) |
 | Vérifier l'image | Captures d'écran automatiques depuis des points de vue fixes ; Claude Code les regarde et corrige |
 | Enregistrer une vidéo | Mode Movie Maker de Godot (`--write-movie`) sur un parcours scripté |
-| Créer la version jouable | `godot --headless --export-release "Windows Desktop"` |
+| Créer la version jouable | `godot --headless --export-release "Windows Desktop"` (les plugins ne sont inclus dans l'export qu'à partir du MVP qui les utilise : `exclude_filter` de `Game/export_presets.cfg`) |
 
 Toutes ces commandes sont regroupées dans des scripts PowerShell de `Scripts/Pipeline/`, et les chemins des outils sont lus dans `Tools/outils.json`.
 
