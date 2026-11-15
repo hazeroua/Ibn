@@ -57,3 +57,6 @@ desktop.ini
 # Scène générée de la vitrine du personnage
 /Game/world/vitrine_personnage/vitrine_personnage.tscn
 __pycache__/
+
+# Sons libres téléchargés (manifeste Game/data/assets/sounds.json)
+/Game/assets/sounds/

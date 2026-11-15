@@ -51,6 +51,27 @@ function Get-CheminCarte([string]$Carte) {
     }
 }
 
+function Get-Parcours([string]$Carte, [string]$Parcours) {
+    # Parcours suivi par les mesures et la vidéo d'une carte :
+    # - 'points_de_vue' : la caméra glisse d'un point de vue à l'autre (res://data/<carte>/viewpoints.json) ;
+    # - 'joueur' : le joueur marche, piloté par les actions d'entrée, le long de res://data/<carte>/route_joueur.json ;
+    # - 'res://….json' : un autre parcours du joueur (même format que route_joueur.json).
+    $chemins = Get-CheminCarte $Carte
+    if ($Parcours -eq 'points_de_vue') {
+        return [pscustomobject]@{ Joueur = $false; Fichier = $chemins.PointsDeVue; Suffixe = '' }
+    }
+    if ($Parcours -eq 'joueur') {
+        $fichier = "res://data/$Carte/route_joueur.json"
+    } elseif ($Parcours -match '^res://[A-Za-z0-9_/.-]+\.json$' -and $Parcours -notmatch '\.\.') {
+        $fichier = $Parcours
+    } else {
+        throw "Parcours invalide : « $Parcours » (points_de_vue, joueur ou un chemin res://….json)."
+    }
+    $local = Join-Path $Script:Jeu $fichier.Substring('res://'.Length)
+    if (-not (Test-Path $local)) { throw "Parcours du joueur introuvable : $fichier" }
+    return [pscustomobject]@{ Joueur = $true; Fichier = $fichier; Suffixe = '_joueur' }
+}
+
 function Invoke-Godot {
     param(
         [Parameter(Mandatory = $true)][string[]]$Arguments,

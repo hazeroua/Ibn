@@ -1,18 +1,32 @@
 {
-  "description": "Actions d'entrée du jeu. Touches désignées par leur position physique (disposition QWERTY de référence : « W » est la touche Z d'un clavier AZERTY). Boutons et axes de manette : numérotation SDL de Godot.",
+  "description": "Actions d'entrée du jeu. Touches désignées par leur position physique (disposition QWERTY de référence : « W » est la touche Z d'un clavier AZERTY). Boutons de souris : numérotation de Godot (1 gauche, 2 droit, 4 molette vers le haut, 5 molette vers le bas). Boutons et axes de manette : numérotation SDL de Godot. « contexts » : situations où l'action est active ; deux actions qui partagent un contexte ne peuvent pas avoir la même touche sans conflit. « deadzone » : zone morte propre à chaque action.",
+  "user_file": {
+    "description": "Surcharge des touches par le joueur. « version » : version actuelle du format ; un fichier plus ancien est lu et fusionné (actions renommées suivies par « renamed_actions », actions absentes = valeurs par défaut), un fichier plus récent ou illisible est ignoré puis sauvegardé à part avant d'être remplacé.",
+    "path": "user://controles.json",
+    "version": 1,
+    "max_bytes": 65536
+  },
+  "renamed_actions": {},
+  "max_events_per_family": 3,
+  "joy_axis_activation": 0.5,
+  "mouse_motion_activation_px": 3.0,
+  "contexts": ["game", "free_camera"],
   "actions": [
-    { "name": "move_forward", "events": [ { "type": "key", "physical": "W" }, { "type": "joy_axis", "axis": 1, "value": -1.0 } ] },
-    { "name": "move_back",    "events": [ { "type": "key", "physical": "S" }, { "type": "joy_axis", "axis": 1, "value": 1.0 } ] },
-    { "name": "move_left",    "events": [ { "type": "key", "physical": "A" }, { "type": "joy_axis", "axis": 0, "value": -1.0 } ] },
-    { "name": "move_right",   "events": [ { "type": "key", "physical": "D" }, { "type": "joy_axis", "axis": 0, "value": 1.0 } ] },
-    { "name": "move_up",      "events": [ { "type": "key", "physical": "E" }, { "type": "joy_button", "button": 10 } ] },
-    { "name": "move_down",    "events": [ { "type": "key", "physical": "Q" }, { "type": "joy_button", "button": 9 } ] },
-    { "name": "sprint",       "events": [ { "type": "key", "physical": "Shift" }, { "type": "joy_axis", "axis": 4, "value": 1.0 } ] },
-    { "name": "look_left",    "deadzone": 0.15, "events": [ { "type": "joy_axis", "axis": 2, "value": -1.0 } ] },
-    { "name": "look_right",   "deadzone": 0.15, "events": [ { "type": "joy_axis", "axis": 2, "value": 1.0 } ] },
-    { "name": "look_up",      "deadzone": 0.15, "events": [ { "type": "joy_axis", "axis": 3, "value": -1.0 } ] },
-    { "name": "look_down",    "deadzone": 0.15, "events": [ { "type": "joy_axis", "axis": 3, "value": 1.0 } ] },
-    { "name": "look_hold",    "events": [ { "type": "mouse_button", "button": 2 } ] },
-    { "name": "quit_game",    "events": [ { "type": "key", "physical": "Escape" }, { "type": "joy_button", "button": 4 } ] }
+    { "name": "move_forward", "contexts": ["game", "free_camera"], "deadzone": 0.2, "events": [ { "type": "key", "physical": "W" }, { "type": "joy_axis", "axis": 1, "value": -1.0 } ] },
+    { "name": "move_back", "contexts": ["game", "free_camera"], "deadzone": 0.2, "events": [ { "type": "key", "physical": "S" }, { "type": "joy_axis", "axis": 1, "value": 1.0 } ] },
+    { "name": "move_left", "contexts": ["game", "free_camera"], "deadzone": 0.2, "events": [ { "type": "key", "physical": "A" }, { "type": "joy_axis", "axis": 0, "value": -1.0 } ] },
+    { "name": "move_right", "contexts": ["game", "free_camera"], "deadzone": 0.2, "events": [ { "type": "key", "physical": "D" }, { "type": "joy_axis", "axis": 0, "value": 1.0 } ] },
+    { "name": "move_up", "contexts": ["free_camera"], "deadzone": 0.5, "events": [ { "type": "key", "physical": "E" }, { "type": "joy_button", "button": 10 } ] },
+    { "name": "move_down", "contexts": ["free_camera"], "deadzone": 0.5, "events": [ { "type": "key", "physical": "Q" }, { "type": "joy_button", "button": 9 } ] },
+    { "name": "sprint", "contexts": ["game", "free_camera"], "deadzone": 0.3, "events": [ { "type": "key", "physical": "Shift" }, { "type": "joy_axis", "axis": 4, "value": 1.0 } ] },
+    { "name": "walk_slow", "contexts": ["game"], "deadzone": 0.5, "events": [ { "type": "key", "physical": "Ctrl" }, { "type": "joy_button", "button": 7 } ] },
+    { "name": "look_left", "contexts": ["game", "free_camera"], "deadzone": 0.15, "events": [ { "type": "joy_axis", "axis": 2, "value": -1.0 } ] },
+    { "name": "look_right", "contexts": ["game", "free_camera"], "deadzone": 0.15, "events": [ { "type": "joy_axis", "axis": 2, "value": 1.0 } ] },
+    { "name": "look_up", "contexts": ["game", "free_camera"], "deadzone": 0.15, "events": [ { "type": "joy_axis", "axis": 3, "value": -1.0 } ] },
+    { "name": "look_down", "contexts": ["game", "free_camera"], "deadzone": 0.15, "events": [ { "type": "joy_axis", "axis": 3, "value": 1.0 } ] },
+    { "name": "camera_zoom_in", "contexts": ["game"], "deadzone": 0.5, "events": [ { "type": "mouse_button", "button": 4 }, { "type": "joy_button", "button": 11 } ] },
+    { "name": "camera_zoom_out", "contexts": ["game"], "deadzone": 0.5, "events": [ { "type": "mouse_button", "button": 5 }, { "type": "joy_button", "button": 12 } ] },
+    { "name": "look_hold", "contexts": ["free_camera"], "deadzone": 0.5, "events": [ { "type": "mouse_button", "button": 2 } ] },
+    { "name": "quit_game", "contexts": ["game", "free_camera"], "deadzone": 0.5, "events": [ { "type": "key", "physical": "Escape" }, { "type": "joy_button", "button": 4 } ] }
   ]
 }
