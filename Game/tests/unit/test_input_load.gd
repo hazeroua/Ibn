@@ -158,9 +158,11 @@ func test_largest_user_file_and_repeated_saves() -> void:
 	for action: StringName in bindings.get_action_names():
 		assert_eq(bindings.get_binding(action).events.size(), 2 * max_per_family, str(action))
 	_write_text(" ".repeat(max_bytes + 1))
+	bindings.log_warnings = false
 	start = Time.get_ticks_usec()
 	bindings.load_user_file()
 	var oversized_ms: float = float(Time.get_ticks_usec() - start) / 1000.0
+	bindings.log_warnings = true
 	assert_eq(bindings.last_load_status, InputBindings.LoadStatus.CORRUPTED)
 	# Enregistrements répétés : la taille du fichier ne grandit pas.
 	_write_text(text)
