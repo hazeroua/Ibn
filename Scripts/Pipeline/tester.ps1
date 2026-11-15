@@ -3,7 +3,10 @@
   Lance tous les tests automatisés (GUT) en ligne de commande. Échoue si un test échoue.
 #>
 [CmdletBinding()]
-param()
+param(
+    # Un seul fichier de tests (ex. res://tests/unit/test_input_load.gd) ; vide = tous les tests.
+    [string]$Fichier = ''
+)
 . "$PSScriptRoot/commun.ps1"
 
 Write-Etape 'Tests automatisés (GUT)'
@@ -13,9 +16,10 @@ $junit = Join-Path $dossierRapport 'junit.xml'
 $arguments = @(
     '--headless', '--path', $Jeu,
     '-s', 'res://addons/gut/gut_cmdln.gd',
-    '-gdir=res://tests/unit', '-ginclude_subdirs', '-gexit', '-glog=2',
+    '-gexit', '-glog=2',
     "-gjunit_xml_file=$junit"
 )
+if ($Fichier) { $arguments += "-gtest=$Fichier" } else { $arguments += @('-gdir=res://tests/unit', '-ginclude_subdirs') }
 $null = Invoke-Godot -Arguments $arguments -Journal (Join-Path $dossierRapport 'tests.log')
 if (-not (Test-Path $junit)) { throw "Rapport de tests absent : $junit" }
 [xml]$rapport = Get-Content -Raw -Encoding UTF8 $junit
