@@ -1,0 +1,9 @@
+{
+  "description": "Points de vue fixes de la carte « désert » : captures comparables d'un MVP à l'autre, et parcours des mesures et de la vidéo (dans l'ordre). vue_crete est le pire cas : depuis une crête, tout le bloc de cellules chargées (49 cellules, quatre niveaux de détail) est dans le champ.",
+  "viewpoints": [
+    { "id": "vue_generale", "position": [-420.0, 75.0, -900.0], "target": [260.0, 20.0, -180.0] },
+    { "id": "vue_crete", "position": [130.0, 70.0, 720.0], "target": [260.0, 28.0, -300.0] },
+    { "id": "vue_oasis", "position": [260.0, 52.0, 40.0], "target": [260.0, 24.0, -180.0] },
+    { "id": "vue_sol", "position": [260.0, 28.0, -90.0], "target": [260.0, 26.0, -180.0] }
+  ]
+}
