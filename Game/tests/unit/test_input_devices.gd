@@ -52,8 +52,8 @@ func test_switches_on_deliberate_use_only() -> void:
 
 func test_switch_every_event_emits_every_time() -> void:
 	for i: int in 10:
-		_tracker.observe(_key(KEY_W, true))
 		_tracker.observe(_joy_button(0, JOY_BUTTON_A, true))
+		_tracker.observe(_key(KEY_W, true))
 	assert_eq(_changes.size(), 20)
 
 

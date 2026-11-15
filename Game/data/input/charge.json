@@ -1,13 +1,13 @@
 {
-  "description": "Pires cas du test de charge des entrées (tests/unit/test_input_load.gd). Une image de jeu reçoit au plus, par manette, un événement par bouton et par axe (21 boutons et 6 axes SDL) ; 16 manettes est la limite de Godot (numéros 0 à 15). Durées maximales mesurées en intégration continue (Godot de débogage, machine virtuelle).",
+  "description": "Pires cas du test de charge des entrées (tests/unit/test_input_load.gd). Une image de jeu reçoit au plus, par manette, un événement par bouton et par axe (26 boutons et 6 axes SDL de Godot 4.7) ; 16 manettes est la limite de Godot (numéros 0 à 15). Durées maximales pour l'intégration continue (Godot de débogage, machine virtuelle), environ deux à six fois les durées qui y sont mesurées.",
   "gamepads": 16,
-  "events_per_gamepad_per_frame": 27,
+  "events_per_gamepad_per_frame": 32,
   "frames": 1000,
   "max_observe_ms_per_frame": 2.0,
   "connection_cycles": 100,
-  "max_disconnect_all_ms": 20.0,
+  "max_disconnect_all_ms": 5.0,
   "save_load_cycles": 100,
-  "max_save_load_ms": 20.0,
-  "max_full_file_load_ms": 50.0,
-  "max_oversized_load_ms": 5.0
+  "max_save_load_ms": 10.0,
+  "max_full_file_load_ms": 10.0,
+  "max_oversized_load_ms": 3.0
 }

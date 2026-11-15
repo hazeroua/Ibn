@@ -1,7 +1,7 @@
 extends GutTest
 ## Test de charge des entrées : pires cas décrits dans res://data/input/charge.json.
 ##
-## - 16 manettes qui envoient chacune tous leurs boutons et axes à chaque image, en alternance avec
+## - 16 manettes qui envoient chacune tous leurs boutons et axes (32) à chaque image, en alternance avec
 ##   le clavier (le dernier périphérique utilisé change à chaque événement) : temps par image et
 ##   aucune allocation d'objet ;
 ## - 16 manettes qui maintiennent toutes leurs actions, débranchées puis rebranchées en boucle
