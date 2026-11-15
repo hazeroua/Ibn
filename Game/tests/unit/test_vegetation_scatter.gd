@@ -280,5 +280,5 @@ func test_worst_case_load() -> void:
 	var all_ms: float = float(Time.get_ticks_usec() - start_all) / 1000.0
 	gut.p("%d cellules visibles : %d instances, %.1f ms au total, %.2f ms par cellule" % [cells, total, all_ms, all_ms / cells])
 	assert_eq(cells, 16)
-	assert_lt(worst_ms, 40.0, "une cellule d'oasis en moins de 40 ms (tâche de fond, hors du fil de rendu)")
-	assert_lt(all_ms, 400.0, "16 cellules en moins de 400 ms")
+	PerfCheck.under(self, worst_ms, 40.0, "une cellule d'oasis en moins de 40 ms (tâche de fond, hors du fil de rendu)")
+	PerfCheck.under(self, all_ms, 400.0, "16 cellules en moins de 400 ms")

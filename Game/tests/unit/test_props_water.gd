@@ -46,7 +46,7 @@ func test_build_cost_worst_case() -> void:
 		node.free()
 	var per_build_ms: float = float(Time.get_ticks_usec() - start) / 1000.0 / float(BUILD_COUNT)
 	gut.p("Construction de l'eau : %.3f ms en moyenne (%d constructions)" % [per_build_ms, BUILD_COUNT])
-	assert_lt(per_build_ms, BUILD_BUDGET_MS)
+	PerfCheck.under(self, per_build_ms, BUILD_BUDGET_MS)
 
 
 func test_mesh_and_material_are_shared() -> void:

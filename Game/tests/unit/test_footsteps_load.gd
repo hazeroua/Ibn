@@ -106,7 +106,7 @@ func test_worst_case_200_emitters_same_frame() -> void:
 	assert_lt(stats["steps_played"], EMITTER_COUNT * FRAMES, "le plafond de voix limite le travail")
 	assert_eq(system.get_child_count(), children_before, "aucun lecteur créé pendant la charge")
 	assert_lte(system.get_active_voice_count(Time.get_ticks_usec()), system.get_voice_count(), "plafond de voix tenu")
-	assert_lt(per_frame_ms, BUDGET_MS_PER_FRAME, "200 pas par image sous le budget")
+	PerfCheck.under(self, per_frame_ms, BUDGET_MS_PER_FRAME, "200 pas par image sous le budget")
 
 
 func test_worst_case_200_steps_per_frame_at_60_fps_clock() -> void:
@@ -131,4 +131,4 @@ func test_worst_case_200_steps_per_frame_at_60_fps_clock() -> void:
 		)
 	)
 	assert_gt(stats["steps_played"], 0)
-	assert_lt(per_frame_ms, BUDGET_MS_PER_FRAME, "coût par image sous le budget")
+	PerfCheck.under(self, per_frame_ms, BUDGET_MS_PER_FRAME, "coût par image sous le budget")

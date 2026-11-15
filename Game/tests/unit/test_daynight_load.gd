@@ -31,7 +31,7 @@ func test_update_cost_at_every_hour() -> void:
 		report.append("%dh : %.1f us" % [hour, mean])
 	gut.p("Coût moyen d'une mise à jour complète : " + ", ".join(report))
 	gut.p("Pire heure : %.1f us (budget %.0f us)" % [worst, MAX_MEAN_UPDATE_USEC])
-	assert_lt(worst, MAX_MEAN_UPDATE_USEC)
+	PerfCheck.under(self, worst, MAX_MEAN_UPDATE_USEC)
 
 
 func test_no_object_growth_over_many_updates() -> void:

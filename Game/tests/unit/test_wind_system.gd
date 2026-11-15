@@ -94,4 +94,4 @@ func test_worst_case_has_no_allocation_and_fits_budget() -> void:
 	gut.p("Vent, force maximale, 100 h de jeu : %.1f us par image (budget %.0f us)" % [per_frame, BUDGET_USEC_PER_FRAME])
 	assert_eq(nodes_after, nodes_before, "aucun nœud créé par image")
 	assert_eq(objects_after, objects_before, "aucun objet créé par image")
-	assert_lt(per_frame, BUDGET_USEC_PER_FRAME)
+	PerfCheck.under(self, per_frame, BUDGET_USEC_PER_FRAME)

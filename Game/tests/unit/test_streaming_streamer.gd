@@ -153,7 +153,7 @@ func _run_path(points: Array[Vector3], speed: float, label: String) -> void:
 	)
 	# Tolérance : au plus 0,05 % des images, pour absorber une préemption du système sur une machine chargée
 	# (le coût typique mesuré est de 0,1 à 0,5 ms pour un budget de 2 ms).
-	assert_lte(int(stats["over_budget_frames"]), int(float(frames) * 0.0005), "images au-delà du budget")
+	PerfCheck.at_most(self, float(stats["over_budget_frames"]), float(int(float(frames) * 0.0005)), "images au-delà du budget")
 	assert_eq(missing_frames, 0, "la cellule du joueur est toujours chargée")
 	assert_lte(_streamer.get_loaded_count(), 256)
 

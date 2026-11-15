@@ -78,7 +78,7 @@ func test_load_transition_cost_and_hundred_hours() -> void:
 			frames += 1
 	var per_frame: float = float(Time.get_ticks_usec() - started) / float(frames)
 	gut.p("transition : %.2f us par image (%d images)" % [per_frame, frames])
-	assert_lt(per_frame, BUDGET_USEC_PER_FRAME)
+	PerfCheck.under(self, per_frame, BUDGET_USEC_PER_FRAME)
 	assert_false(_seasons.is_processing(), "au repos, aucun traitement par image")
 	# 100 h de jeu = 100 h sans traitement : les valeurs restent exactement celles de la dernière saison atteinte.
 	var rest: float = _seasons.get_value(&"dust")

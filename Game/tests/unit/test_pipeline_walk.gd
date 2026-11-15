@@ -413,7 +413,7 @@ func test_worst_case_ten_minute_route() -> void:
 	assert_between(driver.get_elapsed(), 480.0, 780.0, "le parcours de test doit durer environ 10 minutes")
 	assert_eq(objects_after, objects_before, "aucun objet créé pendant le parcours")
 	var average_usec: float = float(driver_usec) / float(ticks)
-	assert_lt(average_usec, 50.0, "le pilotage doit rester négligeable devant 16,7 ms par image")
+	PerfCheck.under(self, average_usec, 50.0, "le pilotage doit rester négligeable devant 16,7 ms par image")
 	_assert_actions_released()
 
 	var recorder := PerfRecorder.new()

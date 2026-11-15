@@ -159,6 +159,6 @@ func test_worst_case_one_thousand_obstacles_around_the_player() -> void:
 		)
 	)
 	var settings: LocomotionSettings = player.get_settings()
-	assert_lt(average, settings.budget_step_average_ms, "moyenne sous le budget")
-	assert_lt(p95, settings.budget_step_p95_ms, "95e centile sous le budget")
+	PerfCheck.under(self, average, settings.budget_step_average_ms, "moyenne sous le budget")
+	PerfCheck.under(self, p95, settings.budget_step_p95_ms, "95e centile sous le budget")
 	assert_between(player.global_position.y, -0.01, 0.1, "reste au sol parmi les obstacles")

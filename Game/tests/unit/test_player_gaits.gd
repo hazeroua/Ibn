@@ -142,4 +142,4 @@ func test_worst_case_motor_update_cost() -> void:
 		_motor.update(sticks[i & 1023], (i & 64) != 0, (i & 256) != 0, FORWARD, RIGHT, true, DT)
 	var elapsed_ms: float = float(Time.get_ticks_usec() - start) / 1000.0
 	gut.p("Logique de déplacement : %d images en %.1f ms, soit %.2f µs par image" % [count, elapsed_ms, elapsed_ms * 1000.0 / float(count)])
-	assert_lt(elapsed_ms / float(count), 0.05, "moins de 50 µs par image")
+	PerfCheck.under(self, elapsed_ms / float(count), 0.05, "moins de 50 µs par image")

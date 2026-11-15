@@ -82,7 +82,7 @@ func test_device_switch_every_event_with_all_gamepads() -> void:
 	)
 	assert_eq(_switches, frames * gamepad_events.size() * 2, "un signal à chaque changement")
 	assert_eq(objects_after, objects_before, "aucune allocation d'objet par événement")
-	assert_lt(per_frame_ms, JsonData.get_float(_limits, "max_observe_ms_per_frame", "charge"))
+	PerfCheck.under(self, per_frame_ms, JsonData.get_float(_limits, "max_observe_ms_per_frame", "charge"))
 
 
 func test_gamepads_unplugged_while_holding_actions() -> void:
@@ -130,7 +130,7 @@ func test_gamepads_unplugged_while_holding_actions() -> void:
 	assert_eq(stuck, 0, "aucune action bloquée « appuyée »")
 	assert_eq(keyboard_lost, 0, "la touche maintenue au clavier reste appuyée")
 	assert_false(Input.is_action_pressed(&"move_forward"))
-	assert_lt(worst_ms, JsonData.get_float(_limits, "max_disconnect_all_ms", "charge"))
+	PerfCheck.under(self, worst_ms, JsonData.get_float(_limits, "max_disconnect_all_ms", "charge"))
 
 
 func test_largest_user_file_and_repeated_saves() -> void:
@@ -207,9 +207,9 @@ func test_largest_user_file_and_repeated_saves() -> void:
 	assert_eq(failures, 0)
 	assert_eq(lengths.size(), 1, "taille du texte stable")
 	assert_eq(sizes.size(), 1, "taille du fichier stable")
-	assert_lt(full_ms, JsonData.get_float(_limits, "max_full_file_load_ms", "charge"))
-	assert_lt(oversized_ms, JsonData.get_float(_limits, "max_oversized_load_ms", "charge"))
-	assert_lt(cycle_ms, JsonData.get_float(_limits, "max_save_load_ms", "charge"))
+	PerfCheck.under(self, full_ms, JsonData.get_float(_limits, "max_full_file_load_ms", "charge"))
+	PerfCheck.under(self, oversized_ms, JsonData.get_float(_limits, "max_oversized_load_ms", "charge"))
+	PerfCheck.under(self, cycle_ms, JsonData.get_float(_limits, "max_save_load_ms", "charge"))
 
 
 func _on_switch(_kind: InputDeviceTracker.Kind, _device: int) -> void:

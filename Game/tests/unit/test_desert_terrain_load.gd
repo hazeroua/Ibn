@@ -53,5 +53,5 @@ func test_worst_case_all_cells() -> void:
 					vertices += ((lod as MeshInstance3D).mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX] as PackedVector3Array).size()
 			cell.free()
 	gut.p("256 cellules : moyenne %.0f ms, pire %.0f ms, %d sommets au total (tous niveaux)" % [total / float(count), worst, vertices])
-	assert_lt(worst, MAX_CELL_BUILD_MS)
-	assert_lt(total / float(count), MAX_MEAN_CELL_BUILD_MS)
+	PerfCheck.under(self, worst, MAX_CELL_BUILD_MS)
+	PerfCheck.under(self, total / float(count), MAX_MEAN_CELL_BUILD_MS)

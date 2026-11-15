@@ -36,4 +36,4 @@ func test_worst_case_full_hd_analysis_is_fast() -> void:
 	# Grille de 16 pixels décalée de 8 : 120 colonnes (8 à 1912) et 67 lignes (8 à 1064).
 	assert_eq(int(stats["samples"]), 120 * 67)
 	gut.p("Analyse d'une capture 1080p en %.2f ms" % elapsed_ms)
-	assert_lt(elapsed_ms, 200.0)
+	PerfCheck.under(self, elapsed_ms, 200.0)

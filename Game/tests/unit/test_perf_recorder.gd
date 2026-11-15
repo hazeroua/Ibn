@@ -81,4 +81,4 @@ func test_worst_case_capacity_and_speed() -> void:
 	var elapsed_ms: float = float(Time.get_ticks_usec() - start) / 1000.0
 	assert_eq(int(summary["frames"]), count)
 	gut.p("40 000 images enregistrées et résumées en %.2f ms" % elapsed_ms)
-	assert_lt(elapsed_ms, 1000.0, "l'enregistrement et le résumé du pire cas doivent rester rapides")
+	PerfCheck.under(self, elapsed_ms, 1000.0, "l'enregistrement et le résumé du pire cas doivent rester rapides")

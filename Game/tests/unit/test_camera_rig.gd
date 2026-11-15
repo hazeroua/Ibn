@@ -520,5 +520,5 @@ func test_load_worst_case_cost_per_frame() -> void:
 			% [frames, average_ms, p99_ms, max_ms]
 		)
 	)
-	assert_lt(average_ms, LOAD_AVG_BUDGET_MS, "coût moyen par image de la caméra")
-	assert_lt(p99_ms, LOAD_P99_BUDGET_MS, "99e centile du coût par image de la caméra")
+	PerfCheck.under(self, average_ms, LOAD_AVG_BUDGET_MS, "coût moyen par image de la caméra")
+	PerfCheck.under(self, p99_ms, LOAD_P99_BUDGET_MS, "99e centile du coût par image de la caméra")

@@ -106,6 +106,6 @@ func test_worst_case_crowd_animation_cost() -> void:
 			% [count, build_ms, p50, p99, growth_kb]
 		)
 	)
-	assert_lt(p50, p50_max, "médiane de l'avance des animations")
-	assert_lt(p99, p99_max, "99e centile de l'avance des animations")
+	PerfCheck.under(self, p50, p50_max, "médiane de l'avance des animations")
+	PerfCheck.under(self, p99, p99_max, "99e centile de l'avance des animations")
 	assert_lt(growth_kb, memory_growth_max_kb, "aucune allocation par image dans l'avance des animations")
