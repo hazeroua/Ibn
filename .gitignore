@@ -1,0 +1,31 @@
+# Outils installés localement (recréés par Tools/installer.ps1)
+/Tools/godot/
+/Tools/_telechargements/
+/Tools/outils.json
+
+# Godot
+/Game/.godot/
+/Game/export/
+*.translation
+
+# C++ (GDExtension)
+/Extensions/godot-cpp/
+/Extensions/**/*.obj
+/Extensions/**/*.o
+/Extensions/**/*.lib
+/Extensions/**/*.exp
+/Extensions/**/*.pdb
+/Extensions/**/*.ilk
+/Extensions/.sconsign*.dblite
+/Game/bin/*.dll
+
+# Ressources en attente d'import
+/Import/*
+!/Import/.gitkeep
+
+# Mesures, captures et vidéos générées
+/Mesures/
+
+# Divers
+Thumbs.db
+desktop.ini
