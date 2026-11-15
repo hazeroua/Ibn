@@ -57,18 +57,21 @@ CONSTRUIRE LE JEU                                       RACONTER L'HISTOIRE
 
 **But :** prouver que Claude Code peut tout faire sans que tu ouvres l'éditeur.
 
-**Tu fais (une seule fois) :** demander à Claude Code de lancer `Tools/installer.ps1`, et accepter la fenêtre Windows d'autorisation. Claude Code installe tout le reste (voir `00-installation.md`).
+**Tu fais (une seule fois) :** cloner le dépôt, demander à Claude Code de lancer `Tools/installer.ps1`, accepter la fenêtre Windows d'autorisation (voir `00-installation.md`).
 
 **Livrables**
-- [ ] Outils installés et vérifiés par `Tools/installer.ps1` ; `Tools/outils.json` rempli.
-- [ ] Projet Godot 4 (`Game/`) et extension C++ (`Extensions/`) créés et organisés par script (voir `05-technologies.md`) ; l'extension C++ compile et se charge dans le jeu.
-- [ ] Dépôt Git + Git LFS.
-- [ ] Pipeline en ligne de commande (`Scripts/Pipeline/`) : importer, construire une scène par script, compiler le C++, tester (GUT), mesurer, capturer, enregistrer une vidéo, exporter.
-- [ ] Script d'import automatique depuis `Import/` et fichier `Docs/ressources-a-telecharger.md`.
-- [ ] La carte « bac à sable » : sol, ciel, éclairage, un cube. Elle est entièrement recréée par son script.
-- [ ] `lancer.bat` (ou équivalent) : une commande qui lance le jeu.
+- [x] Versions figées (`Tools/versions.json`) : Godot 4.7.2, godot-cpp 4.5, SCons, gdtoolkit, GUT, Dialogue Manager, Terrain3D.
+- [x] `Tools/installer.ps1` (Windows PowerShell 5.1) et `Tools/dependances.ps1` (Windows et Linux), relançables, vérifiés par la CI ; `Tools/outils.json` rempli.
+- [x] Projet Godot (`Game/`) : Forward+, FSR 2, Jolt, GDScript typé imposé, démarrage, actions d'entrée pilotées par les données (manette et clavier, touches physiques).
+- [x] Extension C++ (`Extensions/`) compilée en debug et release, avertissements traités comme des erreurs (MSVC et GCC) ; première classe : `PerfRecorder` (mesures par image sans allocation, centiles).
+- [x] Pipeline (`Scripts/Pipeline/`) : `valider` (tout), `compiler`, `importer`, `importer-ressources` (Poly Haven avec contrôle MD5), `construire`, `tester` (GUT), `mesurer` (budgets), `capturer` (contrôle automatique des images), `video` (Movie Maker), `exporter` (et démarrage de la version exportée), `lancer.bat`.
+- [x] Carte « bac à sable » construite par script depuis `Game/data/sandbox/` : sol texturé Poly Haven, ciel, soleil et ombres, cubes, caméra libre ; entièrement recréable.
+- [x] Intégration continue GitHub Actions : Windows (installation réelle, validation, export) et Linux (rendu logiciel : mesures, captures, vidéo).
+- [x] Agents, skills et hooks de Claude Code (`.claude/`) ; `CLAUDE.md` optimisé.
+- [x] Test du deuxième cube rouge : ajouté par une seule ligne de données, vérifié par le constructeur, un test, les captures et la CI.
+- [ ] **Mesures sur la machine de développement** (puce Intel Arc) : `Scripts/Pipeline/valider.ps1` avec budgets, à lancer sur ton PC.
 
-**Terminé quand :** tu demandes « mets un deuxième cube rouge », et Claude Code le fait, le teste, prend une capture et te dit « c'est prêt », sans que tu touches à rien.
+**Terminé quand :** tu demandes « mets un deuxième cube rouge », et Claude Code le fait, le teste, prend une capture et te dit « c'est prêt », sans que tu touches à rien — **fait en CI** ; il reste à confirmer les budgets de performance sur ton PC.
 
 ---
 
@@ -280,4 +283,4 @@ Claude Code complète ce tableau à chaque fin de MVP.
 
 | MVP | Date | Perf. pire cas (i/s, ms par image) | Mémoire | Ce qui a été plus dur que prévu | Décisions prises |
 |---|---|---|---|---|---|
-| 0 | | | | | |
+| 0 | 15/11/2026 | CI uniquement (rendu logiciel, sans valeur de référence) ; **à mesurer sur la puce Intel Arc** | 84 Mo (statique), 196 Mo (vidéo) en rendu logiciel | godot-cpp n'a pas de branche 4.7 (branche 4.5, compatible) ; avertissement MSVC dans la macro GDCLASS ; exemples C# de Dialogue Manager bloquants à l'export ; pas de carte son en CI | Godot 4.7.2 figé ; versions figées dans `Tools/versions.json` ; plugins exclus de l'export tant qu'ils ne servent pas ; contrôle automatique des captures |
