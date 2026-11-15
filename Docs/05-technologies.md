@@ -81,7 +81,8 @@ IbnKhaldoun/
 ├── Docs/                     # Ce dossier de conception
 ├── Game/                     # Le projet Godot
 │   ├── project.godot
-│   ├── addons/               # Terrain3D, Dialogue Manager, GUT
+│   ├── addons/               # Terrain3D, Dialogue Manager, GUT (installés aux versions figées, non versionnés)
+│   ├── bin/                  # Extension C++ compilée + ibn.gdextension
 │   ├── core/                 # Démarrage, sauvegarde, chargement des données
 │   ├── player/               # Personnage, caméra, contrôles
 │   ├── horse/                # Monture
@@ -92,17 +93,18 @@ IbnKhaldoun/
 │   ├── world/                # Régions, cycle jour/nuit, météo, voyages
 │   ├── npc/                  # PNJ, routines, foules (interface vers le C++)
 │   ├── ui/                   # Interface
-│   ├── data/                 # JSON : missions, dialogues, idées, livrets, groupes
+│   ├── data/                 # JSON : cartes, entrées, missions, dialogues, idées, livrets, groupes, manifestes de ressources
 │   ├── assets/               # Ressources importées
-│   └── tests/                # Tests GUT, tests de charge, scènes de mesure
+│   ├── tests/                # Tests GUT (unit/), budgets de performance (perf/budgets/)
+│   └── tools/builders/       # Constructeurs de scènes (build_<carte>.gd), lancés par le pipeline
 ├── Extensions/               # C++ (GDExtension)
 │   ├── godot-cpp/
 │   └── src/                  # streaming, foules, génération, cheval
 ├── Scripts/
 │   ├── Pipeline/             # Compiler, tester, mesurer, capturer, exporter (PowerShell)
-│   ├── Godot/                # Scripts qui construisent les scènes et ressources
 │   └── Blender/              # Génération et retouche des modèles
-├── Tools/                    # Godot portable, installer.ps1, outils.json (non versionnés sauf le script)
+├── Tools/                    # installer.ps1, dependances.ps1, versions.json (figées) ; Godot, venv et outils.json (locaux)
+├── .claude/                  # Agents, skills, hooks et réglages de Claude Code
 └── Import/                   # Ressources téléchargées à la main, en attente d'import
 ```
 
@@ -133,14 +135,14 @@ Exemple de mission (format à finaliser au MVP 6) :
 
 ### Les scripts sont la source de vérité
 - Les scènes et ressources Godot sont du **texte** : Claude Code peut les lire et les écrire directement.
-- Les scènes complexes (villes, terrains, placement de végétation) sont **construites par des scripts** dans `Scripts/Godot/`, et doivent pouvoir être **entièrement recréées** en relançant leur script.
+- Les scènes complexes (villes, terrains, placement de végétation) sont **construites par des scripts** dans `Game/tools/builders/` (à partir des données de `Game/data/<carte>/`), et doivent pouvoir être **entièrement recréées** en relançant leur script.
 - Les modèles 3D créés ou retouchés le sont par des **scripts Blender** dans `Scripts/Blender/`.
 
 ### Comment Claude Code pilote Godot
 | Besoin | Méthode |
 |---|---|
 | Importer les ressources | `godot --headless --import` |
-| Construire une scène par script | `godot --headless --script res://…` (le script assemble la scène et l'enregistre) |
+| Construire une scène par script | `godot --headless --script res://tools/builders/build_<carte>.gd` (assemble la scène depuis ses données et l'enregistre) |
 | Compiler le C++ | `scons` dans `Extensions/` |
 | Tester | GUT en ligne de commande (`godot --headless -s addons/gut/gut_cmdln.gd`) |
 | Mesurer les performances | Scène de mesure qui joue un parcours scripté et écrit un rapport CSV (images par seconde, temps par image, mémoire, appels de dessin) |

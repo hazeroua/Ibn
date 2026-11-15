@@ -130,7 +130,9 @@ func _benchmark(camera: Camera3D, viewpoints: Array[Viewpoint], scene_path: Stri
 	RenderingServer.viewport_set_measure_render_time(viewport_rid, true)
 
 	var recorder := PerfRecorder.new()
-	if not recorder.reserve(int(ceilf(duration * MAX_MEASURED_FPS)) + 1):
+	var capacity: int = int(ceilf(duration * MAX_MEASURED_FPS)) + 1
+	if not recorder.reserve(capacity):
+		push_error("Pipeline : impossible de réserver %d mesures (durée trop longue ?)." % capacity)
 		return EXIT_RUNTIME
 
 	camera.global_transform = viewpoints[0].transform

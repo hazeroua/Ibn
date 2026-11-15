@@ -1,78 +1,67 @@
-# CLAUDE.md — Consignes pour l'agent IA
+# CLAUDE.md — Les Chemins d'Ibn Khaldoun
 
-Ce projet est un jeu en monde ouvert sous **Godot 4** (GDScript typé + C++ via GDExtension) sur la vie d'Ibn Khaldoun (1332–1406). Il est entièrement développé par vibe coding : **tu fais tout**, le porteur du projet ne fait que télécharger certaines ressources graphiques et jouer.
+Jeu d'action-aventure en monde ouvert sous **Godot 4.7** (GDScript typé + C++ via GDExtension) sur la vie d'Ibn Khaldoun (1332–1406). Développé entièrement par Claude Code : **tu fais tout** ; le porteur du projet ne fait que télécharger certaines ressources et jouer. Il ne lit pas le code : rends compte en français simple.
 
-**Machine de développement :** Windows, Intel Core Ultra 7, **puce graphique intégrée Intel Arc, pas de carte graphique dédiée**. C'est aussi la configuration minimale du jeu.
+**Machine de développement = configuration minimale du jeu :** Windows, Intel Core Ultra 7, **puce graphique intégrée Intel Arc**, aucune carte graphique dédiée.
 
-## À lire avant toute tâche
-- `Docs/01-vision-et-attentes.md` : ce que veut le porteur du projet.
-- `Docs/06-roadmap-mvp.md` : le MVP en cours. **Ne travaille que sur le MVP en cours.**
-- `Docs/05-technologies.md` : stack, architecture, pipeline, budget de performance.
-- `Tools/outils.json` : chemins de Godot, de Blender et des outils (créé par `Tools/installer.ps1`).
-- Pour toute tâche de contenu (mission, dialogue, Codex) : `Docs/08-synopsis.md` (l'histoire), `Docs/04-missions.md`, `Docs/03-game-design.md`, et `Docs/02-histoire.md` pour les faits.
-- **Toujours** pour le contenu narratif : `Docs/07-philosophie.md`. Chaque mission doit servir au moins une des 20 idées (observation ou application).
-- **Jouer d'abord, apprendre ensuite** : une mission doit être amusante avant d'être instructive. Jamais de texte explicatif imposé au joueur.
+## ⛔ Règle absolue n° 1 : aucun raccourci
+- Chaque système est écrit **directement dans sa version définitive**, avec **la meilleure optimisation possible pour le pire cas**. Interdits : version « provisoire », « pour l'instant », « on optimisera plus tard », `TODO`/`FIXME`/`HACK`, fonctions vides ou valeurs factices présentées comme terminées, solutions qui ne tiennent que le cas moyen. (Un hook refuse ces marqueurs dans le code.)
+- Avant de coder, **écrire les pires cas** : nombre maximal de PNJ, cavaliers et objets visibles ; puce intégrée ; partie de 100 heures ; galop à pleine vitesse en zone dense ; tous les systèmes actifs en même temps.
+- Structures de données et algorithmes choisis pour leur **complexité dans le pire cas** ; **zéro allocation** dans les chemins par image.
+- Chaque système a un **test de charge** qui reproduit son pire cas, avec des mesures.
+- Si une contrainte empêche la meilleure solution : **le dire et s'arrêter pour demander**, jamais livrer au rabais.
+- **Un MVP limite le périmètre, jamais la qualité.**
 
-## ⛔ RÈGLE ABSOLUE N° 1 : AUCUN RACCOURCI
+## ⛔ Règle absolue n° 2 : le porteur du projet ne manipule rien
+- Ne jamais lui demander d'ouvrir l'éditeur Godot, de cliquer, de régler une valeur ou de créer un fichier.
+- **Les scripts sont la source de vérité** : scènes complexes construites par `Game/tools/builders/build_<carte>.gd` à partir de `Game/data/<carte>/` (les `.tscn` générés ne se modifient jamais, un hook l'interdit) ; modèles 3D par `Scripts/Blender/`.
+- Ressources libres téléchargées par script ; seules celles derrière un compte vont dans `Docs/ressources-a-telecharger.md`, puis `Import/`.
+- **Vérifie toi-même** : tests GUT, mesures, captures relues avec Read.
 
-Cette règle passe avant toutes les autres. Elle ne souffre aucune exception.
+## Commandes
+Toujours via les scripts (Windows : `powershell -NoProfile -ExecutionPolicy Bypass -File <script>`).
 
-**Interdit :**
-- Écrire une version « provisoire », « simple pour l'instant », « suffisante pour le moment » ou « à améliorer plus tard ».
-- Repousser l'optimisation : *« on optimisera plus tard »*, *« ça suffit pour un prototype »*, *« ce sera remplacé par un meilleur système »*.
-- Les `TODO`, `FIXME`, `HACK` ou commentaires du type *« temporaire »* dans le code rendu.
-- Les implémentations factices (stubs, valeurs en dur, fonctions vides) présentées comme du travail terminé.
-- Les solutions qui marchent dans le cas moyen mais s'effondrent dans le pire cas.
+| Besoin | Commande |
+|---|---|
+| Installer / vérifier les outils | `Tools/installer.ps1` (versions figées : `Tools/versions.json`, chemins : `Tools/outils.json`) |
+| **Tout valider** (lint, ressources, C++, import, scènes, tests, mesures, captures) | `Scripts/Pipeline/valider.ps1` |
+| Compiler le C++ | `Scripts/Pipeline/compiler.ps1 [-Cible debug\|release]` |
+| Construire une scène | `Scripts/Pipeline/construire.ps1 [-Constructeur <carte>]` |
+| Tests GUT | `Scripts/Pipeline/tester.ps1` |
+| Mesurer / capturer / filmer | `Scripts/Pipeline/mesurer.ps1`, `capturer.ps1`, `video.ps1` (`-Carte <carte>`) |
+| Exporter le jeu Windows | `Scripts/Pipeline/exporter.ps1` |
+| Lancer le jeu | `lancer.bat [-Scene res://…] [-Export]` |
 
-**Obligatoire :**
-- Chaque système est écrit **directement dans sa version définitive**, avec **la meilleure optimisation possible**.
-- Chaque système est conçu pour **tenir le pire cas**, pas le cas moyen. Avant de coder, identifier et écrire explicitement les pires cas, par exemple :
-  - nombre maximal de PNJ, de cavaliers et d'objets visibles en même temps (souk bondé, armée de Damas, caravane du pèlerinage) ;
-  - **la puce graphique intégrée de la machine de développement** ;
-  - partie de 100 heures : taille de la sauvegarde, nombre de missions, d'observations et d'idées enregistrées ;
-  - galop à vitesse maximale à travers une zone dense (streaming des cellules du monde) ;
-  - tous les systèmes actifs en même temps (météo, foule, combat, dialogue, cycle jour/nuit).
-- Choisir les structures de données et les algorithmes pour leur **complexité dans le pire cas** (pas d'O(n²) sur des listes de PNJ, pas de recherche linéaire répétée à chaque image, etc.).
-- **Zéro allocation mémoire inutile** dans les chemins chauds (par image) : réserver, réutiliser, mettre en pool.
-- Écrire un **test de charge** pour chaque système, qui reproduit son pire cas, et donner les mesures (temps par image, mémoire).
-- Si une contrainte empêche de faire la meilleure solution (limite du moteur, ressource manquante), **le dire clairement et s'arrêter pour demander**, au lieu de livrer une solution au rabais.
+Mesures et captures : `Mesures/<mvp>/<carte>/<date>/` ; journaux : `Mesures/journaux/`, `Mesures/tests/`.
 
-**Le MVP limite le périmètre, jamais la qualité.** Un MVP contient moins de fonctionnalités, mais chaque fonctionnalité livrée est finale, optimisée et robuste au pire cas.
+## Où se trouvent les choses
+- `Docs/` : conception (lire selon la tâche, ci-dessous). `Docs/06-roadmap-mvp.md` : **ne travailler que sur le MVP en cours** (réglage `ibn/projet/mvp_en_cours` de `Game/project.godot`).
+- `Game/` : projet Godot. `core/` (démarrage, entrées, données JSON, pipeline), `world/` (cartes et leurs constructeurs), `data/` (toutes les données, **jamais de contenu codé en dur**), `tests/unit/` (GUT), `tests/perf/budgets/` (budgets par carte), `tools/builders/`.
+- `Extensions/` : C++ (GDExtension), `src/` ; godot-cpp figé.
+- `Scripts/Pipeline/` : tout le pipeline ; `.github/workflows/ci.yml` : CI Windows + Linux (rendu logiciel).
 
-## ⛔ RÈGLE ABSOLUE N° 2 : LE PORTEUR DU PROJET NE MANIPULE RIEN
+## Documents à lire selon la tâche
+- Toujours : `Docs/01-vision-et-attentes.md`, la section du MVP en cours de `Docs/06-roadmap-mvp.md`.
+- Technique : `Docs/05-technologies.md`.
+- Contenu (mission, dialogue, Codex, livret) : `Docs/08-synopsis.md`, `Docs/04-missions.md`, `Docs/03-game-design.md`, `Docs/07-philosophie.md` (chaque mission sert au moins une des 20 idées), `Docs/02-histoire.md` (faits). **Jouer d'abord, apprendre ensuite** : jamais de texte explicatif imposé.
 
-- **Tu fais tout** : installation des outils, code, scènes, matériaux, éclairage, imports, réglages, tests, mesures, export. Voir « Tout par Claude Code » dans `Docs/05-technologies.md`.
-- **Télécharge toi-même** les ressources libres (Poly Haven, Quaternius, Kenney…) quand c'est possible. Si une ressource exige un compte ou un clic, ajoute-la à `Docs/ressources-a-telecharger.md` (nom, lien, licence, raison, dossier de destination), puis attends qu'elle soit déposée dans `Import/`.
-- **Ne demande jamais** d'ouvrir l'éditeur Godot, de cliquer, de régler une valeur, de placer un objet ou de créer un fichier à la main.
-- **Les scripts sont la source de vérité** : les scènes complexes sont construites par des scripts de `Scripts/Godot/` et doivent pouvoir être recréées en les relançant ; les modèles créés ou retouchés le sont par des scripts de `Scripts/Blender/`.
-- **Vérifie ton travail toi-même** : captures d'écran automatiques pour le visuel, tests GUT pour la logique, scènes de mesure pour la performance.
-- Si une opération te semble impossible par script, cherche d'abord une solution par le code. Si vraiment il n'y en a pas, **arrête-toi et explique pourquoi** avant de demander quoi que ce soit.
+## Skills et agents du projet
+- Skills : `nouvelle-fonctionnalite` (méthode obligatoire de chaque tâche), `valider`, `nouvelle-carte`, `ressource-libre`, `godot-gdscript`, `extension-cpp`, `nouvelle-mission`, `fin-de-mvp` (manuelle).
+- Agents : `verificateur` (**obligatoire avant d'annoncer qu'un travail est fini**), `garant-performance` (avant tout système par image ou à grand nombre d'objets), `historien` (tout contenu historique), `directeur-artistique` (tout visuel), `concepteur-gameplay` (missions et systèmes de jeu).
 
-## Règles de code
-- **GDScript typé statiquement partout** (variables, paramètres, retours). Pas de code non typé.
-- **C++ (GDExtension) pour tout chemin chaud** : streaming du monde, foules, routines en masse, génération procédurale, locomotion du cheval, et tout ce qu'une mesure désigne comme trop coûteux en GDScript.
-- **Tout est piloté par les données** : missions, dialogues, Codex, idées, livrets, groupes, PNJ nommés → fichiers JSON dans `Game/data/` ou dialogues de Dialogue Manager. Jamais de contenu codé en dur.
-- Respecter l'arborescence de `Docs/05-technologies.md`.
-- Pas de `_process` / `_physics_process` sans nécessité : préférer signaux, timers et mises à jour par paquets.
-- Répétitions visuelles → **MultiMeshInstance3D**. Lointain → niveaux de détail et imposteurs. Médinas → occlusion culling.
-- Noms de code en **anglais**, commentaires et textes du jeu en **français** (textes traduisibles via le système de traduction de Godot).
-- Version de Godot **figée** : celle de `Tools/outils.json`. Ne change pas de version sans le demander.
+## Code
+- GDScript **typé statiquement partout** (y compris variables de boucle) ; formaté par gdformat (140 colonnes), analysé par gdlint (hook après chaque modification).
+- C++ pour tout chemin chaud (streaming, foules, routines en masse, génération, cheval, tout ce qu'une mesure désigne) ; avertissements traités comme des erreurs.
+- Pas de `_process` sans nécessité ; répétitions en `MultiMeshInstance3D` ; lointain en niveaux de détail et imposteurs ; occlusion dans les médinas ; maillages et matériaux partagés.
+- Noms de code en anglais ; commentaires et textes du jeu en français (traduisibles).
+- Toute ligne `ERROR:` ou `SCRIPT ERROR:` de Godot fait échouer le pipeline : corriger la cause, ne jamais filtrer le message.
+- Version de Godot et des dépendances **figées** (`Tools/versions.json`) : ne rien changer sans le demander.
 
 ## Performance (non négociable)
-- Cible : **60 i/s en 1080p (FSR 2) sur la puce Intel Arc intégrée de la machine de développement, dans le pire cas.**
-- Mesurer à chaque fonctionnalité, avec la scène de mesure correspondante.
-- Signaler immédiatement tout dépassement de budget (appels de dessin, triangles, mémoire des textures, temps par image).
+**60 i/s en 1080p (FSR 2) sur la puce Intel Arc intégrée, dans le pire cas.** Budgets par carte dans `Game/tests/perf/budgets/` ; ne jamais assouplir un budget sans l'accord du porteur du projet ; signaler immédiatement tout dépassement.
 
-## Méthode de travail
-1. Reformuler la tâche en une phrase et vérifier qu'elle appartient au MVP en cours.
-2. Écrire les pires cas de la tâche.
-3. Coder par petits incréments ; compiler le C++ (`scons`) et lancer les tests GUT ; corriger avant de rendre la main.
-4. Lancer le **test de charge du pire cas** et rapporter les mesures.
-5. Prendre des **captures d'écran** automatiques et les vérifier si la tâche touche au visuel.
-6. Terminer par : les pires cas traités et leurs mesures, ce qui a changé, **la commande unique qui lance le jeu au bon endroit pour essayer**, et les éventuelles ressources à télécharger.
-7. Une fonctionnalité = une branche Git = un commit clair.
+## Fin de chaque tâche
+Rapport en français simple : ce qui a changé ; pires cas traités et mesures ; **la commande unique pour essayer** ; ressources à télécharger éventuelles. Une fonctionnalité = une branche Git = un commit clair.
 
 ## Histoire
-- Ne jamais contredire un fait historique de `Docs/02-histoire.md`.
-- Tout contenu inventé est marqué `"statut_historique": "F"` (fiction) ou `"P"` (plausible).
-- Représenter les peuples, religions et cultures avec respect et nuance.
+Ne jamais contredire `Docs/02-histoire.md` ; tout contenu inventé porte `"statut_historique": "F"` (fiction) ou `"P"` (plausible) ; peuples, religions et cultures représentés avec respect et nuance.

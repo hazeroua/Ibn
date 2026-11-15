@@ -1,7 +1,6 @@
 #include "perf_recorder.h"
 
 #include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/core/error_macros.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -28,7 +27,10 @@ size_t nearest_rank_index(size_t p_count, double p_percentile) {
 } // namespace
 
 bool PerfRecorder::reserve(int64_t p_capacity) {
-	ERR_FAIL_COND_V_MSG(p_capacity <= 0 || p_capacity > MAX_CAPACITY, false, "PerfRecorder.reserve : capacité hors limites.");
+	// Refus attendu (renvoie false sans message) : l'appelant le signale avec son propre contexte.
+	if (p_capacity <= 0 || p_capacity > MAX_CAPACITY) {
+		return false;
+	}
 	const size_t capacity = static_cast<size_t>(p_capacity);
 	frame_ms_.assign(capacity, 0.0f);
 	cpu_ms_.assign(capacity, 0.0f);

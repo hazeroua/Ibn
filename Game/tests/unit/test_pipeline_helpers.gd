@@ -56,4 +56,4 @@ func test_project_budgets_reference_known_metrics() -> void:
 		"static_mem_mb_max",
 	]
 	for key: Variant in budgets:
-		assert_true(known.has(str(key)), "métrique de budget inconnue : %s" % key)
+		assert_true(known.has(str(key)), "la métrique de budget %s doit exister dans les mesures" % key)

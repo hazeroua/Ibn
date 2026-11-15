@@ -1,5 +1,7 @@
 #pragma once
 
+#include "gdclass.h"
+
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/packed_float32_array.hpp>
@@ -15,10 +17,11 @@
 // et renvoie false : la scène de mesure dimensionne la capacité d'après la durée et un
 // plafond d'images par seconde, et traite ce refus comme une erreur.
 class PerfRecorder : public godot::RefCounted {
-	GDCLASS(PerfRecorder, godot::RefCounted)
+	IBN_GDCLASS(PerfRecorder, godot::RefCounted)
 
 public:
 	// Réserve la mémoire pour p_capacity images et efface les mesures existantes.
+	// Renvoie false (sans rien modifier) si p_capacity est nulle, négative ou au-delà du plafond de sécurité.
 	bool reserve(int64_t p_capacity);
 
 	// Ajoute les mesures d'une image. Renvoie false si la capacité est atteinte ou si une valeur est invalide.
