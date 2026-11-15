@@ -63,3 +63,4 @@ __pycache__/
 
 # Sons libres téléchargés (manifeste Game/data/assets/sounds.json)
 /Game/assets/sounds/
+/Game/world/jeu/jeu.tscn
