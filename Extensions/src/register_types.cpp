@@ -1,6 +1,7 @@
 #include "register_types.h"
 
 #include "perf_recorder.h"
+#include "world_streamer.h"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -11,6 +12,7 @@ void initialize_ibn_module(godot::ModuleInitializationLevel p_level) {
 		return;
 	}
 	GDREGISTER_CLASS(PerfRecorder);
+	GDREGISTER_CLASS(WorldStreamer);
 }
 
 void uninitialize_ibn_module(godot::ModuleInitializationLevel p_level) {
