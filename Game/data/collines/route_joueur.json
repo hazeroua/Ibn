@@ -1,0 +1,16 @@
+{
+  "description": "Tour de la zone dense de 1 000 obstacles, par l'extérieur : approche, contournement à la marche puis au pas de course, retour au point de départ.",
+  "arrival_radius_m": 1.5,
+  "stall_time_s": 3.0,
+  "stall_min_progress_m": 0.25,
+  "max_duration_s": 300.0,
+  "waypoints": [
+    { "id": "approche", "position": [370.0, 100.0], "gait": "walk_slow" },
+    { "id": "ouest", "position": [325.0, 75.0], "gait": "walk" },
+    { "id": "nord_ouest", "position": [325.0, 40.0], "gait": "walk" },
+    { "id": "nord", "position": [370.0, 15.0], "gait": "walk" },
+    { "id": "nord_est", "position": [415.0, 40.0], "gait": "run" },
+    { "id": "est", "position": [415.0, 75.0], "gait": "run" },
+    { "id": "retour", "position": [370.0, 115.0], "gait": "run" }
+  ]
+}

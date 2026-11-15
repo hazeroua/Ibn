@@ -1,0 +1,251 @@
+{
+  "description": "Sons libres (licence CC0) téléchargés par Scripts/Pipeline/importer-sons.ps1 dans res://assets/sounds/<id>.ogg, vérifiés par taille et SHA-256. Les fichiers ne sont pas versionnés : ce manifeste est la source de vérité. Les adresses pointent vers un commit figé ; chaque source donne l'origine et la licence.",
+  "destination": "res://assets/sounds/",
+  "sources": {
+    "kenney_impact_sounds": {
+      "title": "Impact Sounds 1.0",
+      "author": "Kenney (www.kenney.nl)",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "origin": "https://kenney.nl/assets/impact-sounds",
+      "base_url": "https://media.githubusercontent.com/media/series-ai/jam-ready-assets/5e209a64a641624046c6b7a2600855bea60896bf/kenney-impact-sounds/audio/Audio/",
+      "license_file": "https://github.com/series-ai/jam-ready-assets/blob/5e209a64a641624046c6b7a2600855bea60896bf/kenney-impact-sounds/audio/License.txt"
+    },
+    "kenney_rpg_audio": {
+      "title": "RPG Audio 1.0",
+      "author": "Kenney (www.kenney.nl)",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "origin": "https://kenney.nl/assets/rpg-audio",
+      "base_url": "https://media.githubusercontent.com/media/series-ai/jam-ready-assets/5e209a64a641624046c6b7a2600855bea60896bf/kenney-rpg-audio/audio/Audio/",
+      "license_file": "https://github.com/series-ai/jam-ready-assets/blob/5e209a64a641624046c6b7a2600855bea60896bf/kenney-rpg-audio/audio/License.txt"
+    },
+    "fantozzi_footsteps": {
+      "title": "Fantozzi's Footsteps (Grass/Sand & Stone)",
+      "author": "Fantozzi (publié par qubodup)",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "origin": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
+      "base_url": "https://raw.githubusercontent.com/petroulacl/fps-asset-kit/a19b7458a593598211c95ec46ef4eb4b6d1f94d7/sfx/footsteps/Fantozzi-footsteps/ogg/",
+      "license_file": "https://github.com/petroulacl/fps-asset-kit/blob/a19b7458a593598211c95ec46ef4eb4b6d1f94d7/README.md"
+    }
+  },
+  "sounds": [
+    {
+      "id": "footstep_sand_01",
+      "source": "fantozzi_footsteps",
+      "file": "Fantozzi-SandL1.ogg",
+      "sha256": "fe6ec00cbe8790be0f37540cb8db8d245ca062337b121003685b6a96700cd0ae",
+      "bytes": 10440,
+      "usage": "Pas sur le sable"
+    },
+    {
+      "id": "footstep_sand_02",
+      "source": "fantozzi_footsteps",
+      "file": "Fantozzi-SandR1.ogg",
+      "sha256": "439ffe4d6fdf38194caf87e103897354756d69607bd4e48cef923e1ade68ee70",
+      "bytes": 9796,
+      "usage": "Pas sur le sable"
+    },
+    {
+      "id": "footstep_sand_03",
+      "source": "fantozzi_footsteps",
+      "file": "Fantozzi-SandL2.ogg",
+      "sha256": "68ba66063efa32b3a83979194582b1420f808cd217ccb5839c382d0e08522e18",
+      "bytes": 8922,
+      "usage": "Pas sur le sable"
+    },
+    {
+      "id": "footstep_sand_04",
+      "source": "fantozzi_footsteps",
+      "file": "Fantozzi-SandR2.ogg",
+      "sha256": "5eec48117da8fa433963ba06a93f67705f0bbd86ac3f473ab7b3bd120bf55fce",
+      "bytes": 8716,
+      "usage": "Pas sur le sable"
+    },
+    {
+      "id": "footstep_sand_05",
+      "source": "fantozzi_footsteps",
+      "file": "Fantozzi-SandL3.ogg",
+      "sha256": "0a526053424687c18735bca107b7234e48aceeb6bf12eec1f182d89aaf792b71",
+      "bytes": 8246,
+      "usage": "Pas sur le sable"
+    },
+    {
+      "id": "footstep_sand_06",
+      "source": "fantozzi_footsteps",
+      "file": "Fantozzi-SandR3.ogg",
+      "sha256": "7498c4e50282acc4e7e0442a9f2e551fae685898f8261152dbc627f04901ddbe",
+      "bytes": 8635,
+      "usage": "Pas sur le sable"
+    },
+    {
+      "id": "footstep_stone_01",
+      "source": "fantozzi_footsteps",
+      "file": "Fantozzi-StoneL1.ogg",
+      "sha256": "2d85768f04a85b6068f3548b33d6e0b0424c5e62b0941042d593affd3a9555d4",
+      "bytes": 8889,
+      "usage": "Pas sur la pierre"
+    },
+    {
+      "id": "footstep_stone_02",
+      "source": "fantozzi_footsteps",
+      "file": "Fantozzi-StoneR1.ogg",
+      "sha256": "d6949efd0255d50efe4853cc077b18e3ee96b155707ccf4199fd530aaac82d58",
+      "bytes": 8855,
+      "usage": "Pas sur la pierre"
+    },
+    {
+      "id": "footstep_stone_03",
+      "source": "fantozzi_footsteps",
+      "file": "Fantozzi-StoneL2.ogg",
+      "sha256": "1cdd36f02590d2b968b1dd311334e71db8514d7c276e62ad474d01c26b37d4de",
+      "bytes": 8516,
+      "usage": "Pas sur la pierre"
+    },
+    {
+      "id": "footstep_stone_04",
+      "source": "fantozzi_footsteps",
+      "file": "Fantozzi-StoneR2.ogg",
+      "sha256": "075c27afbf29b7771cb01a7bf51530b835e82c56698ca5551318fa0c6b7adb9f",
+      "bytes": 8346,
+      "usage": "Pas sur la pierre"
+    },
+    {
+      "id": "footstep_stone_05",
+      "source": "fantozzi_footsteps",
+      "file": "Fantozzi-StoneL3.ogg",
+      "sha256": "6e008bba3c24c6adc20151126768eba8c9259ec9f40b7c0b8399d60a9ca67812",
+      "bytes": 8207,
+      "usage": "Pas sur la pierre"
+    },
+    {
+      "id": "footstep_stone_06",
+      "source": "fantozzi_footsteps",
+      "file": "Fantozzi-StoneR3.ogg",
+      "sha256": "73bbdfc3d9e891bc1afbab7050de3bd59adf13cf5145ff3fb2f1fa7b251d6d82",
+      "bytes": 8404,
+      "usage": "Pas sur la pierre"
+    },
+    {
+      "id": "footstep_dirt_01",
+      "source": "kenney_rpg_audio",
+      "file": "footstep00.ogg",
+      "sha256": "d0daf7bc4bee8633e6d20aad1f88798f2bd7b948be0f644c2f21c41a42c1e3c5",
+      "bytes": 11518,
+      "usage": "Pas sur la terre"
+    },
+    {
+      "id": "footstep_dirt_02",
+      "source": "kenney_rpg_audio",
+      "file": "footstep01.ogg",
+      "sha256": "99514f67612034154c1a5f152b029fca130fdcd1594527257988ad9619052d34",
+      "bytes": 11943,
+      "usage": "Pas sur la terre"
+    },
+    {
+      "id": "footstep_dirt_03",
+      "source": "kenney_rpg_audio",
+      "file": "footstep02.ogg",
+      "sha256": "4114ecb7bb1a939b65896fba95af09d1dc0fe89fabaf63c4d2934e60bfa35ac6",
+      "bytes": 11571,
+      "usage": "Pas sur la terre"
+    },
+    {
+      "id": "footstep_dirt_04",
+      "source": "kenney_rpg_audio",
+      "file": "footstep03.ogg",
+      "sha256": "6cb4ddfd75ec915b3de63b742999b9a4cd647cd2f23180ddf33abc3962cc90b6",
+      "bytes": 12602,
+      "usage": "Pas sur la terre"
+    },
+    {
+      "id": "footstep_dirt_05",
+      "source": "kenney_rpg_audio",
+      "file": "footstep04.ogg",
+      "sha256": "d5fc12c4eb2df153957c4726309297c5c5228c79b5a97c562e6ffdd0b7e4829b",
+      "bytes": 13346,
+      "usage": "Pas sur la terre"
+    },
+    {
+      "id": "footstep_dirt_06",
+      "source": "kenney_rpg_audio",
+      "file": "footstep05.ogg",
+      "sha256": "e9ff320f5b9645d9cd846437e393430d2c3454f6a3ffe94e44d876a9a4bbcf30",
+      "bytes": 12331,
+      "usage": "Pas sur la terre"
+    },
+    {
+      "id": "footstep_dirt_07",
+      "source": "kenney_rpg_audio",
+      "file": "footstep06.ogg",
+      "sha256": "b75f55f2f7a3d1632039156379081e13204b2d4ea36461ff68c925adb55c9e2c",
+      "bytes": 11928,
+      "usage": "Pas sur la terre"
+    },
+    {
+      "id": "footstep_dirt_08",
+      "source": "kenney_rpg_audio",
+      "file": "footstep07.ogg",
+      "sha256": "2dda1fba263333e355aacdda60b9f29209caff9103cbcc55e6a51841778d5a6e",
+      "bytes": 12307,
+      "usage": "Pas sur la terre"
+    },
+    {
+      "id": "footstep_dirt_09",
+      "source": "kenney_rpg_audio",
+      "file": "footstep08.ogg",
+      "sha256": "13820ad5e005e9d68f13d8c959732361f8967593dd2b56ef2a3c37ac8f59ccc2",
+      "bytes": 11285,
+      "usage": "Pas sur la terre"
+    },
+    {
+      "id": "footstep_dirt_10",
+      "source": "kenney_rpg_audio",
+      "file": "footstep09.ogg",
+      "sha256": "6c1802510968a40efa6eab1c25f49b35542dab6b329a6ce21c3b96f548457658",
+      "bytes": 11397,
+      "usage": "Pas sur la terre"
+    },
+    {
+      "id": "footstep_wood_01",
+      "source": "kenney_impact_sounds",
+      "file": "footstep_wood_000.ogg",
+      "sha256": "1998aa35434a2418a44a34928131c943e7c0df5bdd011385b42a636734166e81",
+      "bytes": 8030,
+      "usage": "Pas sur le bois"
+    },
+    {
+      "id": "footstep_wood_02",
+      "source": "kenney_impact_sounds",
+      "file": "footstep_wood_001.ogg",
+      "sha256": "14d42456a69ea2ea0d6e2022ec2c614256e217b202c6e20bc087bdd38473aba2",
+      "bytes": 8010,
+      "usage": "Pas sur le bois"
+    },
+    {
+      "id": "footstep_wood_03",
+      "source": "kenney_impact_sounds",
+      "file": "footstep_wood_002.ogg",
+      "sha256": "8823e6162976292ff15c1fcd99280f16a7ad8ab629406fc0c60a1fe0a99db25d",
+      "bytes": 7976,
+      "usage": "Pas sur le bois"
+    },
+    {
+      "id": "footstep_wood_04",
+      "source": "kenney_impact_sounds",
+      "file": "footstep_wood_003.ogg",
+      "sha256": "c3209e44a8dbd4764142b6084572653dfb2232e765a914872324f95a6d0b58e0",
+      "bytes": 8288,
+      "usage": "Pas sur le bois"
+    },
+    {
+      "id": "footstep_wood_05",
+      "source": "kenney_impact_sounds",
+      "file": "footstep_wood_004.ogg",
+      "sha256": "f9120bf3c1e14cee61032e94fbdaac87ad13383658f5b18ce23ca1149cb83eb3",
+      "bytes": 7880,
+      "usage": "Pas sur le bois"
+    }
+  ]
+}
