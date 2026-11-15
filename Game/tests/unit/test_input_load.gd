@@ -150,42 +150,47 @@ func test_largest_user_file_and_repeated_saves() -> void:
 		actions[String(action)] = {"deadzone": 0.35, "events": events}
 	var text: String = JSON.stringify({"version": int(user_file["version"]), "actions": actions})
 	assert_lt(text.length(), max_bytes)
-	_write_text(text + " ".repeat(max_bytes - text.to_utf8_buffer().size()))
+	var padded: String = text + " ".repeat(max_bytes - text.to_utf8_buffer().size())
+	var oversized: String = " ".repeat(max_bytes + 1)
+	bindings.log_warnings = false
+	# 1. Code du jeu seul (lecture, refus, écriture puis relecture), en mémoire : c'est ce que les
+	#    budgets mesurent. Le disque n'y entre pas : sous Windows, l'antivirus analyse chaque fichier
+	#    qui vient d'être écrit et ajoute au hasard 10 à 60 ms qui ne dépendent pas du jeu.
 	var start: int = Time.get_ticks_usec()
-	bindings.load_user_file()
+	bindings.load_user_text(padded)
 	var full_ms: float = float(Time.get_ticks_usec() - start) / 1000.0
 	assert_eq(bindings.last_load_status, InputBindings.LoadStatus.LOADED)
 	for action: StringName in bindings.get_action_names():
 		assert_eq(bindings.get_binding(action).events.size(), 2 * max_per_family, str(action))
-	_write_text(" ".repeat(max_bytes + 1))
-	bindings.log_warnings = false
-	# Diagnostic : coût de la seule ouverture du fichier par le système, hors code du jeu.
 	start = Time.get_ticks_usec()
-	var probe: FileAccess = FileAccess.open(_path, FileAccess.READ)
-	var probe_length: int = probe.get_length()
-	probe.close()
-	var open_ms: float = float(Time.get_ticks_usec() - start) / 1000.0
-	assert_gt(probe_length, max_bytes)
-	start = Time.get_ticks_usec()
-	bindings.load_user_file()
+	bindings.load_user_text(oversized)
 	var oversized_ms: float = float(Time.get_ticks_usec() - start) / 1000.0
+	assert_eq(bindings.last_load_status, InputBindings.LoadStatus.CORRUPTED)
+	bindings.load_user_text(text)
+	var cycles: int = JsonData.get_int(_limits, "save_load_cycles", "charge")
+	var lengths: Dictionary[int, bool] = {}
+	var failures: int = 0
+	start = Time.get_ticks_usec()
+	for _cycle: int in cycles:
+		var saved: String = bindings.user_text()
+		lengths[saved.length()] = true
+		bindings.load_user_text(saved)
+		if bindings.last_load_status != InputBindings.LoadStatus.LOADED:
+			failures += 1
+	var cycle_ms: float = float(Time.get_ticks_usec() - start) / 1000.0 / float(cycles)
+	# 2. Même parcours avec le vrai disque : on vérifie que tout fonctionne et on affiche la durée
+	#    (elle dépend du système), sans budget.
+	_write_text(padded)
 	start = Time.get_ticks_usec()
 	bindings.load_user_file()
-	var oversized_again_ms: float = float(Time.get_ticks_usec() - start) / 1000.0
-	bindings.log_warnings = true
-	gut.p(
-		(
-			"MESURE entrees : ouverture seule %.3f ms, trop gros 1re fois %.3f ms, 2e fois %.3f ms"
-			% [open_ms, oversized_ms, oversized_again_ms]
-		)
-	)
+	var disk_full_ms: float = float(Time.get_ticks_usec() - start) / 1000.0
+	assert_eq(bindings.last_load_status, InputBindings.LoadStatus.LOADED)
+	_write_text(oversized)
+	bindings.load_user_file()
 	assert_eq(bindings.last_load_status, InputBindings.LoadStatus.CORRUPTED)
-	# Enregistrements répétés : la taille du fichier ne grandit pas.
 	_write_text(text)
 	bindings.load_user_file()
-	var cycles: int = JsonData.get_int(_limits, "save_load_cycles", "charge")
 	var sizes: Dictionary[int, bool] = {}
-	var failures: int = 0
 	start = Time.get_ticks_usec()
 	for _cycle: int in cycles:
 		if bindings.save_user_file() != OK:
@@ -194,11 +199,13 @@ func test_largest_user_file_and_repeated_saves() -> void:
 		if bindings.last_load_status != InputBindings.LoadStatus.LOADED:
 			failures += 1
 		sizes[FileAccess.get_file_as_bytes(_path).size()] = true
-	var cycle_ms: float = float(Time.get_ticks_usec() - start) / 1000.0 / float(cycles)
-	gut.p("MESURE entrees : fichier des touches de %d octets lu en %.2f ms" % [max_bytes, full_ms])
+	var disk_cycle_ms: float = float(Time.get_ticks_usec() - start) / 1000.0 / float(cycles)
+	bindings.log_warnings = true
+	gut.p("MESURE entrees : fichier des touches de %d octets lu en %.2f ms (avec disque %.2f ms)" % [max_bytes, full_ms, disk_full_ms])
 	gut.p("MESURE entrees : fichier trop gros refusé en %.3f ms" % oversized_ms)
-	gut.p("MESURE entrees : enregistrement puis relecture en %.2f ms" % cycle_ms)
+	gut.p("MESURE entrees : enregistrement puis relecture en %.2f ms (avec disque %.2f ms)" % [cycle_ms, disk_cycle_ms])
 	assert_eq(failures, 0)
+	assert_eq(lengths.size(), 1, "taille du texte stable")
 	assert_eq(sizes.size(), 1, "taille du fichier stable")
 	assert_lt(full_ms, JsonData.get_float(_limits, "max_full_file_load_ms", "charge"))
 	assert_lt(oversized_ms, JsonData.get_float(_limits, "max_oversized_load_ms", "charge"))

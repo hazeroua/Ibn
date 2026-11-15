@@ -108,17 +108,37 @@ func is_customized(action: StringName) -> bool:
 ## Charge la surcharge du joueur et la fusionne avec les valeurs par défaut ; résultat dans
 ## last_load_status et last_load_warnings.
 func load_user_file() -> void:
-	_reset_current()
-	last_load_warnings.clear()
-	_backup_before_save = false
 	var path: String = _user_path
 	if not FileAccess.file_exists(path):
 		path = _user_path + TEMP_SUFFIX
 		if not FileAccess.file_exists(path):
+			_begin_load()
 			last_load_status = LoadStatus.NO_FILE
 			bindings_changed.emit(&"")
 			return
-	var root: Variant = _read_json(path)
+	_begin_load()
+	_finish_load(_parse_json(_read_text(path)), path)
+
+
+## Même traitement que load_user_file, sur un texte déjà lu (sans accès au disque).
+func load_user_text(text: String, source: String = "") -> void:
+	_begin_load()
+	var checked: Variant = null
+	var length: int = text.to_utf8_buffer().size()
+	if length > _max_bytes:
+		last_load_warnings.append("fichier trop gros (%d octets, maximum %d)" % [length, _max_bytes])
+	else:
+		checked = text
+	_finish_load(_parse_json(checked), source if not source.is_empty() else _user_path)
+
+
+func _begin_load() -> void:
+	_reset_current()
+	last_load_warnings.clear()
+	_backup_before_save = false
+
+
+func _finish_load(root: Variant, path: String) -> void:
 	if typeof(root) != TYPE_DICTIONARY:
 		last_load_status = LoadStatus.CORRUPTED
 	else:
@@ -138,15 +158,7 @@ func load_user_file() -> void:
 ## qui peuvent ainsi évoluer d'une version à l'autre). Un fichier illisible ou plus récent est
 ## d'abord conservé à côté (suffixe BACKUP_SUFFIX).
 func save_user_file() -> Error:
-	var overrides: Dictionary = {}
-	for action: StringName in _order:
-		if is_customized(action):
-			var binding: InputActionBinding = _current[action]
-			var events: Array[Dictionary] = []
-			for event: InputEvent in binding.events:
-				events.append(InputEventCodec.to_data(event))
-			overrides[String(action)] = {"deadzone": binding.deadzone, "events": events}
-	var text: String = JSON.stringify({"version": _user_version, "actions": overrides}, "\t")
+	var text: String = user_text()
 	var directory: String = _user_path.get_base_dir()
 	if not DirAccess.dir_exists_absolute(directory):
 		var made: Error = DirAccess.make_dir_recursive_absolute(directory)
@@ -168,6 +180,19 @@ func save_user_file() -> Error:
 	if renamed == OK:
 		_backup_before_save = false
 	return renamed
+
+
+## Texte du fichier utilisateur (touches modifiées seulement), sans accès au disque.
+func user_text() -> String:
+	var overrides: Dictionary = {}
+	for action: StringName in _order:
+		if is_customized(action):
+			var binding: InputActionBinding = _current[action]
+			var events: Array[Dictionary] = []
+			for event: InputEvent in binding.events:
+				events.append(InputEventCodec.to_data(event))
+			overrides[String(action)] = {"deadzone": binding.deadzone, "events": events}
+	return JSON.stringify({"version": _user_version, "actions": overrides}, "\t")
 
 
 ## Lie event (capturé tel quel, il est d'abord mis sous forme canonique) à l'action, à la place
@@ -295,8 +320,8 @@ func _reset_current() -> void:
 		_current[action] = _defaults[action].copy()
 
 
-## Contenu JSON du fichier, ou null s'il est vide, trop gros ou illisible.
-func _read_json(path: String) -> Variant:
+## Texte du fichier, ou null s'il est trop gros ou illisible.
+func _read_text(path: String) -> Variant:
 	var file: FileAccess = FileAccess.open(path, FileAccess.READ)
 	if file == null:
 		last_load_warnings.append("ouverture impossible (%s)" % error_string(FileAccess.get_open_error()))
@@ -307,6 +332,13 @@ func _read_json(path: String) -> Variant:
 		return null
 	var text: String = file.get_as_text()
 	file.close()
+	return text
+
+
+## Contenu JSON du texte, ou null s'il est absent ou illisible.
+func _parse_json(text: Variant) -> Variant:
+	if typeof(text) != TYPE_STRING:
+		return null
 	var json := JSON.new()
 	if json.parse(text) != OK:
 		last_load_warnings.append("JSON illisible, ligne %d : %s" % [json.get_error_line(), json.get_error_message()])
