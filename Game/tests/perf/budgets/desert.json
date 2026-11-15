@@ -1,0 +1,12 @@
+{
+  "description": "Budgets de performance de la carte « désert » (terrain seul), à mesurer sur la machine de développement (puce Intel Arc intégrée, 1080p, FSR 2), synchronisation verticale désactivée. Pire cas : vue_crete (49 cellules chargées dans le champ, avec ombres du soleil). Estimation : 49 cellules, au plus 4 à 20 000 triangles (niveau fin), puis anneaux à 10 000, 1 600 et 400 : environ 400 000 triangles de terrain visibles ; un appel de dessin par cellule visible, doublé par les ombres.",
+  "budgets": {
+    "frame_p99_ms": { "max": 16.6 },
+    "fps_1pct_low": { "min": 60.0 },
+    "gpu_p99_ms": { "max": 12.0 },
+    "draw_calls_max": { "max": 300 },
+    "primitives_max": { "max": 1500000 },
+    "video_mem_mb_max": { "max": 384.0 },
+    "static_mem_mb_max": { "max": 640.0 }
+  }
+}
