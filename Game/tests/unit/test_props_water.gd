@@ -45,5 +45,22 @@ func test_build_cost_worst_case() -> void:
 		var node: Node3D = OasisWater.build(Vector2(float(i), 0.0), 80.0)
 		node.free()
 	var per_build_ms: float = float(Time.get_ticks_usec() - start) / 1000.0 / float(BUILD_COUNT)
-	gut.p("Construction de l'eau : %.3f ms en moyenne (%d constructions)" % [per_build_ms, BUILD_COUNT])
+	gut.p(
+		(
+			"Construction de l'eau : %.3f ms en moyenne (%d constructions)"
+			% [per_build_ms, BUILD_COUNT]
+		)
+	)
 	assert_lt(per_build_ms, BUILD_BUDGET_MS)
+
+
+func test_mesh_and_material_are_shared() -> void:
+	var a: MeshInstance3D = OasisWater.build(Vector2.ZERO, 70.0) as MeshInstance3D
+	var b: MeshInstance3D = OasisWater.build(Vector2(500.0, 0.0), 70.0) as MeshInstance3D
+	var c: MeshInstance3D = OasisWater.build(Vector2.ZERO, 35.0) as MeshInstance3D
+	assert_same(a.mesh, b.mesh, "même rayon : même maillage")
+	assert_ne(a.mesh, c.mesh, "autre rayon : autre maillage")
+	assert_same(a.mesh.surface_get_material(0), c.mesh.surface_get_material(0), "matériau unique")
+	a.free()
+	b.free()
+	c.free()
