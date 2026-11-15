@@ -226,7 +226,6 @@ func _read_season(entry: Dictionary, context: String) -> PackedFloat32Array:
 
 
 func _declare_globals() -> void:
-	var existing: Array[StringName] = RenderingServer.global_shader_parameter_get_list()
 	var specs: Array = [
 		["sun_color", RenderingServer.GLOBAL_VAR_TYPE_VEC3, Vector3.ONE],
 		["sun_intensity", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 1.0],
@@ -242,8 +241,7 @@ func _declare_globals() -> void:
 	for spec: Array in specs:
 		var uniform := StringName(_prefix + String(spec[0]))
 		_uniform_names.append(uniform)
-		if not existing.has(uniform):
-			RenderingServer.global_shader_parameter_add(uniform, spec[1] as RenderingServer.GlobalShaderParameterType, spec[2])
+		ShaderGlobals.declare(uniform, spec[1] as RenderingServer.GlobalShaderParameterType, spec[2])
 
 
 ## Écrit les neuf uniformes (ordre de _declare_globals) ; aucune allocation de tableau.

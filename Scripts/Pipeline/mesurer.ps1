@@ -52,6 +52,21 @@ if ($parcoursChoisi.Joueur) {
     )
 }
 if ($SansBudgets) { $arguments += '--no-budgets' }
+# Sur batterie, Windows bride le processeur et la puce graphique : les budgets sont vérifiés et
+# affichés, mais un dépassement ne fait pas échouer la mesure (décision du porteur du projet).
+# Sur secteur, ou sur une machine sans batterie, ils restent bloquants.
+$surBatterie = $false
+try {
+    $batteries = @(Get-CimInstance -ClassName Win32_Battery -ErrorAction Stop)
+    # BatteryStatus 2 : branché sur secteur.
+    $surBatterie = ($batteries.Count -gt 0) -and (@($batteries | Where-Object { $_.BatteryStatus -ne 2 }).Count -gt 0)
+} catch {
+    $surBatterie = $false
+}
+if ($surBatterie -and -not $SansBudgets) {
+    $arguments += '--budgets-advisory'
+    Write-Host '  [!] Ordinateur sur batterie : budgets affichés mais non bloquants. Branchez le secteur pour une mesure qui compte.' -ForegroundColor Yellow
+}
 try {
     $null = Invoke-Godot -Arguments $arguments -Journal (Join-Path $sortie 'mesure.log')
 } finally {
@@ -69,6 +84,14 @@ try {
 }
 if ($SansBudgets) {
     Write-Ok "Mesure enregistrée sans vérification des budgets : $sortie"
+} elseif ($surBatterie) {
+    $resumeFinal = Get-Content -Raw -Encoding UTF8 (Join-Path $sortie 'resume.json') | ConvertFrom-Json
+    $depassements = @($resumeFinal.budget_violations)
+    if ($depassements.Count -gt 0) {
+        Write-Host "  [!] Sur batterie, budgets dépassés (non bloquant) : $($depassements -join ' ; ')" -ForegroundColor Yellow
+    } else {
+        Write-Ok "Budgets respectés, même sur batterie : $sortie"
+    }
 } else {
     Write-Ok "Budgets respectés : $sortie"
 }

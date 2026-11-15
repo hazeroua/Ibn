@@ -145,10 +145,6 @@ func _follow_camera() -> void:
 
 
 static func _declare_globals() -> void:
-	var existing: Array[StringName] = RenderingServer.global_shader_parameter_get_list()
-	if not existing.has(UNIFORM_DIRECTION):
-		RenderingServer.global_shader_parameter_add(UNIFORM_DIRECTION, RenderingServer.GLOBAL_VAR_TYPE_VEC2, Vector2.RIGHT)
-	if not existing.has(UNIFORM_STRENGTH):
-		RenderingServer.global_shader_parameter_add(UNIFORM_STRENGTH, RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0)
-	if not existing.has(UNIFORM_TIME):
-		RenderingServer.global_shader_parameter_add(UNIFORM_TIME, RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0)
+	ShaderGlobals.declare(UNIFORM_DIRECTION, RenderingServer.GLOBAL_VAR_TYPE_VEC2, Vector2.RIGHT)
+	ShaderGlobals.declare(UNIFORM_STRENGTH, RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0)
+	ShaderGlobals.declare(UNIFORM_TIME, RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0)

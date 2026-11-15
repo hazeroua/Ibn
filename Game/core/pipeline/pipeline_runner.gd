@@ -5,10 +5,10 @@ extends Node
 ## Modes :
 ##   --mode=capture    --scene=<res://…> --viewpoints=<res://…> --out=<dossier absolu> [--settle-frames=30]
 ##   --mode=benchmark  --scene=<res://…> --viewpoints=<res://…> --out=<dossier absolu>
-##                     --budgets=<res://…> [--warmup=3] [--duration=20] [--no-budgets]
+##                     --budgets=<res://…> [--warmup=3] [--duration=20] [--no-budgets] [--budgets-advisory]
 ##   --mode=flythrough --scene=<res://…> --viewpoints=<res://…> [--duration=10]   (avec --write-movie)
 ##   --mode=walk       --scene=<res://…> --route=<res://…/route_joueur.json> --out=<dossier absolu>
-##                     --budgets=<res://…> [--warmup=3] [--no-budgets]
+##                     --budgets=<res://…> [--warmup=3] [--no-budgets] [--budgets-advisory]
 ##   --mode=flythrough --scene=<res://…> --route=<res://…/route_joueur.json> [--duration=<maximum>]
 ##
 ## Avec --route, le joueur (groupe « player ») marche le long du parcours, piloté par les actions
@@ -237,6 +237,10 @@ func _benchmark(camera: Camera3D, viewpoints: Array[Viewpoint], scene_path: Stri
 	if check_budgets:
 		violations = PerfBudget.check(summary, budgets)
 	summary["budgets_checked"] = check_budgets
+	# Sur batterie (signalé par Scripts/Pipeline/mesurer.ps1), la machine est bridée : les dépassements
+	# sont enregistrés et affichés, sans faire échouer la mesure.
+	var blocking: bool = not _args.has("budgets-advisory")
+	summary["budgets_blocking"] = blocking
 	summary["budget_violations"] = violations
 
 	if not _write_text(out_dir.path_join("resume.json"), JSON.stringify(summary, "\t", true)):
@@ -248,8 +252,12 @@ func _benchmark(camera: Camera3D, viewpoints: Array[Viewpoint], scene_path: Stri
 		return EXIT_RUNTIME
 	if not violations.is_empty():
 		for violation: String in violations:
-			push_error("Budget dépassé : %s" % violation)
-		return EXIT_BUDGET
+			if blocking:
+				push_error("Budget dépassé : %s" % violation)
+			else:
+				push_warning("Budget dépassé sur batterie (non bloquant) : %s" % violation)
+		if blocking:
+			return EXIT_BUDGET
 	return EXIT_OK
 
 
