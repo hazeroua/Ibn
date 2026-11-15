@@ -152,6 +152,38 @@ Exemple de mission (format à finaliser au MVP 6) :
 
 Toutes ces commandes sont regroupées dans des scripts PowerShell de `Scripts/Pipeline/`, et les chemins des outils sont lus dans `Tools/outils.json`.
 
+### Parcours du joueur (`route_joueur.json`)
+Les mesures et les vidéos peuvent suivre deux sortes de parcours (paramètre `-Parcours` de `mesurer.ps1` et `video.ps1`) :
+- `points_de_vue` (par défaut) : la caméra glisse d'un point de vue à l'autre (`Game/data/<carte>/viewpoints.json`) ;
+- `joueur` : **le joueur marche vraiment**, piloté par les actions d'entrée (`move_forward`, `move_back`, `move_left`, `move_right` avec une intensité, comme un stick analogique, calculée par rapport à la caméra active ; `walk_slow` ou `sprint` maintenus selon l'allure), le long de `Game/data/<carte>/route_joueur.json`. Les mesures (`resume.json`, `images.csv`, budgets) sont les mêmes ; le résumé indique le mode (`walk`), le parcours, son état, les points atteints, la distance marchée et la durée. La mesure dure exactement le parcours ; la vidéo aussi, sauf si `-Duree` l'écourte.
+
+Le joueur est le **seul** nœud du groupe `player` (seul un `Node3D` est supposé). Échecs explicites, avec la position du joueur : joueur absent ou en double, aucune caméra active, action d'entrée manquante, **joueur bloqué** (la distance au prochain point ne diminue plus), joueur sorti de la scène, durée maximale dépassée. Toutes les actions pressées sont relâchées à la fin.
+
+```json
+{
+  "description": "Tour de la colline par le sentier, puis descente en courant.",
+  "start_position": [0.0, 12.5, 0.0],
+  "arrival_radius_m": 0.6,
+  "stall_time_s": 2.0,
+  "stall_min_progress_m": 0.25,
+  "max_duration_s": 300.0,
+  "waypoints": [
+    { "id": "sentier", "position": [40.0, -12.0], "gait": "walk" },
+    { "id": "sommet", "position": [65.0, 20.0], "gait": "walk_slow" },
+    { "id": "descente", "position": [10.0, 60.0], "gait": "run" }
+  ]
+}
+```
+
+| Clé | Rôle |
+|---|---|
+| `description` | Texte libre (obligatoire). |
+| `start_position` | Facultatif : `[x, y, z]` où le joueur est placé avant le préchauffage ; sinon il part d'où la scène l'a mis. |
+| `arrival_radius_m` | Distance horizontale à laquelle un point de passage est atteint (0,05 à 20 m). |
+| `stall_time_s`, `stall_min_progress_m` | Blocage : la distance au prochain point doit diminuer d'au moins `stall_min_progress_m` toutes les `stall_time_s` secondes (0,1 à 60 s ; 0,01 à 20 m). |
+| `max_duration_s` | Durée maximale du parcours (au plus 900 s) ; elle dimensionne la mémoire des mesures, réservée avant de commencer. |
+| `waypoints` | 1 à 10 000 points : `id` unique (utilisable comme nom de fichier), `position` horizontale `[x, z]` (la hauteur est celle du sol), `gait` = allure du segment qui **mène** à ce point : `walk_slow`, `walk` ou `run`. |
+
 ### Les seules manipulations manuelles
 | Manipulation | Quand |
 |---|---|

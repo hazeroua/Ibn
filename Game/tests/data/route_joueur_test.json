@@ -1,0 +1,14 @@
+{
+  "description": "Parcours de test du pipeline (tests GUT) : un carré de 4 m parcouru aux trois allures, sur la scène de test construite par Game/tests/unit/test_pipeline_walk.gd.",
+  "start_position": [0.0, 0.05, 0.0],
+  "arrival_radius_m": 0.4,
+  "stall_time_s": 1.0,
+  "stall_min_progress_m": 0.1,
+  "max_duration_s": 30.0,
+  "waypoints": [
+    { "id": "coin_est", "position": [4.0, 0.0], "gait": "walk" },
+    { "id": "coin_sud_est", "position": [4.0, 4.0], "gait": "run" },
+    { "id": "coin_sud", "position": [0.0, 4.0], "gait": "walk_slow" },
+    { "id": "retour", "position": [0.0, 0.0], "gait": "walk" }
+  ]
+}
