@@ -1,0 +1,26 @@
+name: sonde
+on: push
+jobs:
+  sonde:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Versions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "== godot releases"; gh api repos/godotengine/godot/releases --jq '.[] | select(.prerelease==false) | .tag_name' | head -8
+          echo "== godot-cpp branches"; gh api repos/godotengine/godot-cpp/branches --paginate --jq '.[].name' | sort -V | tail -10
+          echo "== terrain3d"; gh api repos/TokisanGames/Terrain3D/releases --jq '.[0:4][] | .tag_name + " " + ([.assets[].name]|join(","))'
+          echo "== dialogue"; gh api repos/nathanhoad/godot_dialogue_manager/releases --jq '.[0:4][] | .tag_name + " " + ([.assets[].name]|join(","))'
+          echo "== gut"; gh api repos/bitwes/Gut/releases --jq '.[0:4][] | .tag_name + " " + ([.assets[].name]|join(",")) + " :: " + (.body|.[0:200])'
+          echo "== winget"; which winget || true
+  sonde-windows:
+    runs-on: windows-latest
+    steps:
+      - run: |
+          Get-Command winget -ErrorAction SilentlyContinue | Format-List
+          winget --version
+          $PSVersionTable.PSVersion
+          & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          python --version
+        shell: pwsh
