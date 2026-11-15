@@ -697,6 +697,12 @@ def main() -> int:
     except PreparationError as error:
         print(f"ERREUR preparer_personnage : {error}", file=sys.stderr)
         return 1
+    except Exception as error:  # noqa: BLE001 - toute erreur de Blender doit arrêter le pipeline avec un code non nul
+        import traceback
+
+        traceback.print_exc()
+        print(f"ERREUR preparer_personnage : {type(error).__name__} : {error}", file=sys.stderr)
+        return 1
     with open(args.report, "w", encoding="utf-8") as handle:
         json.dump(report, handle, ensure_ascii=False, indent=2)
     print("PERSONNAGE " + json.dumps(report, ensure_ascii=False))

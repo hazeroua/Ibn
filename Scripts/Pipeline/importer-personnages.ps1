@@ -145,7 +145,7 @@ foreach ($personnage in $manifeste.characters) {
         New-Item -ItemType Directory -Force -Path (Split-Path -Parent $rapport) | Out-Null
         Remove-Item -Force -ErrorAction SilentlyContinue $empreinteFichier
         $arguments = @(
-            '--background', '--factory-startup', '--python', $scriptBlender, '--',
+            '--background', '--factory-startup', '--python-exit-code', '1', '--python', $scriptBlender, '--',
             '--manifest', $manifestePath, '--character', $personnage.id,
             '--source-dir', $dossiersSources[$personnage.source], '--output', $glb, '--report', $rapport
         )
