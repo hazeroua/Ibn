@@ -65,6 +65,8 @@ var turn_90_speed_factor: float = 0.0
 var turn_180_speed_factor: float = 0.0
 var turn_deceleration: float = 0.0
 var turn_cooldown: float = 0.0
+var turn_confirm_time: float = 0.0
+var turn_stable_angle: float = 0.0
 
 # Arrêts
 var stop_min_speed_fraction: float = 0.0
@@ -195,6 +197,8 @@ func _read_turns(section: Dictionary) -> void:
 	turn_180_speed_factor = _ranged(section, "turn_180_speed_factor", 0.0, 1.0, context)
 	turn_deceleration = _positive(section, "deceleration", context)
 	turn_cooldown = _ranged(section, "cooldown", 0.0, 2.0, context)
+	turn_confirm_time = _ranged(section, "confirm_time", 0.0, 1.0, context)
+	turn_stable_angle = deg_to_rad(_ranged(section, "stable_angle_degrees", 1.0, 90.0, context))
 	_check(turn_90_min_angle < turn_180_min_angle, "l'angle du quart de tour doit être inférieur à celui du demi-tour", context)
 
 

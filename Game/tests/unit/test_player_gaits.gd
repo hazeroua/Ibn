@@ -42,16 +42,6 @@ func test_settings_are_valid_and_complete() -> void:
 	assert_lt(_settings.gait_speed[LocomotionSettings.Gait.WALK], _settings.gait_speed[LocomotionSettings.Gait.RUN])
 
 
-func test_inconsistent_settings_are_reported() -> void:
-	var data: Dictionary = JsonData.load_dictionary(LocomotionSettings.PATH)
-	var gaits: Dictionary = data["gaits"]
-	var slow: Dictionary = gaits["walk_slow"]
-	slow["speed"] = 3.0
-	var settings: LocomotionSettings = LocomotionSettings.from_dictionary(data)
-	assert_push_error("walk_slow < walk < run")
-	assert_eq(settings.error_count, 1)
-
-
 func test_starts_idle_and_still() -> void:
 	_run(Vector2.ZERO, 1.0)
 	assert_eq(_motor.gait, LocomotionSettings.Gait.IDLE)

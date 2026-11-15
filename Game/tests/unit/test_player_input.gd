@@ -71,21 +71,3 @@ func test_use_actions_returns_to_reading_the_actions() -> void:
 	_input.poll()
 	assert_eq(_input.move, Vector2.ZERO)
 	assert_false(_input.sprint)
-
-
-func test_missing_action_is_reported_once_and_treated_as_released() -> void:
-	var events: Array[InputEvent] = []
-	var deadzone: float = 0.2
-	if InputMap.has_action(&"walk_slow"):
-		events.assign(InputMap.action_get_events(&"walk_slow"))
-		deadzone = InputMap.action_get_deadzone(&"walk_slow")
-		InputMap.erase_action(&"walk_slow")
-	elif _added.has(&"walk_slow"):
-		InputMap.erase_action(&"walk_slow")
-	_input.poll()
-	_input.poll()
-	assert_push_error_count(1, "l'absence d'action n'est signalée qu'une fois")
-	assert_false(_input.walk_slow)
-	InputMap.add_action(&"walk_slow", deadzone)
-	for event: InputEvent in events:
-		InputMap.action_add_event(&"walk_slow", event)

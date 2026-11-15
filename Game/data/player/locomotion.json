@@ -65,7 +65,7 @@
     }
   },
   "turns": {
-    "description": "Virages marqués quand la direction voulue change brusquement : quart de tour (turn_left_90, turn_right_90) ou demi-tour (turn_180).",
+    "description": "Virages marqués quand la direction voulue change brusquement : quart de tour (turn_left_90, turn_right_90) ou demi-tour (turn_180), décidé sur la direction brute du stick restée stable (confirm_time, stable_angle_degrees) ; angles mesurés entre le cap et la direction voulue.",
     "turn_90_min_angle_degrees": 70.0,
     "turn_180_min_angle_degrees": 140.0,
     "turn_90_duration": 0.4,
@@ -73,7 +73,9 @@
     "turn_90_speed_factor": 0.55,
     "turn_180_speed_factor": 0.0,
     "deceleration": 10.0,
-    "cooldown": 0.2
+    "cooldown": 0.2,
+    "confirm_time": 0.04,
+    "stable_angle_degrees": 20.0
   },
   "stops": {
     "description": "Arrêts marqués (stop_walk, stop_run) : seulement si la vitesse dépasse une fraction de celle de l'allure. Durée = vitesse / décélération de l'allure, bornée.",

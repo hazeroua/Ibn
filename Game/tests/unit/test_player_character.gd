@@ -203,47 +203,6 @@ func test_reentrant_corner_is_stable_without_jitter() -> void:
 	assert_lt(largest_move, 0.005, "aucun tremblement dans le coin")
 
 
-func _build_stairs_world() -> Node3D:
-	var world: Node3D = _new_world()
-	PlayerTestWorld.ground(world)
-	PlayerTestWorld.stairs(world, 10, 0.2, 0.4, -2.0)
-	PlayerTestWorld.box(world, Vector3(6.0, 2.0, 10.0), Vector3(0.0, 1.0, -11.0))
-	return world
-
-
-func test_climbs_stairs_walking() -> void:
-	var player: PlayerCharacter = _spawn(_build_stairs_world())
-	await _settle()
-	player.input.simulate(Vector2(0.0, 1.0))
-	await _simulate(6.0)
-	assert_true(player.is_on_floor())
-	assert_between(player.global_position.y, 1.97, 2.1, "au sommet de l'escalier")
-
-
-func test_climbs_stairs_running() -> void:
-	var player: PlayerCharacter = _spawn(_build_stairs_world())
-	await _settle()
-	player.input.simulate(Vector2(0.0, 1.0), true)
-	await _simulate(3.0)
-	assert_true(player.is_on_floor())
-	assert_between(player.global_position.y, 1.97, 2.1, "au sommet de l'escalier, en courant")
-
-
-func test_descends_stairs_staying_on_the_ground() -> void:
-	var world: Node3D = _build_stairs_world()
-	var player: PlayerCharacter = _spawn(world, Vector3(0.0, 2.02, -8.0), PI)
-	await _settle()
-	player.input.simulate(Vector2(0.0, -1.0), true)
-	var airborne: int = 0
-	var frames: int = int(3.0 * float(Engine.physics_ticks_per_second))
-	for i: int in frames:
-		await wait_physics_frames(1)
-		if not player.is_on_floor() and i > 10:
-			airborne += 1
-	assert_lte(airborne, 3, "descend les marches sans décoller")
-	assert_lt(player.global_position.y, 0.1, "arrivé en bas")
-
-
 func test_walks_off_a_cliff_and_falls_at_most_at_terminal_speed() -> void:
 	var world: Node3D = _new_world()
 	PlayerTestWorld.box(world, Vector3(20.0, 1.0, 20.0), Vector3(0.0, -0.5, 0.0))

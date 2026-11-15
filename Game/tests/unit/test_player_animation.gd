@@ -104,17 +104,13 @@ func test_u_turn_plays_turn_180() -> void:
 	assert_eq(seen.back(), &"locomotion/run")
 
 
-func test_missing_animation_is_reported_and_character_still_moves() -> void:
-	var world: Node3D = _new_world()
-	PlayerTestWorld.ground(world)
-	var pair: Array = _spawn_animated(world, &"turn_180")
-	var player: PlayerCharacter = pair[0]
-	assert_push_error("locomotion/turn_180")
-	assert_false(player.is_animating(), "bibliothèque incomplète : pas d'animation")
-	await _settle()
-	player.input.simulate(Vector2(0.0, 1.0))
-	await _simulate(2.0)
-	assert_lt(player.global_position.z, -1.0, "le personnage se déplace quand même")
+func test_missing_clips_are_listed_by_the_contract_names() -> void:
+	var complete: AnimationPlayer = autofree(_make_animation_player())
+	assert_true(PlayerAnimator.missing_clips(complete).is_empty())
+	var incomplete: AnimationPlayer = autofree(_make_animation_player(&"turn_180"))
+	assert_eq(PlayerAnimator.missing_clips(incomplete), PackedStringArray(["locomotion/turn_180"]))
+	var empty: AnimationPlayer = autofree(AnimationPlayer.new())
+	assert_eq(PlayerAnimator.missing_clips(empty).size(), CLIPS.size())
 
 
 func test_character_works_without_any_animation_player() -> void:

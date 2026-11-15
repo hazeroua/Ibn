@@ -32,6 +32,18 @@ func _init(settings: LocomotionSettings) -> void:
 	_maneuver_lengths.resize(MANEUVER_CLIPS.size())
 
 
+## Noms des animations du contrat absentes de l'AnimationPlayer (vide : bibliothèque complète).
+static func missing_clips(player: AnimationPlayer) -> PackedStringArray:
+	var missing := PackedStringArray()
+	for clip: StringName in LOOP_CLIPS:
+		if not player.has_animation(clip):
+			missing.append(clip)
+	for index: int in range(1, MANEUVER_CLIPS.size()):
+		if not player.has_animation(MANEUVER_CLIPS[index]):
+			missing.append(MANEUVER_CLIPS[index])
+	return missing
+
+
 ## Branche l'AnimationPlayer du modèle (null pour fonctionner sans visuel). Si une animation du
 ## contrat manque, l'erreur est signalée et le personnage fonctionne sans animation (is_bound()).
 func bind(player: AnimationPlayer) -> void:
@@ -40,12 +52,9 @@ func bind(player: AnimationPlayer) -> void:
 	_current_serial = -1
 	if player == null:
 		return
-	var complete: bool = true
-	for clip: StringName in LOOP_CLIPS:
-		complete = _require(player, clip) and complete
-	for index: int in range(1, MANEUVER_CLIPS.size()):
-		complete = _require(player, MANEUVER_CLIPS[index]) and complete
-	if not complete:
+	var missing: PackedStringArray = missing_clips(player)
+	if not missing.is_empty():
+		push_error("PlayerAnimator : animations absentes de l'AnimationPlayer « %s » : %s." % [player.name, ", ".join(missing)])
 		return
 	# Les allures bouclent, les manœuvres se jouent une fois.
 	for clip: StringName in LOOP_CLIPS:
@@ -92,10 +101,3 @@ func update(motor: LocomotionMotor, real_speed: float) -> void:
 	else:
 		var reference: float = _settings.gait_animation_reference_speed[motor.gait]
 		_player.speed_scale = clampf(real_speed / reference, _settings.speed_scale_min, _settings.speed_scale_max)
-
-
-func _require(player: AnimationPlayer, clip: StringName) -> bool:
-	if player.has_animation(clip):
-		return true
-	push_error("PlayerAnimator : animation « %s » absente de l'AnimationPlayer « %s »." % [clip, player.name])
-	return false

@@ -31,8 +31,10 @@ var motion_gait: int = GAIT_WALK
 var speed: float = 0.0
 ## Orientation du personnage (radians autour de +Y ; 0 = regard vers -Z).
 var yaw: float = 0.0
-## Orientation voulue, valable quand has_direction est vrai.
+## Orientation voulue (entrée lissée), valable quand has_direction est vrai.
 var desired_yaw: float = 0.0
+## Cap visé par le virage marqué en cours.
+var turn_target_yaw: float = 0.0
 ## Vrai quand l'entrée lissée dépasse le seuil de déplacement.
 var has_direction: bool = false
 ## Manœuvre en cours (Maneuver) et son avancement.
@@ -47,11 +49,14 @@ var _smoothed: Vector2 = Vector2.ZERO
 var _magnitude: float = 0.0
 var _idle_timer: float = 0.0
 var _release_speed: float = 0.0
-var _had_direction: bool = false
+var _release_gait: int = GAIT_IDLE
+var _release_valid: bool = false
+var _raw_has: bool = false
+var _raw_yaw: float = 0.0
+var _raw_hold: float = 0.0
 var _cooldown: float = 0.0
 var _turn_sign: float = 1.0
 var _turn_rate: float = 0.0
-var _turn_target_yaw: float = 0.0
 var _turn_speed_factor: float = 1.0
 var _stop_deceleration: float = 0.0
 
@@ -76,7 +81,12 @@ func reset(initial_yaw: float) -> void:
 	_magnitude = 0.0
 	_idle_timer = 0.0
 	_release_speed = 0.0
-	_had_direction = false
+	_release_gait = GAIT_IDLE
+	_release_valid = false
+	_raw_has = false
+	_raw_yaw = yaw
+	_raw_hold = 0.0
+	turn_target_yaw = yaw
 	_cooldown = 0.0
 
 
@@ -101,11 +111,10 @@ func forward_xz() -> Vector2:
 func update(move: Vector2, sprint: bool, walk_slow: bool, view_forward: Vector2, view_right: Vector2, grounded: bool, delta: float) -> void:
 	if not (delta > 0.0):
 		return
-	_smooth_input(move.limit_length(1.0), delta)
+	var raw: Vector2 = move.limit_length(1.0)
+	_track_raw_input(raw, view_forward, view_right, delta)
+	_smooth_input(raw, delta)
 	has_direction = _magnitude >= _settings.move_threshold
-	if _had_direction and not has_direction:
-		_release_speed = speed
-	_had_direction = has_direction
 	if has_direction:
 		var world: Vector2 = view_right * _smoothed.x + view_forward * _smoothed.y
 		desired_yaw = atan2(-world.x, -world.y)
@@ -116,6 +125,30 @@ func update(move: Vector2, sprint: bool, walk_slow: bool, view_forward: Vector2,
 	_update_maneuver(grounded, delta)
 	_update_rotation(grounded, delta)
 	_update_speed(walk_slow, grounded, delta)
+
+
+## Suit l'entrée brute (non lissée) : sa direction décide des virages marqués, car l'entrée lissée
+## fait tourner le personnage progressivement et masquerait un changement brusque. Un cap n'est
+## retenu qu'après être resté stable (un stick qui vibre ne déclenche pas de virage). Mémorise
+## aussi l'allure et la vitesse au relâchement, pour reconnaître l'arrêt d'une course ou d'une marche.
+func _track_raw_input(raw: Vector2, view_forward: Vector2, view_right: Vector2, delta: float) -> void:
+	var has_raw: bool = raw.length() >= _settings.move_threshold
+	if has_raw:
+		var world: Vector2 = view_right * raw.x + view_forward * raw.y
+		var new_yaw: float = atan2(-world.x, -world.y)
+		if _raw_has and absf(angle_difference(_raw_yaw, new_yaw)) < _settings.turn_stable_angle:
+			_raw_hold += delta
+		else:
+			_raw_hold = 0.0
+		_raw_yaw = new_yaw
+		_release_valid = false
+	else:
+		_raw_hold = 0.0
+		if _raw_has:
+			_release_valid = true
+			_release_gait = gait
+			_release_speed = speed
+	_raw_has = has_raw
 
 
 func _smooth_input(move: Vector2, delta: float) -> void:
@@ -157,14 +190,21 @@ func _update_gait(sprint: bool, walk_slow: bool) -> void:
 func _begin_stop(previous: int) -> void:
 	if is_turning():
 		return
-	if previous != GAIT_WALK and previous != GAIT_RUN:
+	# Relâchement net du stick : on arrête l'allure et la vitesse d'avant le relâchement (le lissage de
+	# l'entrée et le relâchement du bouton de course retardent la décision). Sinon : l'allure quittée.
+	var stop_gait: int = previous
+	var peak_speed: float = speed
+	if _release_valid:
+		stop_gait = _release_gait
+		peak_speed = maxf(speed, _release_speed)
+		_release_valid = false
+	if stop_gait != GAIT_WALK and stop_gait != GAIT_RUN:
 		return
-	# La vitesse au moment du relâchement compte : le lissage de l'entrée retarde la décision d'arrêt.
-	if maxf(speed, _release_speed) < _settings.stop_min_speed_fraction * _settings.gait_speed[previous]:
+	if peak_speed < _settings.stop_min_speed_fraction * _settings.gait_speed[stop_gait]:
 		return
-	maneuver = Maneuver.STOP_RUN if previous == GAIT_RUN else Maneuver.STOP_WALK
+	maneuver = Maneuver.STOP_RUN if stop_gait == GAIT_RUN else Maneuver.STOP_WALK
 	maneuver_elapsed = 0.0
-	maneuver_duration = clampf(speed / _settings.gait_deceleration[previous], _settings.stop_min_duration, _settings.stop_max_duration)
+	maneuver_duration = clampf(speed / _settings.gait_deceleration[stop_gait], _settings.stop_min_duration, _settings.stop_max_duration)
 	_stop_deceleration = speed / maneuver_duration
 	maneuver_serial += 1
 
@@ -179,7 +219,9 @@ func _update_maneuver(grounded: bool, delta: float) -> void:
 			maneuver = Maneuver.NONE
 	if maneuver != Maneuver.NONE or not has_direction or not grounded or _cooldown > 0.0:
 		return
-	var diff: float = angle_difference(yaw, desired_yaw)
+	if not _raw_has or _raw_hold < _settings.turn_confirm_time:
+		return
+	var diff: float = angle_difference(yaw, _raw_yaw)
 	var abs_diff: float = absf(diff)
 	if abs_diff >= _settings.turn_180_min_angle:
 		_begin_turn(Maneuver.TURN_180, diff, _settings.turn_180_duration, _settings.turn_180_speed_factor)
@@ -195,22 +237,31 @@ func _begin_turn(kind: int, diff: float, duration: float, speed_factor: float) -
 	maneuver_serial += 1
 	_turn_sign = 1.0 if diff >= 0.0 else -1.0
 	_turn_rate = absf(diff) / duration
-	_turn_target_yaw = desired_yaw
+	turn_target_yaw = _raw_yaw
 	_turn_speed_factor = speed_factor
+
+
+## Vrai quand un virage marqué est sur le point de démarrer : l'entrée brute demande un changement de cap
+## d'au moins un quart de tour et attend sa confirmation. La rotation progressive est suspendue pendant ce
+## court délai, sinon elle rattraperait l'écart avant que le virage ne soit reconnu.
+func _turn_pending(grounded: bool) -> bool:
+	if not grounded or _cooldown > 0.0 or not _raw_has:
+		return false
+	return absf(angle_difference(yaw, _raw_yaw)) >= _settings.turn_90_min_angle
 
 
 func _update_rotation(grounded: bool, delta: float) -> void:
 	if is_turning():
-		if has_direction:
-			_turn_target_yaw = desired_yaw
-		var diff: float = angle_difference(yaw, _turn_target_yaw)
+		if _raw_has and _raw_hold >= _settings.turn_confirm_time:
+			turn_target_yaw = _raw_yaw
+		var diff: float = angle_difference(yaw, turn_target_yaw)
 		if absf(diff) > PI - HALF_TURN_AMBIGUITY:
 			diff = absf(diff) * _turn_sign
 		# Sens verrouillé : une cible passée de l'autre côté immobilise la rotation, sans l'inverser.
 		if diff * _turn_sign > 0.0:
 			yaw = wrapf(yaw + _turn_sign * minf(absf(diff), _turn_rate * delta), -PI, PI)
 		return
-	if not has_direction:
+	if not has_direction or _turn_pending(grounded):
 		return
 	var rate: float = _settings.gait_turn_rate[gait if gait != GAIT_IDLE else motion_gait]
 	if not grounded:

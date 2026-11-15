@@ -60,10 +60,10 @@ func test_turn_180_rotation_never_reverses() -> void:
 	for i: int in 150:
 		_motor.update(Vector2(0.0, -1.0), true, false, FORWARD, RIGHT, true, DT)
 		if _motor.maneuver == LocomotionMotor.Maneuver.TURN_180 and _motor.maneuver_serial != serial:
-			previous = absf(angle_difference(_motor.yaw, _motor.desired_yaw))
+			previous = absf(angle_difference(_motor.yaw, _motor.turn_target_yaw))
 			serial = _motor.maneuver_serial
 		elif _motor.maneuver == LocomotionMotor.Maneuver.TURN_180:
-			var current: float = absf(angle_difference(_motor.yaw, _motor.desired_yaw))
+			var current: float = absf(angle_difference(_motor.yaw, _motor.turn_target_yaw))
 			if current > previous + 0.0001:
 				reversals += 1
 			previous = current
