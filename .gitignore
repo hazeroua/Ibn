@@ -50,3 +50,6 @@ desktop.ini
 
 # Versions exportées
 /Build/
+
+# Sons libres téléchargés (manifeste Game/data/assets/sounds.json)
+/Game/assets/sounds/
