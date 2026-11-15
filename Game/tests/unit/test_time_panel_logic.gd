@@ -16,16 +16,8 @@ func before_each() -> void:
 
 
 func after_each() -> void:
-	for node: Node in [_day_night, _seasons, _wind]:
-		if node != null:
-			node.free()
-
-
-func _skip_if_real() -> bool:
-	if _day_night == null or _seasons == null or _wind == null:
-		pending("Un vrai autoload existe déjà : les doublures ne sont pas installées.")
-		return true
-	return false
+	for node: Node in [_wind, _seasons, _day_night]:
+		TimeDoubles.uninstall(get_tree(), node)
 
 
 func _find(type_name: String, index: int) -> Node:
@@ -59,8 +51,6 @@ func test_starts_closed_and_toggles_on_action() -> void:
 
 
 func test_time_slider_sets_time() -> void:
-	if _skip_if_real():
-		return
 	_panel.toggle()
 	var slider: HSlider = _find("HSlider", 0) as HSlider
 	slider.value = 18.5
@@ -68,8 +58,6 @@ func test_time_slider_sets_time() -> void:
 
 
 func test_time_slider_follows_time_changed_without_feedback() -> void:
-	if _skip_if_real():
-		return
 	_panel.toggle()
 	_day_night.call(&"set_time", 6.0)
 	var slider: HSlider = _find("HSlider", 0) as HSlider
@@ -78,8 +66,6 @@ func test_time_slider_follows_time_changed_without_feedback() -> void:
 
 
 func test_speed_buttons_set_time_scale() -> void:
-	if _skip_if_real():
-		return
 	_panel.toggle()
 	var expected: Array[float] = [0.0, 1.0, 60.0, 600.0, 3600.0]
 	for i: int in expected.size():
@@ -89,8 +75,6 @@ func test_speed_buttons_set_time_scale() -> void:
 
 
 func test_season_buttons_and_signal() -> void:
-	if _skip_if_real():
-		return
 	_panel.toggle()
 	(_panel._season_buttons[3] as Button).pressed.emit()
 	assert_eq(StringName(_seasons.get(&"season")), &"hiver")
@@ -100,8 +84,6 @@ func test_season_buttons_and_signal() -> void:
 
 
 func test_wind_slider_sets_base_strength() -> void:
-	if _skip_if_real():
-		return
 	_panel.toggle()
 	var slider: HSlider = _find("HSlider", 1) as HSlider
 	slider.value = 0.8
@@ -109,8 +91,6 @@ func test_wind_slider_sets_base_strength() -> void:
 
 
 func test_open_shows_current_values() -> void:
-	if _skip_if_real():
-		return
 	_day_night.set(&"time_of_day", 3.5)
 	_wind.call(&"set_base_strength", 0.6)
 	_seasons.set(&"season", &"automne")

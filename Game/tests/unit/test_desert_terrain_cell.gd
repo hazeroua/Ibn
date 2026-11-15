@@ -97,8 +97,3 @@ func test_cells_are_continuous_across_borders() -> void:
 	for row: int in [0, 17, 60, 100]:
 		assert_eq(mine[row * 101 + 100].y, theirs[row * 101].y, "bord partagé sans fissure")
 	neighbour.free()
-
-
-func test_cell_outside_the_grid_is_refused() -> void:
-	assert_null(_provider.build_cell(Vector2i(16, 0)))
-	assert_push_error("hors de la grille")

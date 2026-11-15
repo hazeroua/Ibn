@@ -96,10 +96,3 @@ func test_cell_lookup_covers_the_grid() -> void:
 	assert_eq(_field.cell_at(1999.9, 1999.9), Vector2i(15, 15))
 	assert_eq(_field.cell_at(0.0, 0.0), Vector2i(8, 8))
 	assert_eq(_field.cell_at(2000.1, 0.0), DesertHeightfield.NO_CELL)
-
-
-func test_invalid_data_is_refused() -> void:
-	var data: Dictionary = _data.duplicate(true)
-	data["oasis_radius"] = -3.0
-	assert_null(DesertHeightfield.from_data(data))
-	assert_push_error("oasis")

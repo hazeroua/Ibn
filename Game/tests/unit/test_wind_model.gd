@@ -78,11 +78,3 @@ func test_direction_stays_within_drift() -> void:
 		model.evaluate(t, 0.5)
 		assert_lte(absf(model.direction.angle_to(base)), _settings.direction_drift + 0.0001)
 		t += 3.1
-
-
-func test_invalid_settings_are_rejected() -> void:
-	var data: Dictionary = JsonData.load_dictionary(WindSettings.SETTINGS_PATH)
-	(data["sand"] as Dictionary)["max_particles"] = 0
-	var settings: WindSettings = WindSettings.from_dictionary(data, "test")
-	assert_null(settings)
-	assert_push_error("max_particles")

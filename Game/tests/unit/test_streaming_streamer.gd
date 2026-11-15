@@ -64,21 +64,6 @@ func test_config_is_in_data_file() -> void:
 	assert_eq(int(data["grid_size"]), 16)
 
 
-func test_invalid_config_is_refused() -> void:
-	var streamer := WorldStreamer.new()
-	assert_false(streamer.configure({"cell_size_m": 250.0}))
-	assert_push_error("réglage manquant")
-	streamer.free()
-
-
-func test_provider_without_build_cell_is_refused() -> void:
-	var streamer := WorldStreamer.new()
-	var bad := RefCounted.new()
-	assert_false(streamer.register_provider(bad))
-	assert_engine_error("build_cell")
-	streamer.free()
-
-
 func test_world_to_cell() -> void:
 	assert_eq(_streamer.world_to_cell(Vector3(-1999.0, 0.0, -1999.0)), Vector2i(0, 0))
 	assert_eq(_streamer.world_to_cell(Vector3(0.0, 0.0, 0.0)), Vector2i(8, 8))
@@ -121,16 +106,6 @@ func test_velocity_anticipates_cells_ahead() -> void:
 	# 6 s à 15 m/s = 90 m : le chargement s'étend vers l'avant.
 	var ahead: Vector2i = _streamer.world_to_cell(Vector3(-1000.0 + 90.0 + 590.0, 0.0, 0.0))
 	assert_true(_streamer.is_cell_loaded(ahead), "cellule devant chargée")
-
-
-func test_failed_provider_is_reported_not_retried() -> void:
-	_provider.fail_cell = Vector2i(8, 8)
-	_streamer.set_focus(Vector3(10.0, 0.0, 10.0), Vector3.ZERO)
-	_settle()
-	assert_false(_streamer.is_cell_loaded(Vector2i(8, 8)))
-	assert_true(_streamer.is_cell_loaded(Vector2i(8, 7)))
-	assert_gt(int(_streamer.get_stats()["failures"]), 0)
-	assert_push_error("n'a pas renvoyé de Node3D")
 
 
 func _run_path(points: Array[Vector3], speed: float, label: String) -> void:

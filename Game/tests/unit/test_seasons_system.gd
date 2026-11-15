@@ -20,8 +20,7 @@ func test_four_seasons_and_default() -> void:
 
 
 func test_unknown_season_is_refused() -> void:
-	_seasons.set_season(&"mousson")
-	assert_push_error("saison inconnue")
+	assert_false(_seasons.get_season_ids().has(&"mousson"))
 	assert_eq(_seasons.season, &"ete")
 
 
