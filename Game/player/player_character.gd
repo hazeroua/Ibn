@@ -43,6 +43,7 @@ var _step_retry_timer: float = 0.0
 var _last_position: Vector3 = Vector3.ZERO
 var _last_gait: int = LocomotionSettings.Gait.IDLE
 var _last_gait_name: StringName = &"idle"
+var _grounded: bool = false
 var _ready_done: bool = false
 
 
@@ -102,6 +103,11 @@ func is_animating() -> bool:
 	return _animator.is_bound()
 
 
+## Vrai quand le personnage est posé au sol, y compris juste après la descente d'une marche.
+func is_grounded() -> bool:
+	return _grounded
+
+
 ## Allure actuelle : &"idle", &"walk_slow", &"walk" ou &"run".
 func get_gait() -> StringName:
 	return LocomotionSettings.GAIT_NAMES[motor.gait]
@@ -112,6 +118,7 @@ func teleport_to(world_position: Vector3, yaw: float = 0.0) -> void:
 	global_position = world_position
 	rotation = Vector3(0.0, yaw, 0.0)
 	velocity = Vector3.ZERO
+	_grounded = false
 	motor.reset(yaw)
 	_tracker.reset(_settings.gait_stride_length[LocomotionSettings.Gait.WALK])
 	_last_position = world_position
@@ -127,7 +134,7 @@ func step(delta: float) -> void:
 	input.poll()
 	var right: Vector2 = _view_right()
 	var forward := Vector2(right.y, -right.x)
-	var was_grounded: bool = is_on_floor()
+	var was_grounded: bool = _grounded
 	motor.update(input.move, input.sprint, input.walk_slow, forward, right, was_grounded, delta)
 	rotation.y = motor.yaw
 	var heading: Vector2 = motor.forward_xz() * motor.speed
@@ -147,8 +154,28 @@ func step(delta: float) -> void:
 	# L'accrochage au sol couvre une marche descendante et la descente d'une pente à l'angle maximal.
 	floor_snap_length = maxf(_settings.step_max_height, _settings.floor_snap_base_length + motor.speed * delta * tan(floor_max_angle))
 	move_and_slide()
+	_grounded = is_on_floor() or (was_grounded and _regain_ground())
 	_update_outputs(delta, was_grounded)
 	last_step_usec = Time.get_ticks_usec() - started
+
+
+## Descente d'une marche : la capsule qui quitte le bord d'une marche ne touche plus que l'arête, dont la
+## normale est trop inclinée pour l'accrochage au sol. Un rayon vertical sous le centre du corps lit la vraie
+## surface ; si elle est praticable et à moins d'une marche, le personnage y est reposé sans chute.
+## Un seul rayon, seulement à la perte du sol (une fois par marche descendue).
+func _regain_ground() -> bool:
+	var origin: Vector3 = global_position
+	_ray.from = origin + Vector3.UP * _settings.step_clearance
+	_ray.to = origin + Vector3.DOWN * _settings.step_max_height
+	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(_ray)
+	if hit.is_empty() or (hit["normal"] as Vector3).y < cos(floor_max_angle):
+		return false
+	var ground: Vector3 = hit["position"]
+	if ground.y > origin.y + _settings.step_clearance:
+		return false
+	global_position.y = minf(ground.y, origin.y)
+	velocity.y = 0.0
+	return true
 
 
 ## Axe « droite » horizontal de la caméra active (x, z du monde) ; (1, 0) sans caméra.
@@ -198,7 +225,7 @@ func _try_step_up(motion: Vector3) -> bool:
 func _update_outputs(delta: float, was_grounded: bool) -> void:
 	var travelled: Vector3 = global_position - _last_position
 	_last_position = global_position
-	var grounded: bool = is_on_floor()
+	var grounded: bool = _grounded
 	var distance: float = travelled.length()
 	real_speed = Vector2(travelled.x, travelled.z).length() / delta
 	var gait_value: int = motor.gait

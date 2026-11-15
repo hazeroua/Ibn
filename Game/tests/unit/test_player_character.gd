@@ -150,7 +150,7 @@ func test_descends_a_slope_staying_on_the_ground() -> void:
 	var frames: int = int(1.5 * float(Engine.physics_ticks_per_second))
 	for i: int in frames:
 		await wait_physics_frames(1)
-		if not player.is_on_floor() and i > 10:
+		if not player.is_grounded() and i > 10:
 			airborne += 1
 	assert_eq(airborne, 0, "la descente d'une pente raide reste collée au sol à pleine vitesse")
 	assert_lt(player.global_position.y, top.y - 2.0)

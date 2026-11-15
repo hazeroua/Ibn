@@ -37,7 +37,7 @@ func test_descends_stairs_walking_staying_on_the_ground() -> void:
 	var frames: int = int(7.0 * float(Engine.physics_ticks_per_second))
 	for i: int in frames:
 		await wait_physics_frames(1)
-		if not player.is_on_floor() and i > 10:
+		if not player.is_grounded() and i > 10:
 			airborne += 1
 	assert_eq(airborne, 0, "descend les marches à la marche sans décoller")
 	assert_lt(player.global_position.y, 0.1, "arrivé en bas")
@@ -54,7 +54,7 @@ func test_descends_stairs_running_without_falling_through() -> void:
 	for i: int in frames:
 		await wait_physics_frames(1)
 		lowest = minf(lowest, player.global_position.y)
-		if not player.is_on_floor():
+		if not player.is_grounded():
 			airborne += 1
 	gut.p("Descente d'escalier en courant : %d images sur %d sans appui au sol" % [airborne, frames])
 	assert_gt(lowest, -0.05, "ne traverse jamais le sol")
