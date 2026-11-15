@@ -1,0 +1,18 @@
+{
+  "description": "Actions d'entrée du jeu. Touches désignées par leur position physique (disposition QWERTY de référence : « W » est la touche Z d'un clavier AZERTY). Boutons et axes de manette : numérotation SDL de Godot.",
+  "actions": [
+    { "name": "move_forward", "events": [ { "type": "key", "physical": "W" }, { "type": "joy_axis", "axis": 1, "value": -1.0 } ] },
+    { "name": "move_back",    "events": [ { "type": "key", "physical": "S" }, { "type": "joy_axis", "axis": 1, "value": 1.0 } ] },
+    { "name": "move_left",    "events": [ { "type": "key", "physical": "A" }, { "type": "joy_axis", "axis": 0, "value": -1.0 } ] },
+    { "name": "move_right",   "events": [ { "type": "key", "physical": "D" }, { "type": "joy_axis", "axis": 0, "value": 1.0 } ] },
+    { "name": "move_up",      "events": [ { "type": "key", "physical": "E" }, { "type": "joy_button", "button": 10 } ] },
+    { "name": "move_down",    "events": [ { "type": "key", "physical": "Q" }, { "type": "joy_button", "button": 9 } ] },
+    { "name": "sprint",       "events": [ { "type": "key", "physical": "Shift" }, { "type": "joy_axis", "axis": 4, "value": 1.0 } ] },
+    { "name": "look_left",    "deadzone": 0.15, "events": [ { "type": "joy_axis", "axis": 2, "value": -1.0 } ] },
+    { "name": "look_right",   "deadzone": 0.15, "events": [ { "type": "joy_axis", "axis": 2, "value": 1.0 } ] },
+    { "name": "look_up",      "deadzone": 0.15, "events": [ { "type": "joy_axis", "axis": 3, "value": -1.0 } ] },
+    { "name": "look_down",    "deadzone": 0.15, "events": [ { "type": "joy_axis", "axis": 3, "value": 1.0 } ] },
+    { "name": "look_hold",    "events": [ { "type": "mouse_button", "button": 2 } ] },
+    { "name": "quit_game",    "events": [ { "type": "key", "physical": "Escape" }, { "type": "joy_button", "button": 4 } ] }
+  ]
+}

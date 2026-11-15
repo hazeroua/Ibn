@@ -1,0 +1,40 @@
+{
+  "description": "Versions figées des dépendances du projet. Ne modifier qu'après décision explicite (voir CLAUDE.md). Lu par Tools/dependances.ps1 et par la CI.",
+  "godot": {
+    "tag": "4.7.2-stable",
+    "version_modeles_export": "4.7.2.stable",
+    "url_base": "https://github.com/godotengine/godot/releases/download/4.7.2-stable",
+    "archive_windows": "Godot_v4.7.2-stable_win64.exe.zip",
+    "archive_linux": "Godot_v4.7.2-stable_linux.x86_64.zip",
+    "modeles_export": "Godot_v4.7.2-stable_export_templates.tpz"
+  },
+  "godot_cpp": {
+    "depot": "https://github.com/godotengine/godot-cpp.git",
+    "branche": "4.5",
+    "remarque": "Dernière branche stable de godot-cpp. Les GDExtension compilées pour l'API 4.5 se chargent dans Godot 4.5 et suivants (compatibilité ascendante) ; compatibility_minimum = 4.5 dans Game/bin/ibn.gdextension."
+  },
+  "plugins": {
+    "gut": {
+      "version": "v9.7.1",
+      "url": "https://github.com/bitwes/Gut/archive/refs/tags/v9.7.1.zip",
+      "dossier": "gut"
+    },
+    "dialogue_manager": {
+      "version": "v4.2.0",
+      "url": "https://github.com/nathanhoad/godot_dialogue_manager/archive/refs/tags/v4.2.0.zip",
+      "dossier": "dialogue_manager"
+    },
+    "terrain_3d": {
+      "version": "v1.1.0-stable",
+      "url": "https://github.com/TokisanGames/Terrain3D/releases/download/v1.1.0-stable/Terrain3D_v1.1.0-stable.zip",
+      "dossier": "terrain_3d"
+    }
+  },
+  "scons": {
+    "version": "4.11.1"
+  },
+  "gdtoolkit": {
+    "version": "4.5.0",
+    "remarque": "Analyse (gdlint) et mise en forme (gdformat) du GDScript, utilisées par Scripts/Pipeline/valider.ps1."
+  }
+}

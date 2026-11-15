@@ -1,0 +1,50 @@
+; Réglages du projet « Les Chemins d'Ibn Khaldoun ».
+; Fichier texte versionné : toute modification passe par Claude Code (voir CLAUDE.md).
+
+config_version=5
+
+[application]
+
+config/name="Les Chemins d'Ibn Khaldoun"
+config/description="Jeu d'action-aventure en monde ouvert sur la vie d'Ibn Khaldoun (1332-1406)."
+run/main_scene="res://core/boot/boot.tscn"
+config/features=PackedStringArray("4.7", "Forward Plus")
+
+[autoload]
+
+GameInput="*res://core/input/game_input.gd"
+Pipeline="*res://core/pipeline/pipeline_runner.gd"
+
+[debug]
+
+gdscript/warnings/untyped_declaration=2
+gdscript/warnings/unsafe_property_access=1
+gdscript/warnings/unsafe_method_access=1
+gdscript/warnings/unsafe_cast=1
+gdscript/warnings/unsafe_call_argument=1
+gdscript/warnings/return_value_discarded=1
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/vsync/vsync_mode=1
+
+[ibn]
+
+boot/default_scene="res://world/sandbox/sandbox.tscn"
+projet/mvp_en_cours="mvp-0"
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+scaling_3d/mode=2
+scaling_3d/scale=0.67
+anti_aliasing/quality/msaa_3d=0
+textures/vram_compression/import_etc2_astc=false
+lights_and_shadows/directional_shadow/size=2048
+lights_and_shadows/directional_shadow/soft_shadow_filter_quality=1

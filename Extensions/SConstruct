@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+"""Compilation de l'extension C++ du jeu (GDExtension).
+
+Utilisation (depuis Scripts/Pipeline/compiler.ps1) :
+    python -m SCons target=template_debug
+    python -m SCons target=template_release
+
+La bibliothèque est écrite dans Game/bin/, à l'emplacement attendu par Game/bin/ibn.gdextension.
+"""
+import os
+
+env = SConscript("godot-cpp/SConstruct")
+
+# Nos sources sont compilées avec les avertissements au maximum, traités comme des erreurs.
+# Les en-têtes de godot-cpp sont déclarés « système » pour que ces règles ne s'appliquent qu'à notre code.
+ibn_env = env.Clone()
+ibn_env.Append(CPPPATH=["src/"])
+
+godot_cpp_includes = [
+    os.path.join("godot-cpp", "include"),
+    os.path.join("godot-cpp", "gen", "include"),
+    os.path.join("godot-cpp", "gdextension"),
+]
+
+is_msvc = bool(env.get("is_msvc", False)) or env["CC"] == "cl"
+if is_msvc:
+    ibn_env.Append(CCFLAGS=["/W4", "/WX", "/permissive-", "/external:anglebrackets", "/external:W0"])
+else:
+    for include in godot_cpp_includes:
+        ibn_env.Append(CCFLAGS=["-isystem", ibn_env.Dir(include).abspath])
+    ibn_env.Append(CCFLAGS=["-Wall", "-Wextra", "-Wpedantic", "-Wshadow", "-Wconversion", "-Werror"])
+
+sources = Glob("src/*.cpp")
+library = ibn_env.SharedLibrary(
+    "../Game/bin/libibn{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
+    source=sources,
+)
+Default(library)

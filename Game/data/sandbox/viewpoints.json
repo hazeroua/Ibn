@@ -1,0 +1,9 @@
+{
+  "description": "Points de vue fixes du bac à sable : captures d'écran comparables d'un MVP à l'autre, et parcours des mesures et de la vidéo (dans l'ordre).",
+  "viewpoints": [
+    { "id": "vue_generale", "position": [7.0, 3.5, 9.0], "target": [0.0, 1.0, 0.0] },
+    { "id": "vue_rasante", "position": [-6.0, 0.6, 4.0], "target": [1.0, 1.0, -1.0] },
+    { "id": "vue_haute", "position": [0.5, 18.0, 12.0], "target": [0.0, 0.0, 0.0] },
+    { "id": "vue_horizon", "position": [-20.0, 2.0, -20.0], "target": [10.0, 1.5, 10.0] }
+  ]
+}

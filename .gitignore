@@ -29,3 +29,24 @@
 # Divers
 Thumbs.db
 desktop.ini
+
+# Environnement Python dédié (Tools/dependances.ps1)
+/Tools/venv/
+
+# Plugins Godot installés aux versions figées de Tools/versions.json
+/Game/addons/
+
+# Bibliothèques C++ compilées
+/Game/bin/*.so
+/Game/bin/*.exp
+/Game/bin/*.lib
+/Game/bin/*.pdb
+
+# Ressources téléchargées automatiquement (manifestes dans Game/data/assets/)
+/Game/assets/textures/polyhaven/
+
+# Scènes générées par les constructeurs de Game/tools/builders/ (la source de vérité est le script et ses données)
+/Game/world/sandbox/sandbox.tscn
+
+# Versions exportées
+/Build/

@@ -1,0 +1,11 @@
+{
+  "description": "Ressources Poly Haven (licence CC0) téléchargées par Scripts/Pipeline/importer-ressources.ps1 dans res://assets/textures/polyhaven/<id>/<id>_<carte>.jpg. Les fichiers ne sont pas versionnés : ce manifeste est la source de vérité.",
+  "textures": [
+    {
+      "id": "coast_sand_01",
+      "resolution": "1k",
+      "maps": { "diff": "Diffuse", "nor_gl": "nor_gl", "rough": "Rough" },
+      "usage": "Sol du bac à sable (MVP 0)"
+    }
+  ]
+}

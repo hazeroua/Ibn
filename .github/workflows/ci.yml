@@ -1,0 +1,104 @@
+name: CI
+
+# À chaque envoi : installation (script réel du projet), qualité du GDScript, compilation C++,
+# import, construction des scènes, tests GUT, export Windows ; sous Linux, rendu logiciel pour
+# vérifier les captures et la chaîne de mesure (les chiffres de performance n'ont de valeur que
+# sur la machine de développement).
+
+on:
+  push:
+    branches: [main, "mvp-*"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: Windows (installation, compilation, tests, export)
+    runs-on: windows-latest
+    timeout-minutes: 75
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache des téléchargements et de godot-cpp compilé
+        uses: actions/cache@v4
+        with:
+          path: |
+            Tools/_telechargements
+            Extensions/godot-cpp
+          key: windows-${{ hashFiles('Tools/versions.json') }}-v1
+
+      - name: Installation (Tools/installer.ps1, Windows PowerShell 5.1)
+        shell: powershell
+        run: .\Tools\installer.ps1
+
+      - name: Validation complète sans rendu
+        shell: powershell
+        run: .\Scripts\Pipeline\valider.ps1 -SansRendu
+
+      - name: Export Windows
+        shell: powershell
+        run: .\Scripts\Pipeline\exporter.ps1
+
+      - name: Démarrage de la version exportée
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $exe = Resolve-Path .\Build\windows\IbnKhaldoun.console.exe
+          $sortie = & $exe --headless --quit 2>&1 | ForEach-Object { "$_" }
+          $sortie
+          if ($LASTEXITCODE -ne 0) { throw "La version exportée ne démarre pas (code $LASTEXITCODE)." }
+          if ($sortie -match '^\s*(ERROR|SCRIPT ERROR)') { throw 'La version exportée affiche des erreurs au démarrage.' }
+
+      - name: Rapports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapports-windows
+          path: Mesures/
+          if-no-files-found: ignore
+
+  linux-rendu:
+    name: Linux (rendu logiciel, captures, chaîne de mesure)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache des téléchargements et de godot-cpp compilé
+        uses: actions/cache@v4
+        with:
+          path: |
+            Tools/_telechargements
+            Extensions/godot-cpp
+          key: linux-${{ hashFiles('Tools/versions.json') }}-v1
+
+      - name: Rendu logiciel Vulkan (lavapipe) et affichage virtuel
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends mesa-vulkan-drivers libvulkan1 xvfb python3-venv
+
+      - name: Dépendances (Tools/dependances.ps1)
+        shell: pwsh
+        run: ./Tools/dependances.ps1 -SansModelesExport
+
+      - name: Validation complète avec rendu logiciel (sans budgets)
+        run: xvfb-run -a -s "-screen 0 1920x1080x24" pwsh ./Scripts/Pipeline/valider.ps1 -SansBudgets
+
+      - name: Vidéo du parcours
+        run: xvfb-run -a -s "-screen 0 1920x1080x24" pwsh ./Scripts/Pipeline/video.ps1 -Duree 4
+
+      - name: Captures, mesures et vidéo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendu-linux
+          path: Mesures/
+          if-no-files-found: ignore
