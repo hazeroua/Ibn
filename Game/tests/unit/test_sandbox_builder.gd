@@ -76,3 +76,15 @@ func test_worst_case_many_objects_share_resources() -> void:
 	assert_eq(materials.size(), 4)
 	gut.p("2 000 objets construits en %.1f ms" % elapsed_ms)
 	root.free()
+
+
+func test_project_sandbox_has_the_red_cube() -> void:
+	# Critère de fin du MVP 0 : le deuxième cube rouge, ajouté uniquement par les données.
+	var root: Node3D = SandboxBuilder.build(_load_data())
+	var cube: MeshInstance3D = root.get_node_or_null("Objects/cube_rouge")
+	assert_not_null(cube)
+	var material: StandardMaterial3D = cube.material_override
+	assert_eq(material.albedo_color.to_html(false), "b8322a")
+	var ocre: MeshInstance3D = root.get_node("Objects/cube_ocre")
+	assert_same(cube.mesh, ocre.mesh, "même taille : même maillage partagé")
+	root.free()

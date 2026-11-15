@@ -23,7 +23,8 @@
     "tint": "#ffffff"
   },
   "objects": [
-    { "id": "cube_ocre", "shape": "box", "size": [2.0, 2.0, 2.0], "position": [0.0, 1.0, 0.0], "color": "#c69c5d" }
+    { "id": "cube_ocre", "shape": "box", "size": [2.0, 2.0, 2.0], "position": [0.0, 1.0, 0.0], "color": "#c69c5d" },
+    { "id": "cube_rouge", "shape": "box", "size": [2.0, 2.0, 2.0], "position": [3.5, 1.0, -1.5], "rotation_degrees": [0.0, 25.0, 0.0], "color": "#b8322a" }
   ],
   "camera": {
     "position": [7.0, 3.5, 9.0],
