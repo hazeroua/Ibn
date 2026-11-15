@@ -102,3 +102,6 @@ foreach ($fichier in $deposes) {
     Write-Ok "$($fichier.Name) -> assets/import/$($categories[$extension])/$nom"
 }
 if ($deposes.Count -eq 0) { Write-Ok 'Aucune ressource en attente.' }
+
+# Sons libres (manifeste Game/data/assets/sounds.json)
+& (Join-Path $PSScriptRoot 'importer-sons.ps1')
