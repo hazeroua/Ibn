@@ -25,6 +25,9 @@ const BACKUP_SUFFIX: String = ".illisible"
 var last_load_status: LoadStatus = LoadStatus.NO_FILE
 ## Raisons des parties ignorées lors du dernier chargement.
 var last_load_warnings: Array[String] = []
+## Faux : les avertissements de lecture restent dans last_load_warnings mais ne sont pas écrits dans la console
+## (utile aux mesures, car l'écriture dans la console Windows coûte plus que la lecture elle-même).
+var log_warnings: bool = true
 
 var _order: Array[StringName] = []
 var _defaults: Dictionary[StringName, InputActionBinding] = {}
@@ -32,9 +35,6 @@ var _current: Dictionary[StringName, InputActionBinding] = {}
 var _renamed: Dictionary[String, String] = {}
 var _user_path: String = ""
 var _user_version: int = 1
-## Faux : les avertissements de lecture restent dans last_load_warnings mais ne sont pas écrits dans la console
-## (utile aux mesures, car l'écriture dans la console Windows coûte plus que la lecture elle-même).
-var log_warnings: bool = true
 var _max_bytes: int = 65536
 var _max_per_family: int = 3
 var _axis_activation: float = 0.5
