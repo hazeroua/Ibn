@@ -61,6 +61,7 @@ static func _make_settings(variant_counts: Dictionary[String, int], max_voices: 
 			"max_distance": 30.0,
 			"unit_size": 3.0,
 			"max_db": 3.0,
+			"min_steal_age_ms": 40.0,
 			"attenuation": "inverse_square",
 			"panning_strength": 1.0,
 		},
@@ -206,14 +207,25 @@ func test_voice_cap_steals_oldest() -> void:
 	var system: FootstepSystem = _default_system(4)
 	var voices: PackedInt32Array = PackedInt32Array()
 	for i: int in 4:
-		voices.append(system.play_footstep(Vector3.ZERO, 1.5, null, 1000 + i))
-	assert_eq(system.get_active_voice_count(2000), 4)
-	var stolen: int = system.play_footstep(Vector3.ZERO, 1.5, null, 2000)
+		voices.append(system.play_footstep(Vector3.ZERO, 1.5, null, 100000 + i * 10000))
+	var now: int = 150000
+	assert_eq(system.get_active_voice_count(now), 4)
+	var stolen: int = system.play_footstep(Vector3.ZERO, 1.5, null, now)
 	assert_eq(stolen, voices[0], "la voix la plus ancienne est volée")
 	assert_eq(system.get_stats()["voices_stolen"], 1)
-	var stolen_again: int = system.play_footstep(Vector3.ZERO, 1.5, null, 2001)
+	var stolen_again: int = system.play_footstep(Vector3.ZERO, 1.5, null, now + 1)
 	assert_eq(stolen_again, voices[1], "puis la suivante la plus ancienne")
-	assert_eq(system.get_active_voice_count(2001), 4, "jamais plus de voix que le plafond")
+	assert_eq(system.get_active_voice_count(now + 1), 4, "jamais plus de voix que le plafond")
+
+
+func test_too_recent_voice_is_not_stolen() -> void:
+	var system: FootstepSystem = _default_system(4)
+	for i: int in 4:
+		assert_gte(system.play_footstep(Vector3.ZERO, 1.5, null, 100000 + i), 0)
+	assert_eq(system.play_footstep(Vector3.ZERO, 1.5, null, 100010), -1, "voix démarrée il y a 10 µs : pas volée")
+	assert_eq(system.get_stats()["steps_dropped"], 1)
+	assert_eq(system.get_stats()["voices_stolen"], 0)
+	assert_gte(system.play_footstep(Vector3.ZERO, 1.5, null, 140000), 0, "après 40 ms la voix la plus ancienne peut être volée")
 
 
 func test_finished_voice_is_reused_without_stealing() -> void:
@@ -237,7 +249,7 @@ func test_pool_is_created_once_and_never_grows() -> void:
 	assert_eq(system.get_child_count(), 6, "aucun lecteur créé pendant le jeu")
 	for i: int in 6:
 		assert_same(system.get_voice(i), players[i])
-	assert_eq(system.get_stats()["steps_played"], 5000)
+	assert_eq(system.get_stats()["steps_played"] + system.get_stats()["steps_dropped"], 5000)
 
 
 func test_dedicated_bus_and_voice_settings() -> void:

@@ -10,6 +10,7 @@
     "max_distance": 30.0,
     "unit_size": 3.0,
     "max_db": 3.0,
+    "min_steal_age_ms": 40.0,
     "attenuation": "inverse_square",
     "panning_strength": 1.0
   },

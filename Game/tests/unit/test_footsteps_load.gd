@@ -90,11 +90,45 @@ func test_worst_case_200_emitters_same_frame() -> void:
 	var stats: Dictionary[String, int] = system.get_stats()
 	gut.p(
 		(
-			"200 émetteurs x %d images : %.3f ms par image (%.2f microsecondes par pas), voix volées %d"
-			% [FRAMES, per_frame_ms, per_frame_ms * 1000.0 / float(EMITTER_COUNT), stats["voices_stolen"]]
+			"200 émetteurs x %d images : %.3f ms par image (%.2f microsecondes par pas), joués %d, abandonnés %d, voix volées %d"
+			% [
+				FRAMES,
+				per_frame_ms,
+				per_frame_ms * 1000.0 / float(EMITTER_COUNT),
+				stats["steps_played"],
+				stats["steps_dropped"],
+				stats["voices_stolen"]
+			]
 		)
 	)
-	assert_eq(stats["steps_played"], EMITTER_COUNT * FRAMES)
+	assert_eq(stats["steps_received"], EMITTER_COUNT * FRAMES)
+	assert_eq(stats["steps_played"] + stats["steps_dropped"], EMITTER_COUNT * FRAMES, "chaque pas est joué ou abandonné")
+	assert_lt(stats["steps_played"], EMITTER_COUNT * FRAMES, "le plafond de voix limite le travail")
 	assert_eq(system.get_child_count(), children_before, "aucun lecteur créé pendant la charge")
 	assert_lte(system.get_active_voice_count(Time.get_ticks_usec()), system.get_voice_count(), "plafond de voix tenu")
 	assert_lt(per_frame_ms, BUDGET_MS_PER_FRAME, "200 pas par image sous le budget")
+
+
+func test_worst_case_200_steps_per_frame_at_60_fps_clock() -> void:
+	# Horloge simulée à 60 i/s : 200 pas par image pendant 10 s ; les voix libérées sont réutilisées,
+	# les autres sont volées après 40 ms, le reste est abandonné.
+	var system: FootstepSystem = _system_from_game_settings()
+	system.seed_random(11)
+	var frame_usec: int = 16667
+	var frames: int = 600
+	var start: int = Time.get_ticks_usec()
+	for frame: int in frames:
+		var now: int = frame * frame_usec + 1000000
+		for i: int in EMITTER_COUNT:
+			system.play_footstep(Vector3(float(i % 20), 0.0, float(i / 20)), float(i % 6), null, now)
+		assert_lte(system.get_active_voice_count(now), system.get_voice_count())
+	var per_frame_ms: float = float(Time.get_ticks_usec() - start) / 1000.0 / float(frames)
+	var stats: Dictionary[String, int] = system.get_stats()
+	gut.p(
+		(
+			"Horloge 60 i/s, 200 pas par image : %.3f ms par image, joués %d, abandonnés %d, volés %d"
+			% [per_frame_ms, stats["steps_played"], stats["steps_dropped"], stats["voices_stolen"]]
+		)
+	)
+	assert_gt(stats["steps_played"], 0)
+	assert_lt(per_frame_ms, BUDGET_MS_PER_FRAME, "coût par image sous le budget")

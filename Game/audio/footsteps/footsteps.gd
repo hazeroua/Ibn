@@ -10,7 +10,10 @@ extends Node
 ##   3. variante tirée au hasard sans jamais rejouer deux fois de suite la même sur une surface ;
 ##   4. volume et hauteur selon la surface et l'allure (déduite de la vitesse), avec variation ;
 ##   5. voix prise dans une réserve de lecteurs 3D créée une fois pour toutes au démarrage : une voix
-##      libre, sinon la voix la plus ancienne est volée (le nombre de voix est donc plafonné).
+##      libre, sinon la voix la plus ancienne est volée (le nombre de voix est donc plafonné) ; si
+##      cette voix a démarré depuis moins de min_steal_age_ms, le pas est abandonné sans autre calcul
+##      (la voler serait inaudible) : au plus « max_voices » pas sont donc joués par fenêtre de
+##      min_steal_age_ms, quel que soit le nombre d'émetteurs.
 ##
 ## Pires cas : 200 émetteurs simultanés (foule), tous audibles, tous les pas dans la même image ;
 ## collisionneur détruit avant la résolution ; surface inconnue. Aucun objet n'est créé pendant le
@@ -45,6 +48,7 @@ var _max_distance: float = 0.0
 var _max_distance_squared: float = 0.0
 var _unit_size: float = 1.0
 var _max_db: float = 0.0
+var _min_steal_age_usec: int = 0
 var _attenuation: AudioStreamPlayer3D.AttenuationModel = AudioStreamPlayer3D.ATTENUATION_INVERSE_DISTANCE
 var _panning_strength: float = 1.0
 var _voices: Array[AudioStreamPlayer3D] = []
@@ -77,6 +81,7 @@ var _steps_received: int = 0
 var _steps_played: int = 0
 var _steps_culled: int = 0
 var _steps_rejected: int = 0
+var _steps_dropped: int = 0
 var _voices_stolen: int = 0
 var _unknown_surfaces: int = 0
 
@@ -169,6 +174,10 @@ func play_footstep(world_position: Vector3, speed: float, collider: Variant, now
 	if camera != null and camera.global_position.distance_squared_to(world_position) > _max_distance_squared:
 		_steps_culled += 1
 		return -1
+	var voice_index: int = _acquire_voice(now_usec)
+	if voice_index < 0:
+		_steps_dropped += 1
+		return -1
 	var surface: int = resolve_surface(collider, world_position)
 	var variant: int = _pick_variant(surface)
 	var gait: int = _gait_for_speed(speed)
@@ -177,7 +186,6 @@ func play_footstep(world_position: Vector3, speed: float, collider: Variant, now
 	var pitch: float = _gait_pitch_scale[gait] * pow(2.0, semitones / SEMITONES_PER_OCTAVE)
 	var volume_variation: float = _surface_volume_variation_db[surface]
 	var volume: float = _surface_volume_db[surface] + _gait_volume_db[gait] + _rng.randf_range(-volume_variation, volume_variation)
-	var voice_index: int = _acquire_voice(now_usec)
 	var voice: AudioStreamPlayer3D = _voices[voice_index]
 	voice.stream = _variant_streams[variant]
 	voice.pitch_scale = pitch
@@ -263,6 +271,7 @@ func get_stats() -> Dictionary[String, int]:
 		"steps_played": _steps_played,
 		"steps_culled": _steps_culled,
 		"steps_rejected": _steps_rejected,
+		"steps_dropped": _steps_dropped,
 		"voices_stolen": _voices_stolen,
 		"unknown_surfaces": _unknown_surfaces,
 	}
@@ -306,7 +315,8 @@ func _gait_for_speed(speed: float) -> int:
 	return gait
 
 
-## Première voix libre, sinon la plus ancienne (volée). O(nombre de voix), plafonné.
+## Première voix libre, sinon la plus ancienne (volée), sinon -1 si elle est trop récente pour être
+## volée. O(nombre de voix), plafonné.
 func _acquire_voice(now_usec: int) -> int:
 	var oldest: int = 0
 	var oldest_start: int = _voice_start_usec[0]
@@ -316,6 +326,8 @@ func _acquire_voice(now_usec: int) -> int:
 		if _voice_start_usec[i] < oldest_start:
 			oldest = i
 			oldest_start = _voice_start_usec[i]
+	if now_usec - oldest_start < _min_steal_age_usec:
+		return -1
 	_voices_stolen += 1
 	return oldest
 
@@ -383,6 +395,11 @@ func _parse_voices(settings: Dictionary) -> bool:
 		ok = false
 	_max_distance_squared = _max_distance * _max_distance
 	_max_db = JsonData.get_float(voices, "max_db", SETTINGS_PATH)
+	var steal_age_ms: float = JsonData.get_float(voices, "min_steal_age_ms", SETTINGS_PATH)
+	if steal_age_ms < 0.0:
+		push_error("Footsteps : « min_steal_age_ms » doit être positif ou nul.")
+		ok = false
+	_min_steal_age_usec = int(steal_age_ms * 1000.0)
 	_panning_strength = JsonData.get_float(voices, "panning_strength", SETTINGS_PATH)
 	var model: String = JsonData.get_string(voices, "attenuation", SETTINGS_PATH)
 	match model:
