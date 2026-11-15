@@ -20,10 +20,9 @@ func _init(terrain: DesertTerrainCell, field: DesertHeightfield, scatter: Vegeta
 	_scatter = scatter
 	_meshes = meshes
 	_seed = world_seed
-	var list: Array = _scatter.get_species_settings()
-	for entry: Variant in list:
-		var settings: Dictionary = entry
-		_settings[StringName(str(settings["id"]))] = settings
+	var all: Dictionary = _scatter.get_species_settings()
+	for species: Variant in all.keys():
+		_settings[StringName(str(species))] = all[species]
 
 
 func build_cell(cell: Vector2i) -> Node3D:
