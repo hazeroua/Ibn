@@ -39,13 +39,12 @@ func build_cell(cell: Vector2i) -> Node3D:
 	return body
 
 
-func _build_multimesh(id: StringName, transforms: PackedFloat32Array, origin: Vector3) -> MultiMeshInstance3D:
+func _build_multimesh(id: StringName, transforms: PackedFloat32Array, origin: Vector3) -> DesertFoliageInstance:
 	var multimesh := MultiMesh.new()
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	multimesh.mesh = _meshes[id]
-	multimesh.instance_count = transforms.size() / 12
-	multimesh.buffer = transforms
-	var instance := MultiMeshInstance3D.new()
+	var instance := DesertFoliageInstance.new()
+	instance.transform_buffer = transforms
 	instance.name = String(id)
 	instance.multimesh = multimesh
 	# Les transformées sont en coordonnées du monde ; la cellule est posée à son coin : on compense.
