@@ -41,19 +41,9 @@ jobs:
         shell: powershell
         run: .\Scripts\Pipeline\valider.ps1 -SansRendu
 
-      - name: Export Windows
+      - name: Export Windows et démarrage de la version exportée
         shell: powershell
         run: .\Scripts\Pipeline\exporter.ps1
-
-      - name: Démarrage de la version exportée
-        shell: powershell
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $exe = Resolve-Path .\Build\windows\IbnKhaldoun.console.exe
-          $sortie = & $exe --headless --quit 2>&1 | ForEach-Object { "$_" }
-          $sortie
-          if ($LASTEXITCODE -ne 0) { throw "La version exportée ne démarre pas (code $LASTEXITCODE)." }
-          if ($sortie -match '^\s*(ERROR|SCRIPT ERROR)') { throw 'La version exportée affiche des erreurs au démarrage.' }
 
       - name: Rapports
         if: always()

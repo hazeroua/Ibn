@@ -20,7 +20,7 @@ Options : `-SansRendu` (machine sans affichage), `-SansBudgets` (hors machine de
 | Construction | `construire.ps1` | donnée manquante (`JsonData : clé … manquante`) | corriger le JSON de la carte |
 | Tests | `tester.ps1` | test en échec | lire `Mesures/tests/tests.log` et `junit.xml` |
 | Mesures | `mesurer.ps1` | `Budget dépassé : …` | consulter l'agent `garant-performance` |
-| Captures | `capturer.ps1` | image noire ou rose | texture manquante ou lumière absente |
+| Captures | `capturer.ps1` | `Capture … : image presque noire / uniforme / pixels magenta` (contrôle automatique `CaptureCheck`) | lumière absente, rien de rendu, texture ou matériau manquant |
 
 ## Règles
 - Toute ligne `ERROR:` ou `SCRIPT ERROR:` de Godot fait échouer le pipeline : on corrige la cause, on ne filtre pas le message.

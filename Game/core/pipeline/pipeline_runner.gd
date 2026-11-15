@@ -86,6 +86,7 @@ func _capture(camera: Camera3D, viewpoints: Array[Viewpoint]) -> int:
 	if err != OK:
 		push_error("Pipeline : impossible de créer %s (%s)." % [out_dir, error_string(err)])
 		return EXIT_RUNTIME
+	var failures: int = 0
 	for viewpoint: Viewpoint in viewpoints:
 		camera.global_transform = viewpoint.transform
 		# Laisse l'image se stabiliser (mise à l'échelle temporelle, exposition, ombres).
@@ -98,8 +99,12 @@ func _capture(camera: Camera3D, viewpoints: Array[Viewpoint]) -> int:
 		if err != OK:
 			push_error("Pipeline : impossible d'écrire %s (%s)." % [path, error_string(err)])
 			return EXIT_RUNTIME
-		print("CAPTURE %s" % path)
-	return EXIT_OK
+		var stats: Dictionary = CaptureCheck.analyze(image)
+		print("CAPTURE %s %s" % [path, JSON.stringify(stats)])
+		for problem: String in CaptureCheck.problems(stats):
+			push_error("Capture %s : %s" % [viewpoint.id, problem])
+			failures += 1
+	return EXIT_RUNTIME if failures > 0 else EXIT_OK
 
 
 func _benchmark(camera: Camera3D, viewpoints: Array[Viewpoint], scene_path: String) -> int:

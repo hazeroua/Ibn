@@ -56,9 +56,10 @@ function Invoke-Godot {
         [Parameter(Mandatory = $true)][string[]]$Arguments,
         [string]$Journal = '',
         [switch]$Editeur,
-        [switch]$IgnorerErreursAffichees
+        [switch]$IgnorerErreursAffichees,
+        [string]$Executable = ''
     )
-    $executable = if ($Editeur) { $Script:GodotEditeur } else { $Script:GodotConsole }
+    $executable = if ($Executable) { $Executable } elseif ($Editeur) { $Script:GodotEditeur } else { $Script:GodotConsole }
     if ($env:CI -eq 'true' -and $Arguments -notcontains '--headless' -and $Arguments -notcontains '--audio-driver') {
         # Les machines d'intégration continue n'ont pas de carte son : pilote audio factice.
         # Sur la machine de développement, le son reste actif pendant les mesures (il fait partie du coût réel).
