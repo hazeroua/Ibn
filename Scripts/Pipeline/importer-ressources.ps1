@@ -102,3 +102,8 @@ foreach ($fichier in $deposes) {
     Write-Ok "$($fichier.Name) -> assets/import/$($categories[$extension])/$nom"
 }
 if ($deposes.Count -eq 0) { Write-Ok 'Aucune ressource en attente.' }
+
+# ---------------------------------------------------------------------------
+# Personnages 3D (sources libres préparées avec Blender)
+# ---------------------------------------------------------------------------
+& (Join-Path $PSScriptRoot 'importer-personnages.ps1')

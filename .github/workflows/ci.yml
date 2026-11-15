@@ -73,7 +73,7 @@ jobs:
       - name: Rendu logiciel Vulkan (lavapipe) et affichage virtuel
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends mesa-vulkan-drivers libvulkan1 xvfb python3-venv
+          sudo apt-get install -y --no-install-recommends mesa-vulkan-drivers libvulkan1 xvfb python3-venv blender
 
       - name: Dépendances (Tools/dependances.ps1)
         shell: pwsh

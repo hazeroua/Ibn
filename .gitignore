@@ -50,3 +50,9 @@ desktop.ini
 
 # Versions exportées
 /Build/
+
+# Personnages 3D préparés par Scripts/Pipeline/importer-personnages.ps1 (manifeste : Game/data/assets/characters.json)
+/Game/assets/characters/*/
+
+# Scène générée de la vitrine du personnage
+/Game/world/vitrine_personnage/vitrine_personnage.tscn

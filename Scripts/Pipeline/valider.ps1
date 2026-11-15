@@ -19,7 +19,7 @@
 param(
     [switch]$SansRendu,
     [switch]$SansBudgets,
-    [string[]]$Cartes = @('sandbox')
+    [string[]]$Cartes = @('sandbox', 'vitrine_personnage')
 )
 . "$PSScriptRoot/commun.ps1"
 
