@@ -33,7 +33,7 @@ window/vsync/vsync_mode=1
 [ibn]
 
 boot/default_scene="res://world/sandbox/sandbox.tscn"
-projet/mvp_en_cours="mvp-0"
+projet/mvp_en_cours="mvp-1"
 
 [physics]
 

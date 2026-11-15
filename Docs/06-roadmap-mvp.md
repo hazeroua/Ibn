@@ -79,6 +79,8 @@ CONSTRUIRE LE JEU                                       RACONTER L'HISTOIRE
 
 **But :** marcher dans le monde. Le premier vrai moment de jeu.
 
+**Tickets :** [jalon MVP 1](https://github.com/hazeroua/Ibn/milestone/1) — #1 à #7 réalisables **en parallèle** (un worktree par ticket, contrats communs dans [`contrats-mvp-1.md`](contrats-mvp-1.md)), puis #8 (intégration et validation).
+
 **Ressources :** un personnage généré avec MakeHuman (MPFB) dans Blender, des animations de déplacement libres (Quaternius, ou Mixamo en téléchargement manuel).
 
 **Livrables**
