@@ -105,11 +105,7 @@ static func _material() -> ShaderMaterial:
 	material.set_shader_parameter("foam_color", _color(settings, "foam_color"))
 	for key: String in ["wave_speed", "wave_scale", "normal_strength", "edge_width"]:
 		material.set_shader_parameter(key, JsonData.get_float(settings, key, SETTINGS_PATH))
-	material.set_shader_parameter(
-		"wave_height", JsonData.get_float(settings, "wave_height_m", SETTINGS_PATH)
-	)
-	material.set_shader_parameter(
-		"roughness_value", JsonData.get_float(settings, "roughness", SETTINGS_PATH)
-	)
+	material.set_shader_parameter("wave_height", JsonData.get_float(settings, "wave_height_m", SETTINGS_PATH))
+	material.set_shader_parameter("roughness_value", JsonData.get_float(settings, "roughness", SETTINGS_PATH))
 	_shared_material = material
 	return material

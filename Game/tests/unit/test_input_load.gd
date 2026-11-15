@@ -29,10 +29,7 @@ func before_all() -> void:
 
 func after_all() -> void:
 	for suffix: String in ["", InputBindings.TEMP_SUFFIX, InputBindings.BACKUP_SUFFIX]:
-		if (
-			FileAccess.file_exists(_path + suffix)
-			and DirAccess.remove_absolute(_path + suffix) != OK
-		):
+		if FileAccess.file_exists(_path + suffix) and DirAccess.remove_absolute(_path + suffix) != OK:
 			push_warning("Fichier de test non supprimé : %s" % (_path + suffix))
 	if DirAccess.dir_exists_absolute(_directory) and DirAccess.remove_absolute(_directory) != OK:
 		push_warning("Dossier de test non supprimé : %s" % _directory)
@@ -77,13 +74,10 @@ func test_device_switch_every_event_with_all_gamepads() -> void:
 	var elapsed_ms: float = float(Time.get_ticks_usec() - start) / 1000.0
 	var objects_after: float = Performance.get_monitor(Performance.OBJECT_COUNT)
 	var per_frame_ms: float = elapsed_ms / float(frames)
-	(
-		gut
-		. p(
-			(
-				"MESURE entrees : %d événements par image (%d manettes + clavier, bascule à chaque événement) : %.4f ms par image"
-				% [gamepad_events.size() * 2, gamepads, per_frame_ms]
-			)
+	gut.p(
+		(
+			"MESURE entrees : %d événements par image (%d manettes + clavier, bascule à chaque événement) : %.4f ms par image"
+			% [gamepad_events.size() * 2, gamepads, per_frame_ms]
 		)
 	)
 	assert_eq(_switches, frames * gamepad_events.size() * 2, "un signal à chaque changement")
@@ -126,13 +120,10 @@ func test_gamepads_unplugged_while_holding_actions() -> void:
 		for device: int in gamepads:
 			Input.joy_connection_changed.emit(device, true)
 	_parse_now(_make_key(KEY_W, false))
-	(
-		gut
-		. p(
-			(
-				"MESURE entrees : %d manettes débranchées en maintenant %d actions : %.3f ms au pire (%d cycles)"
-				% [gamepads, held_actions.size(), worst_ms, cycles]
-			)
+	gut.p(
+		(
+			"MESURE entrees : %d manettes débranchées en maintenant %d actions : %.3f ms au pire (%d cycles)"
+			% [gamepads, held_actions.size(), worst_ms, cycles]
 		)
 	)
 	assert_eq(not_pressed, 0, "toutes les actions sont maintenues avant le débranchement")

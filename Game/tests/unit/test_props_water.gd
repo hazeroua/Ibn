@@ -45,12 +45,7 @@ func test_build_cost_worst_case() -> void:
 		var node: Node3D = OasisWater.build(Vector2(float(i), 0.0), 80.0)
 		node.free()
 	var per_build_ms: float = float(Time.get_ticks_usec() - start) / 1000.0 / float(BUILD_COUNT)
-	gut.p(
-		(
-			"Construction de l'eau : %.3f ms en moyenne (%d constructions)"
-			% [per_build_ms, BUILD_COUNT]
-		)
-	)
+	gut.p("Construction de l'eau : %.3f ms en moyenne (%d constructions)" % [per_build_ms, BUILD_COUNT])
 	assert_lt(per_build_ms, BUILD_BUDGET_MS)
 
 
