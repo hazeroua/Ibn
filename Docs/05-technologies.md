@@ -196,6 +196,20 @@ Les ressources libres (Poly Haven, Quaternius, Kenney…) sont **téléchargées
 2. Le porteur du projet télécharge et dépose les fichiers dans `Import/`.
 3. Claude Code les importe, les range, les configure (niveaux de détail, collisions, compression) et vérifie par capture d'écran.
 
+## Décision : terrain par tuiles de maillages au lieu de Terrain3D (MVP 1, carte « collines »)
+
+Terrain3D v1.1.0 (versions figées) a été essayé avec Godot 4.7.2. La **construction** par script fonctionne (régions, hauteurs, textures, collisions), mais le plugin **fait planter le moteur dès les premières images rendues** (signal 11 suivi de « propagate_notification() … caller thread ») : reproduit avec un terrain vide, avec la bibliothèque de débogage comme de production, avec le modèle de rendu monofil, avec les shaders légers fournis, sous Vulkan logiciel (lavapipe), la configuration de la CI Linux qui produit captures, mesures et vidéo. Sans cette vérification, un terrain ne peut pas être livré. Le plugin reste installé et figé ; à réessayer quand une version compatible avec Godot 4.7 sera publiée (décision du porteur du projet, car changer une version figée l'exige).
+
+Solution retenue, entièrement par script (`Game/world/collines/`) :
+
+| Élément | Choix |
+|---|---|
+| Relief | Bruit de graine fixe, calculé au moment de la construction (même graine, même résultat) |
+| Maillage | 64 tuiles de 128 m, quatre niveaux de détail par tuile (pas de 1, 2, 4 et 8 m), choisis par les plages de visibilité du moteur (aucun script par image), jupes contre les fissures |
+| Texture | Un shader à deux surfaces (sable, pierre) mélangées par une carte de contrôle (pente et altitude), normales lues dans une carte du relief : identiques à tous les niveaux de détail |
+| Collisions | Une seule forme de carte de hauteurs (couche 1) |
+| Surfaces | `surface_at()` lit la carte de contrôle en O(1) |
+
 ## Budget de performance
 
 | Cible | Résolution | Fréquence |

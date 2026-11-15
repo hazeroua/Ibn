@@ -50,3 +50,7 @@ desktop.ini
 
 # Versions exportées
 /Build/
+
+# Carte « collines » générée par Game/tools/builders/build_collines.gd
+/Game/world/collines/collines.tscn
+/Game/world/collines/terrain_data/

@@ -1,0 +1,9 @@
+{
+  "description": "Points de vue fixes de la carte « collines » : captures d'écran comparables d'un MVP à l'autre, et parcours des mesures et de la vidéo (dans l'ordre). vue_sommet est le pire cas : depuis le point le plus haut, presque tout le terrain et les 1 000 obstacles de la zone dense sont dans le champ.",
+  "viewpoints": [
+    { "id": "vue_generale", "position": [-300.0, 110.0, 700.0], "target": [80.0, 5.0, 0.0] },
+    { "id": "vue_sommet", "position": [274.0, 38.7, -211.0], "target": [370.0, 3.0, 60.0] },
+    { "id": "vue_zone_dense", "position": [370.0, 22.0, 125.0], "target": [370.0, 2.0, 60.0] },
+    { "id": "vue_sol", "position": [370.0, 5.3, 115.0], "target": [370.0, 3.2, 60.0] }
+  ]
+}

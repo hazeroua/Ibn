@@ -5,7 +5,13 @@
       "id": "coast_sand_01",
       "resolution": "1k",
       "maps": { "diff": "Diffuse", "nor_gl": "nor_gl", "rough": "Rough" },
-      "usage": "Sol du bac à sable (MVP 0)"
+      "usage": "Sol du bac à sable (MVP 0) ; sable des collines (MVP 1)"
+    },
+    {
+      "id": "rock_face_03",
+      "resolution": "1k",
+      "maps": { "diff": "Diffuse", "nor_gl": "nor_gl", "rough": "Rough" },
+      "usage": "Pierre des collines : pentes du terrain et rochers (MVP 1)"
     }
   ]
 }

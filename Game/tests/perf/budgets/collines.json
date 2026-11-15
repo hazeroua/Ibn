@@ -1,0 +1,12 @@
+{
+  "description": "Budgets de performance de la carte « collines », mesurés sur la machine de développement (puce Intel Arc intégrée, 1080p, FSR 2), synchronisation verticale désactivée. Pire cas : vue_sommet (tout le terrain et 1 000 obstacles dans le champ), avec ombres du soleil. Estimation : environ 350 000 triangles de terrain au pire (4 tuiles à 1 m, anneaux de niveaux de détail 2, 4 et 8 m), 70 000 d'obstacles, ombres comprises moins de 1,2 million ; dix appels de dessin pour le terrain visible plus 5 pour les obstacles, doublés par les ombres.",
+  "budgets": {
+    "frame_p99_ms": { "max": 16.6 },
+    "fps_1pct_low": { "min": 60.0 },
+    "gpu_p99_ms": { "max": 12.0 },
+    "draw_calls_max": { "max": 450 },
+    "primitives_max": { "max": 1500000 },
+    "video_mem_mb_max": { "max": 384.0 },
+    "static_mem_mb_max": { "max": 640.0 }
+  }
+}
