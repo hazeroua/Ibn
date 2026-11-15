@@ -1,0 +1,12 @@
+{
+  "description": "Budgets de performance de la vitrine du personnage (35 personnages animés dont 32 dans la foule), mesurés sur la machine de développement (puce Intel Arc intégrée, 1080p, FSR 2), synchronisation verticale désactivée. Un personnage = une surface = un appel de dessin, plus l'ombre.",
+  "budgets": {
+    "frame_p99_ms": { "max": 16.6 },
+    "fps_1pct_low": { "min": 60.0 },
+    "gpu_p99_ms": { "max": 12.0 },
+    "draw_calls_max": { "max": 140 },
+    "primitives_max": { "max": 1600000 },
+    "video_mem_mb_max": { "max": 512.0 },
+    "static_mem_mb_max": { "max": 384.0 }
+  }
+}

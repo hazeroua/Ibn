@@ -19,7 +19,10 @@
 param(
     [switch]$SansRendu,
     [switch]$SansBudgets,
-    [string[]]$Cartes = @('sandbox', 'collines')
+<<<<<<< HEAD
+    [string[]]$Cartes = @('sandbox', 'collines', 'vitrine_personnage')
+=======
+>>>>>>> mvp-1/modele
 )
 . "$PSScriptRoot/commun.ps1"
 

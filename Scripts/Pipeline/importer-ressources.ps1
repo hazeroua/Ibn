@@ -103,5 +103,10 @@ foreach ($fichier in $deposes) {
 }
 if ($deposes.Count -eq 0) { Write-Ok 'Aucune ressource en attente.' }
 
+# ---------------------------------------------------------------------------
+# Personnages 3D (sources libres préparées avec Blender)
+# ---------------------------------------------------------------------------
+& (Join-Path $PSScriptRoot 'importer-personnages.ps1')
+
 # Sons libres (manifeste Game/data/assets/sounds.json)
 & (Join-Path $PSScriptRoot 'importer-sons.ps1')

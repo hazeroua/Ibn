@@ -54,6 +54,12 @@ desktop.ini
 # Carte « collines » générée par Game/tools/builders/build_collines.gd
 /Game/world/collines/collines.tscn
 /Game/world/collines/terrain_data/
+# Personnages 3D préparés par Scripts/Pipeline/importer-personnages.ps1 (manifeste : Game/data/assets/characters.json)
+/Game/assets/characters/*/
+
+# Scène générée de la vitrine du personnage
+/Game/world/vitrine_personnage/vitrine_personnage.tscn
+__pycache__/
 
 # Sons libres téléchargés (manifeste Game/data/assets/sounds.json)
 /Game/assets/sounds/
