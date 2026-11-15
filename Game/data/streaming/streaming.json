@@ -1,0 +1,12 @@
+{
+  "description": "Réglages du streaming du monde (WorldStreamer, C++). Distances en mètres, durées en secondes ou millisecondes.",
+  "cell_size_m": 250.0,
+  "grid_size": 16,
+  "origin_x_m": -2000.0,
+  "origin_z_m": -2000.0,
+  "load_radius_m": 600.0,
+  "unload_hysteresis_m": 250.0,
+  "lookahead_s": 6.0,
+  "frame_budget_ms": 2.0,
+  "max_concurrent_builds": 4
+}

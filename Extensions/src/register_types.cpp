@@ -2,6 +2,7 @@
 
 #include "perf_recorder.h"
 #include "vegetation_scatter.h"
+#include "world_streamer.h"
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -13,6 +14,7 @@ void initialize_ibn_module(godot::ModuleInitializationLevel p_level) {
 	}
 	GDREGISTER_CLASS(PerfRecorder);
 	GDREGISTER_CLASS(VegetationScatter);
+	GDREGISTER_CLASS(WorldStreamer);
 }
 
 void uninitialize_ibn_module(godot::ModuleInitializationLevel p_level) {
