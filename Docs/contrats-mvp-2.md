@@ -43,3 +43,8 @@ Terrain3D fait planter Godot 4.7.2 (voir `Docs/05-technologies.md`). Le désert 
 | #5 Jour/nuit | `Game/world/sky/`, `Game/data/sky/`, `Game/tests/unit/test_daynight_*.gd` |
 | #6 Vent | `Game/world/wind/`, `Game/data/wind/`, `Game/audio/wind/`, `Game/tests/unit/test_wind_*.gd` |
 | #8 Intégration | `Game/project.godot`, `Scripts/Pipeline/valider.ps1`, la scène de jeu du désert, `Game/data/desert/route_joueur.json`, `Docs/06-roadmap-mvp.md` |
+
+## Saisons et panneau de temps (ticket #16, demandé par le porteur du projet)
+- Autoload `Seasons` (`res://world/seasons/seasons.gd`) : `season: StringName` (`printemps`, `ete`, `automne`, `hiver`), `set_season(id)`, `blend(from, to, t)` pour transition douce ; réglages dans `res://data/seasons/seasons.json` (par saison : teinte et intensité du soleil, hauteur maximale du soleil, durée du jour, densité du brouillard, couleur de l'herbe/des palmes, force moyenne du vent, quantité de poussière). Signal `season_changed(id)`. Fournit des multiplicateurs lus par `DayNight`, `Wind` et la végétation via les uniformes globaux de shader `season_*` (aucune dépendance directe de code).
+- Panneau `TimePanel` (`res://ui/time_panel/time_panel.tscn` construit par script) : ouvert/fermé par la touche **F2** (action `toggle_time_panel`), curseur de l'heure (0–24 h), vitesse du temps (0, 1, 60, 600, 3600), boutons des 4 saisons, curseur de force du vent, utilisable à la souris et à la manette. Il appelle `DayNight`, `Seasons` et `Wind` uniquement par leurs méthodes publiques.
+- Fichiers possédés : `Game/world/seasons/`, `Game/data/seasons/`, `Game/ui/time_panel/`, `Game/tests/unit/test_seasons_*.gd`, `test_time_panel_*.gd`.
