@@ -71,3 +71,4 @@ __pycache__/
 
 # Scène générée du panneau de temps (Game/tools/builders/build_time_panel.gd)
 /Game/ui/time_panel/time_panel.tscn
+/Game/world/desert_jeu/desert_jeu.tscn

@@ -21,24 +21,36 @@ func _ready() -> void:
 		return
 	for camera: Node in map.find_children("*", "Camera3D", true, false):
 		(camera as Camera3D).current = false
+	var player: PlayerCharacter = spawn_player(self, spawn.global_position, spawn.global_rotation.y, character_id)
+	attach_camera(self, player)
+
+
+## Crée le joueur (avec son modèle et ses sons de pas) à la position donnée et l'ajoute à « parent ».
+static func spawn_player(parent: Node, position: Vector3, yaw: float, model_id: String) -> PlayerCharacter:
 	var player := PlayerCharacter.new()
 	player.name = "Joueur"
-	add_child(player)
-	player.teleport_to(spawn.global_position, spawn.global_rotation.y)
-	_attach_model(player)
+	parent.add_child(player)
+	player.teleport_to(position, yaw)
+	_attach_model(player, model_id)
+	var footsteps: FootstepSystem = parent.get_node("/root/Footsteps") as FootstepSystem
+	footsteps.connect_emitter(player)
+	return player
+
+
+## Crée la caméra à la troisième personne qui suit « player » et capture la souris.
+static func attach_camera(parent: Node, player: PlayerCharacter) -> ThirdPersonCamera:
 	var rig := ThirdPersonCamera.new()
 	rig.name = "Camera"
-	add_child(rig)
+	parent.add_child(rig)
 	rig.set_target(player)
 	rig.snap()
-	var footsteps: FootstepSystem = get_node("/root/Footsteps") as FootstepSystem
-	footsteps.connect_emitter(player)
-	var input: GameInput = get_node("/root/GameInput") as GameInput
+	var input: GameInput = parent.get_node("/root/GameInput") as GameInput
 	input.set_mouse_capture(true)
+	return rig
 
 
-func _attach_model(player: PlayerCharacter) -> void:
-	var scene: PackedScene = CharacterCatalog.load_scene(character_id)
+static func _attach_model(player: PlayerCharacter, model_id: String) -> void:
+	var scene: PackedScene = CharacterCatalog.load_scene(model_id)
 	if scene == null:
 		return
 	var model: Node3D = scene.instantiate() as Node3D

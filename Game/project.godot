@@ -15,6 +15,9 @@ config/features=PackedStringArray("4.7", "Forward Plus")
 GameInput="*res://core/input/game_input.gd"
 Pipeline="*res://core/pipeline/pipeline_runner.gd"
 Footsteps="*res://audio/footsteps/footsteps.gd"
+DayNight="*res://world/sky/day_night.gd"
+Wind="*res://world/wind/wind.gd"
+Seasons="*res://world/seasons/seasons.gd"
 
 [debug]
 
@@ -33,7 +36,7 @@ window/vsync/vsync_mode=1
 
 [ibn]
 
-boot/default_scene="res://world/jeu/jeu.tscn"
+boot/default_scene="res://world/desert_jeu/desert_jeu.tscn"
 projet/mvp_en_cours="mvp-1"
 
 [layer_names]
