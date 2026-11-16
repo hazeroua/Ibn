@@ -155,10 +155,31 @@ func apply_settings(new_settings: CameraSettings) -> void:
 	_needs_snap = true
 
 
+## Change de réglages sans saut (monte, descente) : l'orientation est gardée, le recul et le champ rejoignent
+## les nouveaux réglages avec leur lissage habituel. Sans effet si les réglages sont déjà ceux-là.
+func blend_to_settings(new_settings: CameraSettings) -> void:
+	if new_settings == settings:
+		return
+	settings = new_settings
+	camera.near = settings.near
+	camera.far = settings.far
+	_probe_shape.radius = settings.probe_radius
+	_probe.collision_mask = settings.collision_mask
+	_pitch_goal = clampf(_pitch_goal, settings.pitch_min, settings.pitch_max)
+	_zoom_goal = settings.zoom_initial
+
+
 func set_target(value: Node3D) -> void:
 	target = value
 	_fader.set_target(value)
 	_needs_snap = true
+
+
+## Change de cible en glissant de l'ancienne à la nouvelle (monte et descente de cheval), sans placement direct.
+func glide_to_target(value: Node3D) -> void:
+	var was_snapping: bool = _needs_snap
+	target = value
+	_needs_snap = was_snapping
 
 
 ## Place la caméra directement à sa position voulue à la prochaine image (sans lissage).

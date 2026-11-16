@@ -69,6 +69,19 @@ static func load_default() -> CameraSettings:
 	return from_dictionary(JsonData.load_dictionary(DEFAULT_PATH))
 
 
+## Réglages à cheval : camera.json dont les sections de « mounted » remplacent clé par clé celles du jeu à pied.
+static func load_mounted() -> CameraSettings:
+	var data: Dictionary = JsonData.load_dictionary(DEFAULT_PATH)
+	var mounted: Dictionary = JsonData.get_dictionary(data, "mounted", CONTEXT)
+	var merged: Dictionary = data.duplicate(true)
+	for section: Variant in mounted.keys():
+		if typeof(mounted[section]) != TYPE_DICTIONARY:
+			continue
+		var base: Dictionary = JsonData.get_dictionary(merged, str(section), CONTEXT)
+		base.merge(mounted[section] as Dictionary, true)
+	return from_dictionary(merged)
+
+
 ## Construit les réglages à partir d'un dictionnaire au format de camera.json.
 static func from_dictionary(data: Dictionary) -> CameraSettings:
 	var s := CameraSettings.new()

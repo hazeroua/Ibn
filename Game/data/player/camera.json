@@ -37,7 +37,10 @@
     "smoothing": 9.0
   },
   "collision": {
-    "layers": [1, 4],
+    "layers": [
+      1,
+      4
+    ],
     "probe_radius_m": 0.22,
     "contact_skin_m": 0.02,
     "return_smoothing": 4.0
@@ -58,5 +61,33 @@
     "start_distance_m": 0.95,
     "end_distance_m": 0.5,
     "smoothing": 12.0
+  },
+  "mounted": {
+    "description": "Caméra à cheval : remplace seulement les clés données ici (même format que le reste du fichier). Point visé à hauteur du cavalier, recul plus grand pour voir Barq en entier, retard un peu plus souple et champ qui s'ouvre jusqu'au galop de course (vitesses de Barq). À la monte et à la descente, la caméra garde son orientation et rejoint en douceur le nouveau cadrage.",
+    "framing": {
+      "pivot_height_m": 2.45,
+      "probe_origin_height_m": 1.7,
+      "shoulder_offset_m": 0.0
+    },
+    "follow": {
+      "position_smoothing": 10.0,
+      "max_lag_m": 1.1,
+      "teleport_distance_m": 12.0
+    },
+    "zoom": {
+      "min_distance_m": 3.6,
+      "max_distance_m": 9.0,
+      "initial_distance_m": 5.6,
+      "step_m": 0.7,
+      "smoothing": 6.0
+    },
+    "fov": {
+      "base_deg": 70.0,
+      "run_bonus_deg": 10.0,
+      "speed_start_mps": 3.5,
+      "speed_full_mps": 11.5,
+      "speed_smoothing": 4.0,
+      "fov_smoothing": 2.0
+    }
   }
 }

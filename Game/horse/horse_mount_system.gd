@@ -42,6 +42,8 @@ var _current_rider_clip: StringName = &""
 var _dismount_requested: bool = false
 ## Couches de collision du personnage, retirées pendant la monte (il ne doit pas heurter Barq qui le porte).
 var _player_layers: int = 0
+var _camera_walk: CameraSettings
+var _camera_ride: CameraSettings
 
 
 func setup(owner_player: PlayerCharacter, rig: ThirdPersonCamera, field: DesertHeightfield) -> void:
@@ -59,6 +61,9 @@ func setup(owner_player: PlayerCharacter, rig: ThirdPersonCamera, field: DesertH
 	for gait: Variant in JsonData.get_array(rider, "gallop_lean_gaits", context):
 		_lean_gaits.append(StringName(str(gait)))
 	_spawn_horse()
+	if camera_rig != null:
+		_camera_walk = camera_rig.settings
+		_camera_ride = CameraSettings.load_mounted()
 
 
 func _ready() -> void:
@@ -159,7 +164,8 @@ func _begin_mount() -> void:
 		_rider_animation.play(PlayerAnimator.LOOP_CLIPS[LocomotionSettings.Gait.WALK], 0.15)
 		_rider_animation.speed_scale = 1.0
 	if camera_rig != null:
-		camera_rig.set_target(horse)
+		camera_rig.glide_to_target(horse)
+		camera_rig.blend_to_settings(_camera_ride)
 	_enter(State.APPROACH)
 
 
@@ -175,7 +181,8 @@ func _finish_dismount() -> void:
 	player.reset_animation_state()
 	player.teleport_to(ground.origin, horse.rotation.y)
 	if camera_rig != null:
-		camera_rig.set_target(player)
+		camera_rig.glide_to_target(player)
+		camera_rig.blend_to_settings(_camera_walk)
 	_enter(State.ON_FOOT)
 
 
