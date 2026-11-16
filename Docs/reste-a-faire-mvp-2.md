@@ -32,9 +32,9 @@ Les corrections de l'eau, de la palmeraie et des pas (commits `883b8f1`, `249095
 - Le générateur de modèles écrit maintenant lui-même les réglages d'import ; `lancer.bat` régénère les modèles et l'atlas au premier lancement.
 
 ## 4. Tests à écrire ou à réparer
-- **Test de charge de la palmeraie** (décor, collisions, shader de terre).
+- ~~**Test de charge de la palmeraie**~~ : fait (`test_palmeraie_load.gd` : 4 cellules, 55 ms et 289 formes au plus par cellule) ; le coût du shader de terre reste à mesurer sur la puce Intel Arc.
 - **Pas calés sur l'animation** : test avec un squelette (appuis, silence contre un mur, arrêts).
-- **Géométrie des séguias** : crête au-dessus du sol, bouts fermés, collision du lit et des berges.
+- ~~**Géométrie des séguias**~~ : collision du lit et des berges, crêtes au-dessus du sol, aucune face enfouie ni dégénérée (même test).
 - ~~**Échecs GUT déjà présents sur `main`**~~ : corrigés, toute la suite GUT passe (352 tests, commit `816e56b`).
 
 ## 5. Ce qui a été fait (rappel)
