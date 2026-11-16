@@ -33,7 +33,7 @@ func _physics_process(_delta: float) -> void:
 	if horse == null or player == null:
 		return
 	if Input.is_action_just_pressed(WHISTLE_ACTION) and not mounted:
-		horse.call_to(player.global_position)
+		horse.call_to_node(player)
 	if Input.is_action_just_pressed(MOUNT_ACTION):
 		if mounted:
 			dismount()
@@ -43,7 +43,7 @@ func _physics_process(_delta: float) -> void:
 		):
 			mount()
 	if mounted:
-		var move: Vector2 = Input.get_vector(&"move_left", &"move_right", &"move_forward", &"move_back")
+		var move: Vector2 = _camera_relative_move()
 		horse.set_input(move, Input.is_action_pressed(&"sprint"))
 		player.global_position = horse.saddle_position()
 		player.rotation = horse.rotation
@@ -52,6 +52,7 @@ func _physics_process(_delta: float) -> void:
 func mount() -> void:
 	mounted = true
 	horse.mounted = true
+	horse.cancel_call()
 	player.process_mode = Node.PROCESS_MODE_DISABLED
 	if camera_rig != null:
 		camera_rig.set_target(horse)
@@ -61,6 +62,7 @@ func mount() -> void:
 func dismount() -> void:
 	mounted = false
 	horse.mounted = false
+	horse.set_input(Vector2.ZERO, false)
 	player.process_mode = Node.PROCESS_MODE_INHERIT
 	var side: Vector3 = horse.global_basis.x * 1.5
 	player.teleport_to(horse.global_position + side, horse.rotation.y)
@@ -92,3 +94,13 @@ func _on_hoofstep(world_position: Vector3, speed: float, surface: StringName) ->
 		traces.place(world_position, horse.rotation.y, surface)
 	if audio != null:
 		audio.hoof(surface, speed)
+
+
+## Même convention que le déplacement à pied : la poussée avant suit la direction regardée par la caméra.
+func _camera_relative_move() -> Vector2:
+	var raw: Vector2 = Input.get_vector(&"move_left", &"move_right", &"move_back", &"move_forward")
+	if camera_rig == null:
+		return raw
+	var right := Vector2(camera_rig.global_basis.x.x, camera_rig.global_basis.x.z).normalized()
+	var forward := Vector2(-camera_rig.global_basis.z.x, -camera_rig.global_basis.z.z).normalized()
+	return (right * raw.x + forward * raw.y).limit_length(1.0)
