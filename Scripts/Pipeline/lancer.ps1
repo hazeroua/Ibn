@@ -34,7 +34,10 @@ if ($Export) {
 
 # Avant chaque lancement : tout ce qui a pu changer depuis le dernier « git pull » est remis à jour
 # (compilation C++ incrémentale, import, scènes générées). Aucun test : ils se lancent avec valider.ps1.
-if (-not (Test-Path (Join-Path $Jeu 'assets/textures/polyhaven'))) { & (Join-Path $PSScriptRoot 'importer-ressources.ps1') }
+# Ressources libres : tout est (re)téléchargé dès qu'une texture déclarée dans polyhaven.json manque (rien n'est retéléchargé si intact).
+$texturesDeclarees = @((Get-Content -Raw -Encoding UTF8 (Join-Path $Jeu 'data/assets/polyhaven.json') | ConvertFrom-Json).textures)
+$textureManquante = @($texturesDeclarees | Where-Object { -not (Test-Path (Join-Path $Jeu "assets/textures/polyhaven/$($_.id)")) }).Count -gt 0
+if ($textureManquante) { & (Join-Path $PSScriptRoot 'importer-ressources.ps1') }
 # Sons libres : rien n'est retéléchargé s'ils sont déjà intacts ; ceux ajoutés par une mise à jour arrivent ici.
 & (Join-Path $PSScriptRoot 'importer-sons.ps1')
 & (Join-Path $PSScriptRoot 'compiler.ps1') -Cible debug
