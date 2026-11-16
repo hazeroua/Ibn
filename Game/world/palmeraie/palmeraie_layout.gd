@@ -333,6 +333,15 @@ func _try_add_parcel(u0: float, v0: float, u1: float, v1: float) -> void:
 				return
 	if high - low > JsonData.get_float(parcel, "max_height_range_m", CONTEXT):
 		return
+	# Oueds : échantillonnage serré (pas de wadi_sample_m) pour ne pas laisser passer un lit étroit entre deux points.
+	var wadi_step: float = JsonData.get_float(parcel, "wadi_sample_m", CONTEXT)
+	var columns: int = maxi(1, ceili((u1 - u0) / wadi_step))
+	var rows: int = maxi(1, ceili((v1 - v0) / wadi_step))
+	for i: int in columns + 1:
+		for j: int in rows + 1:
+			var point: Vector2 = _to_world(lerpf(u0, u1, float(i) / float(columns)), lerpf(v0, v1, float(j) / float(rows)))
+			if features.distance_to_wadi(point.x, point.y) < wadi_clear:
+				return
 	_pu0.append(u0)
 	_pv0.append(v0)
 	_pu1.append(u1)

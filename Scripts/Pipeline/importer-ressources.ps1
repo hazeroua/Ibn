@@ -108,6 +108,7 @@ if ($deposes.Count -eq 0) { Write-Ok 'Aucune ressource en attente.' }
 # ---------------------------------------------------------------------------
 & (Join-Path $PSScriptRoot 'importer-personnages.ps1')
 & (Join-Path $PSScriptRoot 'generer-props-desert.ps1')
+& (Join-Path $PSScriptRoot 'generer-faune.ps1')
 
 # Sons libres (manifeste Game/data/assets/sounds.json)
 & (Join-Path $PSScriptRoot 'importer-sons.ps1')

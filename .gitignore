@@ -68,6 +68,9 @@ __pycache__/
 # Modèles du désert générés par Scripts/Blender/generer_props_desert.py (manifeste : Game/data/assets/desert_props.json)
 /Game/assets/desert/*.glb
 /Game/assets/desert/*.import
+# Modèles de la faune générés par Scripts/Blender/generer_faune.py (manifeste : Game/data/assets/fauna_models.json)
+/Game/assets/faune/*.glb
+/Game/assets/faune/*.import
 
 # Scène générée du panneau de temps (Game/tools/builders/build_time_panel.gd)
 /Game/ui/time_panel/time_panel.tscn

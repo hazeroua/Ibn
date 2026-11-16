@@ -1,5 +1,5 @@
-"""Génère les rochers, palmiers, arbres fruitiers de verger (grenadier, figuier, olivier), touffes de culture (orge, fève), chadouf, acacias, tamaris, buissons (jujubier, laurier-rose, retam), herbes sèches, les imposteurs
-d'arbres et le couvert du sol (alfa, drinn, fleurs, cailloux, pierres plates, bois mort) du désert, avec Blender en ligne de commande.
+"""Génère les rochers, palmiers, acacias, tamaris, buissons, herbes sèches, falaises de gorge, arbres fruitiers de verger (grenadier, figuier, olivier), touffes de culture (orge, fève), chadouf, les imposteurs d'arbres et le couvert
+du sol (alfa, drinn, fleurs, cailloux, pierres plates, bois mort) du désert, avec Blender en ligne de commande.
 
     blender --background --factory-startup --python Scripts/Blender/generer_props_desert.py -- \
         --manifest Game/data/assets/desert_props.json --output-dir Game/assets/desert --report <rapport.json>
@@ -176,6 +176,47 @@ def build_palm(spec: dict, index: int, lod: int) -> bmesh.types.BMesh:
                 else:
                     bm.faces.new((pl, pr, right, left))
             previous = (left, right)
+    return bm
+
+
+def build_cliff(spec: dict, index: int, lod: int) -> bmesh.types.BMesh:
+    """Bloc de falaise : colonne haute aux facettes irrégulières, enterrée sur embed_m, strates colorées, sommet incliné.
+
+    Même graine pour tous les niveaux de détail : silhouette stable. Pas de fond (le pied est enfoui dans la paroi).
+    """
+    rng = random.Random(spec["seeds"][index])
+    phases = [(rng.uniform(0, 6.28), rng.uniform(0, 6.28), rng.uniform(0.7, 1.3)) for _ in range(3)]
+    tilt = (rng.uniform(-1.0, 1.0), rng.uniform(-1.0, 1.0))
+    bm = new_bmesh()
+    sides = spec["sides"][lod]
+    segments = spec["segments"][lod]
+    radius = spec["radius_m"][index]
+    height = spec["height_m"][index]
+    embed = spec["embed_m"]
+    base = spec["colors"]["base"]
+    top = spec["colors"]["top"]
+    rings = []
+    for s in range(segments + 1):
+        t = s / segments
+        z = -embed + (height + embed) * t
+        row = []
+        for i in range(sides):
+            angle = 2 * math.pi * i / sides
+            jitter = 1.0
+            for k, (p1, p2, f) in enumerate(phases):
+                jitter += 0.12 * math.sin(angle * (k + 2) * f + p1 + t * 3.0 * (k + 1)) * math.cos(p2 + t * 2.0)
+            r = radius * jitter * (1.0 - 0.28 * t)
+            band = 0.5 + 0.5 * math.sin(t * 18.0 + phases[0][0])
+            color = mix(base, top, 0.75 * t + 0.25 * band * (1.0 if lod == 0 else 0.5))
+            row.append(add_vert(bm, Vector((math.cos(angle) * r, math.sin(angle) * r, z)), color))
+        rings.append(row)
+    for s in range(segments):
+        for i in range(sides):
+            j = (i + 1) % sides
+            bm.faces.new((rings[s][i], rings[s][j], rings[s + 1][j], rings[s + 1][i]))
+    apex = add_vert(bm, Vector((tilt[0] * radius * 0.25, tilt[1] * radius * 0.25, height + 0.35 * radius)), top)
+    for i in range(sides):
+        bm.faces.new((rings[-1][i], rings[-1][(i + 1) % sides], apex))
     return bm
 
 
@@ -873,6 +914,10 @@ def main() -> None:
     for i, variant in enumerate(palm["variants"]):
         for lod in range(3):
             jobs.append((f"palmier_{variant}_lod{lod}", palm["max_triangles"][lod], lambda i=i, lod=lod: build_palm(palm, i, lod)))
+    cliff = manifest["models"]["falaise"]
+    for i, variant in enumerate(cliff["variants"]):
+        for lod in range(3):
+            jobs.append((f"falaise_{variant}_lod{lod}", cliff["max_triangles"][lod], lambda i=i, lod=lod: build_cliff(cliff, i, lod)))
     imposter = manifest["models"]["imposteur_palmier"]
     jobs.append(("palmier_imposteur", imposter["max_triangles"], lambda: build_imposter(imposter)))
     bush = manifest["models"]["buisson"]
@@ -924,6 +969,11 @@ def main() -> None:
     chadouf = manifest["models"]["chadouf"]
     for i, variant in enumerate(chadouf["variants"]):
         jobs.append((f"chadouf_{variant}", chadouf["max_triangles"], lambda i=i: build_chadouf(chadouf, i, 0)))
+    # Roseau et jonc (rives des plans d'eau) : mêmes brins effilés que l'herbe sèche, plus hauts, 40 triangles au plus.
+    for reed_name in ("roseau", "jonc"):
+        reed = manifest["models"][reed_name]
+        for i, variant in enumerate(reed["variants"]):
+            jobs.append((f"{reed_name}_{variant}", reed["max_triangles"], lambda i=i, reed=reed: build_grass(reed, i)))
     for name, budget, builder in jobs:
         reset_scene()
         material = make_material()

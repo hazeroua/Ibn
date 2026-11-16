@@ -15,6 +15,7 @@
     "max_height_range_m": 2.4,
     "water_clearance_m": 14.0,
     "wadi_clearance_m": 12.0,
+    "wadi_sample_m": 8.0,
     "water_surface_margin_m": 0.6,
     "sample_side": 3,
     "index_cell_m": 16.0

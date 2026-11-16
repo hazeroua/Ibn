@@ -100,6 +100,27 @@
     "speed_scale_min": 0.6,
     "speed_scale_max": 1.5
   },
+  "wading": {
+    "description": "Marche dans l'eau peu profonde : profondeur maximale franchissable (au-delà, une limite invisible bloque : pas de nage), multiplicateur de vitesse à cette profondeur (interpolé depuis 1 à la profondeur d'entrée), éclaboussure (une seule instance de particules réutilisée à chaque pas).",
+    "max_depth_m": 0.8,
+    "enter_depth_m": 0.03,
+    "speed_multiplier_at_max_depth": 0.55,
+    "smoothing_per_second": 8.0,
+    "splash": {
+      "amount": 24,
+      "lifetime_s": 0.6,
+      "explosiveness": 0.9,
+      "initial_speed_min": 1.0,
+      "initial_speed_max": 2.4,
+      "spread_degrees": 35.0,
+      "gravity": 9.0,
+      "scale_min": 0.6,
+      "scale_max": 1.2,
+      "particle_size_m": 0.07,
+      "color": "#d9edf2bf",
+      "min_speed": 0.6
+    }
+  },
   "budgets": {
     "description": "Budgets du test de charge (1 000 obstacles autour du joueur) : temps de calcul du déplacement d'une image, en millisecondes.",
     "step_average_ms": 1.0,

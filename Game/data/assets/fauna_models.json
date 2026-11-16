@@ -1,0 +1,122 @@
+{
+  "description": "Modèles de la faune d'ambiance du désert, générés par Scripts/Blender/generer_faune.py (un fichier .glb par modèle dans res://assets/faune/). Dimensions en mètres ; couleurs RVB linéaires. Le canal alpha des couleurs de sommets porte le poids d'animation lu par les shaders (aile ou patte). Budgets de triangles vérifiés par le générateur.",
+  "directory": "res://assets/faune/",
+  "models": {
+    "tourterelle": {
+      "kind": "bird",
+      "statut_historique": "P",
+      "body_length_m": 0.28,
+      "body_radius_m": 0.045,
+      "beak_length_m": 0.015,
+      "tail_length_m": 0.12,
+      "tail_width_m": 0.09,
+      "wing_span_m": 0.5,
+      "wing_chord_m": 0.11,
+      "colors": {
+        "back": [0.45, 0.36, 0.3],
+        "belly": [0.78, 0.68, 0.6],
+        "beak": [0.2, 0.17, 0.15],
+        "tail": [0.36, 0.3, 0.26],
+        "wing": [0.5, 0.4, 0.32],
+        "wing_tip": [0.22, 0.2, 0.2]
+      },
+      "max_triangles": 60
+    },
+    "moineau": {
+      "kind": "bird",
+      "statut_historique": "P",
+      "body_length_m": 0.15,
+      "body_radius_m": 0.03,
+      "beak_length_m": 0.01,
+      "tail_length_m": 0.06,
+      "tail_width_m": 0.05,
+      "wing_span_m": 0.24,
+      "wing_chord_m": 0.06,
+      "colors": {
+        "back": [0.42, 0.3, 0.2],
+        "belly": [0.7, 0.64, 0.55],
+        "beak": [0.18, 0.15, 0.12],
+        "tail": [0.33, 0.26, 0.2],
+        "wing": [0.4, 0.28, 0.18],
+        "wing_tip": [0.25, 0.2, 0.16]
+      },
+      "max_triangles": 60
+    },
+    "corbeau_brun": {
+      "kind": "bird",
+      "statut_historique": "P",
+      "body_length_m": 0.5,
+      "body_radius_m": 0.075,
+      "beak_length_m": 0.06,
+      "tail_length_m": 0.2,
+      "tail_width_m": 0.16,
+      "wing_span_m": 1.0,
+      "wing_chord_m": 0.2,
+      "colors": {
+        "back": [0.14, 0.12, 0.1],
+        "belly": [0.2, 0.17, 0.14],
+        "beak": [0.06, 0.06, 0.06],
+        "tail": [0.08, 0.07, 0.07],
+        "wing": [0.1, 0.09, 0.09],
+        "wing_tip": [0.05, 0.05, 0.06]
+      },
+      "max_triangles": 60
+    },
+    "percnoptere": {
+      "kind": "bird",
+      "statut_historique": "P",
+      "body_length_m": 0.65,
+      "body_radius_m": 0.085,
+      "beak_length_m": 0.08,
+      "tail_length_m": 0.25,
+      "tail_width_m": 0.3,
+      "wing_span_m": 1.65,
+      "wing_chord_m": 0.4,
+      "colors": {
+        "back": [0.8, 0.77, 0.7],
+        "belly": [0.88, 0.86, 0.8],
+        "beak": [0.75, 0.6, 0.2],
+        "tail": [0.85, 0.82, 0.76],
+        "wing": [0.82, 0.8, 0.74],
+        "wing_tip": [0.1, 0.09, 0.09]
+      },
+      "max_triangles": 60
+    },
+    "gazelle_dorcas": {
+      "kind": "gazelle",
+      "statut_historique": "P",
+      "body_length_m": 1.0,
+      "body_height_m": 0.62,
+      "snout_length_m": 0.05,
+      "leg_spacing_m": 0.09,
+      "leg_top_radius_m": 0.045,
+      "leg_knee_radius_m": 0.03,
+      "leg_hoof_radius_m": 0.022,
+      "horn_length_m": 0.2,
+      "colors": {
+        "back": [0.62, 0.45, 0.3],
+        "body": [0.62, 0.45, 0.3],
+        "belly": [0.9, 0.84, 0.74],
+        "nose": [0.16, 0.12, 0.1],
+        "leg": [0.78, 0.65, 0.5],
+        "hoof": [0.12, 0.1, 0.09],
+        "horn": [0.18, 0.15, 0.13]
+      },
+      "max_triangles": 300
+    },
+    "libellule": {
+      "kind": "dragonfly",
+      "statut_historique": "P",
+      "body_length_m": 0.06,
+      "body_radius_m": 0.004,
+      "wing_span_m": 0.07,
+      "wing_chord_m": 0.012,
+      "colors": {
+        "body": [0.1, 0.35, 0.55],
+        "belly": [0.35, 0.55, 0.6],
+        "wing": [0.8, 0.88, 0.9]
+      },
+      "max_triangles": 60
+    }
+  }
+}

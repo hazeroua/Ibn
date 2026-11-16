@@ -5,6 +5,10 @@
     { "id": "vue_crete", "position": [130.0, 70.0, 720.0], "target": [260.0, 28.0, -300.0] },
     { "id": "vue_oasis", "position": [260.0, 52.0, 40.0], "target": [260.0, 24.0, -180.0] },
     { "id": "vue_sol", "position": [260.0, 28.0, -90.0], "target": [260.0, 26.0, -180.0] },
+    { "id": "vue_faune", "position": [520.0, 40.0, -150.0], "target": [720.0, 30.0, -330.0] },
+    { "id": "vue_lac", "position": [540.0, 72.0, -130.0], "target": [620.0, 28.5, -300.0] },
+    { "id": "vue_guelta", "position": [-70.0, 70.0, -250.0], "target": [-80.0, 30.0, -335.0] },
+    { "id": "vue_chott", "position": [800.0, 75.0, -450.0], "target": [1050.0, 27.0, -1000.0] },
     { "id": "vue_palmeraie_crete", "position": [120.0, 62.0, 40.0], "target": [260.0, 26.0, -190.0] },
     { "id": "vue_palmeraie_parcelles", "position": [330.0, 48.0, -20.0], "target": [250.0, 26.0, -230.0] }
   ]

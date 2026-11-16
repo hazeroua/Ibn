@@ -24,6 +24,12 @@
       "resolution": "1k",
       "maps": { "diff": "Diffuse", "nor_gl": "nor_gl", "rough": "Rough" },
       "usage": "Roche des rochers du désert (MVP 2)"
+    },
+    {
+      "id": "river_small_rocks",
+      "resolution": "1k",
+      "maps": { "diff": "Diffuse", "nor_gl": "nor_gl", "rough": "Rough" },
+      "usage": "Galets du lit des oueds du désert (MVP 2)"
     }
   ]
 }
