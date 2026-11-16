@@ -159,6 +159,7 @@ bool WorldStreamer::register_provider(Object *p_provider) {
 		clear();
 	}
 	provider_ = p_provider;
+	provider_hold_ = Variant(p_provider);
 	dirty_ = true;
 	return true;
 }

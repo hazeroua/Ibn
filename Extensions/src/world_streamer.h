@@ -9,6 +9,7 @@
 #include <godot_cpp/variant/packed_vector2_array.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/vector2i.hpp>
+#include <godot_cpp/variant/variant.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
 #include <atomic>
@@ -115,6 +116,8 @@ private:
 	std::mutex provider_mutex_;
 
 	godot::Object *provider_ = nullptr;
+	// Garde en vie un fournisseur RefCounted (sinon libéré dès que l'appelant le lâche).
+	godot::Variant provider_hold_;
 	std::vector<Slot> slots_;
 	std::vector<godot::Callable> build_callables_;
 	std::vector<uint32_t> queue_; // indices triés par priorité (réservé à la configuration)

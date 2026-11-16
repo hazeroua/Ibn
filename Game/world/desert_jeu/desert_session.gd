@@ -11,6 +11,8 @@ const TIME_PANEL_SCENE: String = "res://ui/time_panel/time_panel.tscn"
 const SPAWN_WAIT_FRAMES_MAX: int = 1800
 
 var _streamer: WorldStreamer
+## Gardé ici : le streaming l'appelle depuis des fils de fond pendant toute la partie.
+var _provider: DesertCellProvider
 var _player: PlayerCharacter
 var _rig: ThirdPersonCamera
 
@@ -26,7 +28,7 @@ func _ready() -> void:
 	if not scatter.load_rules(VEGETATION_PATH) or not scatter.load_oasis(DATA_PATH):
 		push_error("DesertSession : règles de végétation invalides : %s" % scatter.get_last_error())
 		return
-	var provider := DesertCellProvider.new(
+	_provider = DesertCellProvider.new(
 		terrain,
 		field,
 		scatter,
@@ -37,7 +39,7 @@ func _ready() -> void:
 	_streamer.name = "Streaming"
 	if not _streamer.load_config(STREAMING_PATH):
 		return
-	_streamer.register_provider(provider)
+	_streamer.register_provider(_provider)
 	add_child(_streamer)
 	var day_night: DayNightSystem = get_node("/root/DayNight") as DayNightSystem
 	add_child(day_night.build_environment())
