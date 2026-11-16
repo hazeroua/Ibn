@@ -26,7 +26,7 @@ func _ready() -> void:
 	if data.is_empty() or field == null or terrain == null or meshes.is_empty():
 		return
 	var scatter := VegetationScatter.new()
-	if not scatter.load_rules(VEGETATION_PATH) or not scatter.load_oasis(DATA_PATH):
+	if not scatter.load_rules(VEGETATION_PATH) or not scatter.load_features(DATA_PATH):
 		push_error("DesertSession : règles de végétation invalides : %s" % scatter.get_last_error())
 		return
 	_provider = DesertCellProvider.new(
@@ -45,7 +45,7 @@ func _ready() -> void:
 	add_child(_streamer)
 	var day_night: DayNightSystem = get_node("/root/DayNight") as DayNightSystem
 	add_child(day_night.build_environment())
-	_add_oasis(data, field)
+	_add_water(field)
 	var panel: PackedScene = load(TIME_PANEL_SCENE) as PackedScene
 	if panel != null:
 		add_child(panel.instantiate())
@@ -64,11 +64,16 @@ func _physics_process(_delta: float) -> void:
 		_streamer.set_focus(_player.global_position, _player.velocity)
 
 
-func _add_oasis(data: Dictionary, field: DesertHeightfield) -> void:
-	var center: Vector2 = JsonData.get_vector2(data, "oasis_center", "desert.json")
-	var water: Node3D = OasisWater.build(center, JsonData.get_float(data, "oasis_radius", "desert.json"))
-	water.position = Vector3(center.x, field.height_at(center.x, center.y), center.y)
-	add_child(water)
+## Un disque d'eau par plan d'eau de type « oasis » (les autres types sont rendus par leurs propres systèmes).
+func _add_water(field: DesertHeightfield) -> void:
+	var features: LandscapeFeatures = field.features
+	for index: int in features.water_count:
+		if features.water_kind(index) != &"oasis":
+			continue
+		var center: Vector2 = features.water_center(index)
+		var water: Node3D = OasisWater.build(center, features.water_radius(index))
+		water.position = Vector3(center.x, field.height_at(center.x, center.y), center.y)
+		add_child(water)
 
 
 func _wait_for_cell(cell: Vector2i) -> void:

@@ -1,7 +1,18 @@
 {
   "description": "Carte « désert » du MVP 2 : relief de dunes de 4 × 4 km (cellules de 250 m diffusées par le streaming), sable, pierre et terre autour de l'oasis. Source de vérité de res://world/desert/desert.tscn (carte de test, reconstruite par Scripts/Pipeline/construire.ps1 -Constructeur desert) et du relief lu par DesertHeightfield.",
-  "oasis_center": [260.0, -180.0],
-  "oasis_radius": 55.0,
+  "water_bodies": [
+    {
+      "id": "oasis_principale",
+      "kind": "oasis",
+      "center": [260.0, -180.0],
+      "radius_m": 55.0,
+      "surface_height_m": 24.0,
+      "depth_m": 0.0,
+      "bank_blend_m": 140.0,
+      "statut_historique": "P"
+    }
+  ],
+  "wadis": [],
   "terrain": {
     "seed": 1332,
     "half_extent_m": 2000.0,
@@ -28,10 +39,6 @@
       "octaves": 2,
       "noise_range": 0.7,
       "amplitude_m": 16.0
-    },
-    "oasis": {
-      "height_m": 24.0,
-      "blend_m": 140.0
     },
     "surfaces": {
       "slope_start_deg": 24.0,
