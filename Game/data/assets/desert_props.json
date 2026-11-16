@@ -1,182 +1,117 @@
 {
-  "description": "Modèles du désert générés par Scripts/Blender/generer_props_desert.py (un fichier .glb par modèle et par niveau de détail) dans res://assets/desert/. Budgets de triangles vérifiés par res://tests/unit/test_props_models.gd.",
+  "description": "Modèles du désert générés par Scripts/Blender/generer_props_desert.py (un fichier .glb par modèle et par niveau de détail) dans res://assets/desert/, avec l'atlas peint de la végétation (section atlas). La végétation est faite de cartes découpées par l'alpha de l'atlas (palmes, grappes de feuilles, touffes) et de troncs d'écorce texturée. Budgets de triangles vérifiés par res://tests/unit/test_props_models.gd.",
   "directory": "res://assets/desert/",
-  "lod_distances_m": [
-    0.0,
-    60.0,
-    180.0
-  ],
+  "lod_distances_m": [0.0, 60.0, 180.0],
   "imposter_distance_m": 450.0,
   "models": {
     "rocher": {
-      "variants": [
-        "a",
-        "b",
-        "c"
-      ],
-      "seeds": [
-        11,
-        23,
-        37
-      ],
-      "radius_m": [
-        1.6,
-        1.1,
-        2.2
-      ],
-      "squash": [
-        0.7,
-        0.55,
-        0.85
-      ],
-      "subdivisions": [
-        3,
-        2,
-        1
-      ],
-      "max_triangles": [
-        330,
-        90,
-        24
-      ],
+      "variants": ["a", "b", "c"],
+      "seeds": [11, 23, 37],
+      "radius_m": [1.6, 1.1, 2.2],
+      "squash": [0.7, 0.55, 0.85],
+      "subdivisions": [3, 2, 1],
+      "max_triangles": [330, 90, 24],
       "colors": {
-        "base": [
-          0.52,
-          0.41,
-          0.3
-        ],
-        "top": [
-          0.66,
-          0.54,
-          0.4
-        ]
+        "base": [0.52, 0.41, 0.3],
+        "top": [0.66, 0.54, 0.4]
       },
       "surface": "pierre"
     },
     "palmier": {
-      "variants": [
-        "a",
-        "b"
-      ],
-      "seeds": [
-        5,
-        19
-      ],
-      "height_m": [
-        7.5,
-        9.5
-      ],
-      "lean_m": [
-        0.9,
-        1.6
-      ],
-      "trunk_segments": [
-        8,
-        4,
-        2
-      ],
-      "trunk_sides": [
-        8,
-        6,
-        4
-      ],
-      "frond_count": [
-        11,
-        8,
-        6
-      ],
-      "frond_segments": [
-        4,
-        3,
-        1
-      ],
-      "max_triangles": [
-        700,
-        300,
-        110
-      ],
+      "variants": ["a", "b"],
+      "seeds": [5, 19],
+      "height_m": [7.5, 9.5],
+      "lean_m": [0.9, 1.6],
+      "trunk_radius_m": 0.26,
+      "trunk_segments": [4, 2, 1],
+      "trunk_sides": [6, 5, 4],
+      "bark_tile_aspect": 2.0,
+      "frond_count": [24, 16, 12],
+      "frond_segments": [3, 2, 1],
+      "frond_v": [true, true, false],
+      "frond_fold_deg": 28.0,
+      "frond_length_m": 3.9,
+      "frond_width_ratio": 0.15,
+      "elevation_young_deg": 68.0,
+      "elevation_old_deg": -28.0,
+      "droop": 0.42,
+      "old_darkening": 0.25,
+      "dry_fronds": [3, 0, 0],
+      "max_triangles": [360, 160, 40],
       "colors": {
-        "trunk": [
-          0.4,
-          0.3,
-          0.2
-        ],
-        "frond": [
-          0.27,
-          0.42,
-          0.18
-        ]
+        "trunk": [0.44, 0.35, 0.26],
+        "frond": [0.33, 0.43, 0.3],
+        "dry_frond": [0.62, 0.5, 0.32]
       }
     },
     "buisson": {
-      "variants": [
-        "a"
-      ],
-      "seeds": [
-        41
-      ],
+      "variants": ["a"],
+      "seeds": [41],
       "height_m": 0.9,
       "radius_m": 0.75,
-      "blobs": 3,
-      "subdivisions": 0,
+      "leaf_tile": "grappe_jujubier",
+      "cards": 22,
+      "card_size_m": 0.75,
+      "crown": {
+        "tilt_up": 0.3,
+        "orientation_jitter": 0.5,
+        "depth_min": 0.45,
+        "inner_value": 0.6,
+        "z_min": -0.2
+      },
       "max_triangles": 60,
       "colors": {
-        "base": [
-          0.2,
-          0.26,
-          0.12
-        ],
-        "top": [
-          0.42,
-          0.5,
-          0.25
-        ]
+        "base": [0.2, 0.26, 0.12],
+        "top": [0.42, 0.5, 0.25]
       }
     },
     "herbe_seche": {
-      "variants": [
-        "a"
-      ],
-      "seeds": [
-        53
-      ],
+      "variants": ["a"],
+      "seeds": [53],
+      "tile": "touffe_herbe",
+      "cards": 3,
+      "card_segments": 3,
       "height_m": 0.55,
-      "radius_m": 0.3,
-      "blade_width_m": 0.035,
-      "blades": 7,
+      "radius_m": 0.32,
+      "lean_factor": 0.15,
+      "normal_spread": 0.5,
       "max_triangles": 21,
       "colors": {
-        "base": [
-          0.36,
-          0.3,
-          0.16
-        ],
-        "tip": [
-          0.74,
-          0.66,
-          0.4
-        ]
+        "base": [0.36, 0.3, 0.16],
+        "tip": [0.74, 0.66, 0.4]
       }
     },
     "roseau": {
       "variants": ["a"],
       "seeds": [61],
+      "tile": "touffe_roseau",
+      "cards": 4,
+      "card_segments": 4,
       "height_m": 2.4,
-      "radius_m": 0.35,
-      "blade_width_m": 0.035,
-      "blades": 12,
+      "radius_m": 0.6,
+      "lean_factor": 0.08,
+      "normal_spread": 0.5,
       "max_triangles": 40,
-      "colors": { "base": [0.3, 0.32, 0.14], "tip": [0.62, 0.58, 0.3] }
+      "colors": {
+        "base": [0.3, 0.32, 0.14],
+        "tip": [0.5, 0.55, 0.3]
+      }
     },
     "jonc": {
       "variants": ["a"],
       "seeds": [67],
+      "tile": "touffe_jonc",
+      "cards": 4,
+      "card_segments": 4,
       "height_m": 1.3,
-      "radius_m": 0.28,
-      "blade_width_m": 0.03,
-      "blades": 13,
+      "radius_m": 0.3,
+      "lean_factor": 0.05,
+      "normal_spread": 0.5,
       "max_triangles": 40,
-      "colors": { "base": [0.2, 0.3, 0.12], "tip": [0.45, 0.55, 0.25] }
+      "colors": {
+        "base": [0.2, 0.3, 0.12],
+        "tip": [0.45, 0.55, 0.25]
+      }
     },
     "falaise": {
       "variants": ["a", "b", "c"],
@@ -194,236 +129,109 @@
       "surface": "pierre"
     },
     "imposteur_palmier": {
-      "height_m": 8.5,
-      "width_m": 6.0,
+      "crown_z_m": 8.4,
+      "crown_width_m": 8.0,
+      "crown_tile_center_y": 0.42,
+      "trunk_width_m": 0.6,
       "max_triangles": 12,
       "colors": {
-        "trunk": [
-          0.4,
-          0.3,
-          0.2
-        ],
-        "frond": [
-          0.27,
-          0.42,
-          0.18
-        ]
+        "trunk": [0.44, 0.35, 0.26],
+        "frond": [0.33, 0.43, 0.3]
       }
     },
     "alfa": {
-      "variants": [
-        "a"
-      ],
-      "seeds": [
-        61
-      ],
-      "height_m": 0.7,
-      "radius_m": 0.4,
-      "blade_width_m": 0.03,
-      "blades": 10,
-      "lean_factor": 1.0,
+      "variants": ["a"],
+      "seeds": [61],
+      "surfaces": ["terre", "pierre"],
+      "tile": "touffe_alfa",
+      "cards": 4,
+      "card_segments": 3,
+      "height_m": 0.75,
+      "radius_m": 0.42,
+      "lean_factor": 0.18,
+      "normal_spread": 0.5,
       "max_triangles": 30,
       "colors": {
-        "base": [
-          0.4,
-          0.36,
-          0.2
-        ],
-        "tip": [
-          0.78,
-          0.72,
-          0.46
-        ]
-      },
-      "surfaces": [
-        "terre",
-        "pierre"
-      ]
+        "base": [0.4, 0.36, 0.2],
+        "tip": [0.78, 0.72, 0.46]
+      }
     },
     "drinn": {
-      "variants": [
-        "a"
-      ],
-      "seeds": [
-        67
-      ],
+      "variants": ["a"],
+      "seeds": [67],
+      "surfaces": ["sable"],
+      "tile": "touffe_drinn",
+      "cards": 3,
+      "card_segments": 3,
       "height_m": 0.9,
       "radius_m": 0.3,
-      "blade_width_m": 0.03,
-      "blades": 8,
-      "lean_factor": 0.25,
+      "lean_factor": 0.05,
+      "normal_spread": 0.5,
       "max_triangles": 24,
       "colors": {
-        "base": [
-          0.5,
-          0.44,
-          0.24
-        ],
-        "tip": [
-          0.84,
-          0.76,
-          0.48
-        ]
-      },
-      "surfaces": [
-        "sable"
-      ]
+        "base": [0.5, 0.44, 0.24],
+        "tip": [0.84, 0.76, 0.48]
+      }
     },
     "fleurs": {
-      "variants": [
-        "a"
-      ],
-      "seeds": [
-        71
-      ],
+      "variants": ["a"],
+      "seeds": [71],
+      "surfaces": ["terre", "sable"],
+      "tile": "touffe_fleurs",
+      "cards": 2,
+      "card_segments": 2,
       "height_m": 0.3,
-      "radius_m": 0.25,
-      "stem_width_m": 0.012,
-      "head_radius_m": 0.05,
-      "flowers": 4,
+      "radius_m": 0.2,
+      "lean_factor": 0.1,
+      "normal_spread": 0.5,
       "max_triangles": 16,
       "colors": {
-        "stem_base": [
-          0.25,
-          0.38,
-          0.14
-        ],
-        "stem_tip": [
-          0.4,
-          0.55,
-          0.2
-        ],
-        "petal": [
-          0.92,
-          0.8,
-          0.25
-        ],
-        "heart": [
-          0.85,
-          0.45,
-          0.12
-        ]
+        "base": [0.25, 0.38, 0.14],
+        "tip": [0.4, 0.55, 0.2],
+        "flower": [0.92, 0.8, 0.25]
       },
-      "surfaces": [
-        "terre",
-        "sable"
-      ]
+      "flower_count": 4,
+      "flower_sprite": 3,
+      "flower_size_m": 0.09
     },
     "caillou": {
-      "variants": [
-        "a",
-        "b",
-        "c"
-      ],
-      "seeds": [
-        81,
-        83,
-        89
-      ],
-      "radius_m": [
-        0.14,
-        0.1,
-        0.2
-      ],
-      "squash": [
-        0.6,
-        0.7,
-        0.5
-      ],
+      "variants": ["a", "b", "c"],
+      "seeds": [81, 83, 89],
+      "radius_m": [0.14, 0.1, 0.2],
+      "squash": [0.6, 0.7, 0.5],
       "max_triangles": 12,
       "colors": {
-        "base": [
-          0.45,
-          0.37,
-          0.28
-        ],
-        "top": [
-          0.62,
-          0.52,
-          0.4
-        ]
+        "base": [0.45, 0.37, 0.28],
+        "top": [0.62, 0.52, 0.4]
       },
-      "surfaces": [
-        "pierre"
-      ]
+      "surfaces": ["pierre"]
     },
     "pierre_plate": {
-      "variants": [
-        "a",
-        "b"
-      ],
-      "seeds": [
-        91,
-        97
-      ],
-      "length_m": [
-        0.7,
-        0.5
-      ],
-      "width_m": [
-        0.5,
-        0.4
-      ],
-      "thickness_m": [
-        0.06,
-        0.05
-      ],
+      "variants": ["a", "b"],
+      "seeds": [91, 97],
+      "length_m": [0.7, 0.5],
+      "width_m": [0.5, 0.4],
+      "thickness_m": [0.06, 0.05],
       "max_triangles": 16,
       "colors": {
-        "base": [
-          0.5,
-          0.42,
-          0.33
-        ],
-        "top": [
-          0.7,
-          0.6,
-          0.46
-        ]
+        "base": [0.5, 0.42, 0.33],
+        "top": [0.7, 0.6, 0.46]
       },
-      "surfaces": [
-        "pierre"
-      ]
+      "surfaces": ["pierre"]
     },
     "bois_mort": {
-      "variants": [
-        "a",
-        "b"
-      ],
-      "seeds": [
-        101,
-        103
-      ],
-      "length_m": [
-        1.3,
-        0.9
-      ],
-      "radius_m": [
-        0.05,
-        0.04
-      ],
-      "wobble_m": [
-        0.12,
-        0.08
-      ],
+      "variants": ["a", "b"],
+      "seeds": [101, 103],
+      "length_m": [1.3, 0.9],
+      "radius_m": [0.05, 0.04],
+      "wobble_m": [0.12, 0.08],
       "segments": 5,
       "max_triangles": 40,
       "colors": {
-        "base": [
-          0.72,
-          0.68,
-          0.6
-        ],
-        "tip": [
-          0.86,
-          0.83,
-          0.76
-        ]
+        "base": [0.72, 0.68, 0.6],
+        "tip": [0.86, 0.83, 0.76]
       },
-      "surfaces": [
-        "terre",
-        "sable"
-      ]
+      "surfaces": ["terre", "sable"]
     },
     "acacia": {
       "statut_historique": "P",
@@ -442,13 +250,24 @@
       "canopy_rise_m": 0.55,
       "canopy_radius_m": [3.1, 3.7],
       "canopy_thickness_m": 1.5,
-      "canopy_blob_subdivisions": [[2, 2, 2, 2, 2], [1, 1, 1, 1, 1], [1, 1]],
-      "canopy_lod_scale": [1.0, 1.05, 1.45],
+      "canopy_lod_scale": [1.0, 1.12, 1.6],
       "max_triangles": [600, 250, 80],
       "colors": {
         "trunk": [0.33, 0.26, 0.2],
         "leaf_low": [0.2, 0.26, 0.14],
         "leaf_high": [0.42, 0.48, 0.26]
+      },
+      "fork_fraction": 0.75,
+      "bark_tile_aspect": 2.0,
+      "branchlets": [2, 0, 0],
+      "card_count": [70, 34, 14],
+      "card_size_m": 1.9,
+      "crown": {
+        "tilt_up": 1.6,
+        "orientation_jitter": 0.5,
+        "depth_min": 0.6,
+        "inner_value": 0.62,
+        "z_min": -0.3
       }
     },
     "imposteur_acacia": {
@@ -462,7 +281,10 @@
         "trunk": [0.33, 0.26, 0.2],
         "leaf_low": [0.2, 0.26, 0.14],
         "leaf_high": [0.42, 0.48, 0.26]
-      }
+      },
+      "leaf_tile": "imposteur_acacia",
+      "tile_fill": 0.94,
+      "tile_aspect": 1.0
     },
     "tamaris": {
       "statut_historique": "P",
@@ -476,13 +298,25 @@
       "stem_lean_m": [0.9, 1.3],
       "stem_radius_m": 0.14,
       "canopy_radius_m": [1.9, 2.2],
-      "canopy_blob_subdivisions": [[2, 2, 2, 2, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1]],
-      "canopy_lod_scale": [1.0, 1.08, 1.5],
+      "canopy_lod_scale": [1.0, 1.15, 1.6],
       "max_triangles": [600, 250, 80],
       "colors": {
         "trunk": [0.3, 0.2, 0.16],
         "leaf_low": [0.27, 0.34, 0.27],
         "leaf_high": [0.5, 0.6, 0.5]
+      },
+      "bark_tile_aspect": 2.0,
+      "card_count": [80, 36, 14],
+      "card_size_m": 1.4,
+      "canopy_center_fraction": 0.64,
+      "canopy_height_fraction": 0.36,
+      "crown": {
+        "tilt_up": 0.0,
+        "orientation_jitter": 0.5,
+        "depth_min": 0.5,
+        "inner_value": 0.6,
+        "z_min": -0.6,
+        "lobes": 2
       }
     },
     "imposteur_tamaris": {
@@ -496,7 +330,10 @@
         "trunk": [0.3, 0.2, 0.16],
         "leaf_low": [0.27, 0.34, 0.27],
         "leaf_high": [0.5, 0.6, 0.5]
-      }
+      },
+      "leaf_tile": "imposteur_tamaris",
+      "tile_fill": 0.84,
+      "tile_aspect": 1.0
     },
     "jujubier": {
       "statut_historique": "P",
@@ -504,15 +341,21 @@
       "variants": ["a"],
       "seeds": [107],
       "height_m": 0.9,
-      "radius_m": 0.8,
-      "blob_subdivisions": [1, 1, 1, 1],
-      "twig_count": 8,
-      "twig_width_m": 0.03,
+      "radius_m": 0.85,
+      "leaf_tile": "grappe_jujubier",
+      "cards": 40,
+      "card_size_m": 0.8,
+      "crown": {
+        "tilt_up": 0.3,
+        "orientation_jitter": 0.5,
+        "depth_min": 0.45,
+        "inner_value": 0.6,
+        "z_min": -0.2
+      },
       "max_triangles": 120,
       "colors": {
         "base": [0.24, 0.3, 0.14],
-        "top": [0.4, 0.46, 0.22],
-        "twig": [0.6, 0.56, 0.46]
+        "top": [0.4, 0.46, 0.22]
       }
     },
     "laurier_rose": {
@@ -521,21 +364,31 @@
       "variants": ["a"],
       "seeds": [113],
       "height_m": 1.8,
-      "spread_m": 0.9,
-      "stem_count": 4,
+      "radius_m": 0.95,
+      "stem_count": 3,
       "stem_segments": 2,
       "stem_sides": 3,
       "stem_radius_m": 0.045,
-      "leaf_blob_subdivisions": [1, 1],
+      "bark_tile_aspect": 2.0,
+      "leaf_tile": "grappe_laurier",
+      "cards": 26,
+      "card_size_m": 0.95,
+      "crown": {
+        "tilt_up": 0.3,
+        "orientation_jitter": 0.5,
+        "depth_min": 0.45,
+        "inner_value": 0.6,
+        "z_min": -0.2
+      },
       "flower_count": 8,
-      "flower_size_m": 0.2,
+      "flower_sprite": 2,
+      "flower_size_m": 0.24,
       "max_triangles": 120,
       "colors": {
         "stem": [0.34, 0.27, 0.2],
-        "leaf_low": [0.14, 0.26, 0.13],
-        "leaf_high": [0.3, 0.44, 0.22],
-        "flower": [0.92, 0.38, 0.52],
-        "flower_light": [0.98, 0.7, 0.78]
+        "base": [0.14, 0.26, 0.13],
+        "top": [0.3, 0.44, 0.22],
+        "flower": [0.92, 0.38, 0.52]
       }
     },
     "retam": {
@@ -543,11 +396,13 @@
       "description": "Retam (Retama raetam) : arbuste du sable aux tiges fines et souples, en balai gris-vert.",
       "variants": ["a"],
       "seeds": [127],
+      "tile": "touffe_retam",
+      "cards": 6,
+      "card_segments": 3,
       "height_m": 1.5,
       "radius_m": 1.0,
-      "switch_count": 16,
-      "switch_width_m": 0.025,
-      "mound_subdivisions": 1,
+      "lean_factor": 0.15,
+      "normal_spread": 0.5,
       "max_triangles": 90,
       "colors": {
         "base": [0.28, 0.36, 0.2],
@@ -564,19 +419,14 @@
       "trunk_radius_m": 0.09,
       "trunk_segments": [3, 2, 1],
       "trunk_sides": [5, 4, 3],
-      "limb_count": [3, 2, 0],
+      "limb_count": [3, 2, 1],
       "limb_segments": [2, 1, 1],
       "limb_sides": [3, 3, 3],
       "limb_radius_m": 0.05,
       "canopy_radius_m": [1.5],
       "canopy_height_m": 1.0,
       "canopy_rise_m": 0.5,
-      "canopy_blob_subdivisions": [
-        [2, 2, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1],
-        [1, 1, 1]
-      ],
-      "canopy_lod_scale": [1.0, 1.08, 1.4],
+      "canopy_lod_scale": [1.0, 1.15, 1.6],
       "fruit_count": [12, 5, 0],
       "fruit_size_m": 0.11,
       "max_triangles": [480, 200, 90],
@@ -585,7 +435,21 @@
         "leaf_low": [0.16, 0.3, 0.1],
         "leaf_high": [0.36, 0.5, 0.2],
         "fruit": [0.9, 0.3, 0.2]
-      }
+      },
+      "bark_tile_aspect": 2.0,
+      "gnarl_m": 0.06,
+      "leaf_tile": "grappe_grenadier",
+      "card_count": [80, 36, 12],
+      "card_size_m": 0.95,
+      "crown": {
+        "tilt_up": 0.1,
+        "orientation_jitter": 0.45,
+        "depth_min": 0.5,
+        "inner_value": 0.6,
+        "z_min": -0.6,
+        "lobes": 2
+      },
+      "fruit_sprite": 0
     },
     "figuier": {
       "statut_historique": "P",
@@ -597,19 +461,14 @@
       "trunk_radius_m": 0.14,
       "trunk_segments": [3, 2, 1],
       "trunk_sides": [5, 4, 3],
-      "limb_count": [3, 2, 0],
+      "limb_count": [3, 2, 1],
       "limb_segments": [2, 1, 1],
       "limb_sides": [3, 3, 3],
       "limb_radius_m": 0.07,
       "canopy_radius_m": [2.3],
       "canopy_height_m": 1.4,
       "canopy_rise_m": 0.7,
-      "canopy_blob_subdivisions": [
-        [2, 2, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1],
-        [1, 1, 1]
-      ],
-      "canopy_lod_scale": [1.0, 1.08, 1.4],
+      "canopy_lod_scale": [1.0, 1.15, 1.6],
       "fruit_count": [10, 4, 0],
       "fruit_size_m": 0.12,
       "max_triangles": [480, 200, 90],
@@ -618,7 +477,21 @@
         "leaf_low": [0.17, 0.32, 0.12],
         "leaf_high": [0.38, 0.52, 0.2],
         "fruit": [0.9, 0.4, 0.5]
-      }
+      },
+      "bark_tile_aspect": 2.0,
+      "gnarl_m": 0.05,
+      "leaf_tile": "grappe_figuier",
+      "card_count": [80, 36, 12],
+      "card_size_m": 1.35,
+      "crown": {
+        "tilt_up": 0.1,
+        "orientation_jitter": 0.45,
+        "depth_min": 0.5,
+        "inner_value": 0.6,
+        "z_min": -0.6,
+        "lobes": 2
+      },
+      "fruit_sprite": 0
     },
     "olivier": {
       "statut_historique": "P",
@@ -630,19 +503,14 @@
       "trunk_radius_m": 0.16,
       "trunk_segments": [4, 2, 1],
       "trunk_sides": [6, 4, 3],
-      "limb_count": [4, 3, 0],
+      "limb_count": [4, 3, 1],
       "limb_segments": [2, 1, 1],
       "limb_sides": [3, 3, 3],
       "limb_radius_m": 0.08,
       "canopy_radius_m": [2.0],
       "canopy_height_m": 1.5,
       "canopy_rise_m": 0.8,
-      "canopy_blob_subdivisions": [
-        [2, 2, 1, 1, 1, 1],
-        [1, 1, 1, 1, 1],
-        [1, 1, 1]
-      ],
-      "canopy_lod_scale": [1.0, 1.08, 1.4],
+      "canopy_lod_scale": [1.0, 1.15, 1.6],
       "fruit_count": [14, 6, 0],
       "fruit_size_m": 0.07,
       "max_triangles": [480, 200, 90],
@@ -651,7 +519,21 @@
         "leaf_low": [0.3, 0.38, 0.24],
         "leaf_high": [0.58, 0.64, 0.5],
         "fruit": [0.9, 0.45, 0.3]
-      }
+      },
+      "bark_tile_aspect": 2.0,
+      "gnarl_m": 0.13,
+      "leaf_tile": "grappe_olivier",
+      "card_count": [64, 30, 12],
+      "card_size_m": 1.15,
+      "crown": {
+        "tilt_up": 0.1,
+        "orientation_jitter": 0.45,
+        "depth_min": 0.6,
+        "inner_value": 0.6,
+        "z_min": -0.6,
+        "lobes": 3
+      },
+      "fruit_sprite": 1
     },
     "imposteur_grenadier": {
       "trunk_height_m": 1.0,
@@ -664,7 +546,10 @@
         "trunk": [0.36, 0.26, 0.2],
         "leaf_low": [0.16, 0.3, 0.1],
         "leaf_high": [0.36, 0.5, 0.2]
-      }
+      },
+      "leaf_tile": "imposteur_grenadier",
+      "tile_fill": 0.84,
+      "tile_aspect": 1.0
     },
     "imposteur_figuier": {
       "trunk_height_m": 1.4,
@@ -677,7 +562,10 @@
         "trunk": [0.5, 0.45, 0.38],
         "leaf_low": [0.17, 0.32, 0.12],
         "leaf_high": [0.38, 0.52, 0.2]
-      }
+      },
+      "leaf_tile": "imposteur_figuier",
+      "tile_fill": 0.84,
+      "tile_aspect": 1.0
     },
     "imposteur_olivier": {
       "trunk_height_m": 1.6,
@@ -690,18 +578,23 @@
         "trunk": [0.36, 0.3, 0.24],
         "leaf_low": [0.3, 0.38, 0.24],
         "leaf_high": [0.58, 0.64, 0.5]
-      }
+      },
+      "leaf_tile": "imposteur_olivier",
+      "tile_fill": 0.84,
+      "tile_aspect": 1.0
     },
     "orge": {
       "statut_historique": "P",
       "description": "Touffe d'orge (Hordeum vulgare, cultivé en rangs dans les parcelles basses) : brins verts au printemps, dorés à la moisson (season_crop_*).",
       "variants": ["a"],
       "seeds": [149],
+      "tile": "touffe_orge",
+      "cards": 4,
+      "card_segments": 3,
       "height_m": 0.95,
-      "radius_m": 0.4,
-      "blade_width_m": 0.035,
-      "blades": 16,
-      "lean_factor": 0.7,
+      "radius_m": 0.35,
+      "lean_factor": 0.08,
+      "normal_spread": 0.5,
       "max_triangles": 48,
       "colors": {
         "base": [0.28, 0.44, 0.14],
@@ -713,11 +606,13 @@
       "description": "Plant de fève (Vicia faba) en rangs dans les parcelles basses : larges feuilles vertes, saison froide et printemps.",
       "variants": ["a"],
       "seeds": [151],
+      "tile": "touffe_feve",
+      "cards": 3,
+      "card_segments": 3,
       "height_m": 0.8,
       "radius_m": 0.35,
-      "blade_width_m": 0.1,
-      "blades": 8,
-      "lean_factor": 0.6,
+      "lean_factor": 0.06,
+      "normal_spread": 0.5,
       "max_triangles": 30,
       "colors": {
         "base": [0.2, 0.36, 0.12],
@@ -753,5 +648,675 @@
   },
   "water": {
     "settings": "res://data/assets/oasis_water.json"
+  },
+  "atlas": {
+    "file": "foliage_atlas.dds",
+    "size_px": 2048,
+    "tile_px": 256,
+    "seed": 1332,
+    "dilate_px": 12,
+    "inset_mip": 2,
+    "tiles": {
+      "neutre": {
+        "rect": [0, 0, 1, 1],
+        "kind": "neutral"
+      },
+      "palme": {
+        "rect": [1, 0, 4, 1],
+        "kind": "frond",
+        "leaflets_per_side": 70,
+        "spine_fraction": 0.14,
+        "spine_length_px": 34,
+        "spine_color": [1.25, 1.2, 0.95],
+        "leaflet_angle_deg": 44,
+        "leaflet_length_px": 140,
+        "leaflet_width_px": 5.5,
+        "leaflet_color": [1.0, 1.0, 1.04],
+        "leaflet_tip_color": [1.3, 1.18, 0.82],
+        "dry_ratio": 0.12,
+        "rachis_color": [1.35, 1.25, 0.95],
+        "rachis_width_px": 5.0,
+        "style": {
+          "side_contrast": 0.16,
+          "midrib": 0.8,
+          "midrib_width": 0.18,
+          "outline": 0.72,
+          "outline_px": 1.0,
+          "tip_gain": 0.18
+        }
+      },
+      "couronne_palmier": {
+        "rect": [1, 1, 2, 2],
+        "kind": "crown_palm",
+        "frond": "palme",
+        "fronds": 18,
+        "center_y": 0.42,
+        "length_frac": 0.5,
+        "rise": 0.75,
+        "droop": 0.95,
+        "back_value": 0.6,
+        "leaflets_per_side": 30,
+        "scale": 0.55
+      },
+      "ecorce_palmier": {
+        "rect": [7, 0, 1, 2],
+        "kind": "bark_palm",
+        "rows": 16,
+        "per_row": 7,
+        "fiber_color": [0.72, 0.65, 0.58],
+        "base_color": [1.08, 1.02, 0.96],
+        "shadow_color": [0.48, 0.42, 0.38],
+        "style": {
+          "side_contrast": 0.14,
+          "midrib": 0.92,
+          "midrib_width": 0.08,
+          "outline": 0.7,
+          "outline_px": 1.6,
+          "tip_gain": 0.25
+        }
+      },
+      "ecorce_arbre": {
+        "rect": [0, 1, 1, 2],
+        "kind": "bark_tree",
+        "fissures": 46,
+        "fissure_width_px": 3.2,
+        "highlights": 60,
+        "base_color": [1.0, 1.0, 1.0],
+        "fissure_color": [0.42, 0.4, 0.4],
+        "highlight_color": [1.3, 1.28, 1.24]
+      },
+      "grappe_olivier": {
+        "rect": [3, 1, 2, 2],
+        "kind": "cluster",
+        "leaf": "lanceolate",
+        "origin_y": 0.8,
+        "center_y": 0.5,
+        "radius_x": 0.43,
+        "radius_y": 0.42,
+        "leaves": 420,
+        "twigs": 14,
+        "leaf_length_px": 46,
+        "leaf_width_px": 5.5,
+        "leaf_color": [0.95, 0.97, 1.0],
+        "underside_color": [1.3, 1.36, 1.36],
+        "underside_ratio": 0.35,
+        "twig_color": [0.75, 0.72, 0.7],
+        "twig_width_px": 2.2,
+        "angle_spread_rad": 0.7,
+        "back_value": 0.62,
+        "style": {
+          "side_contrast": 0.1,
+          "midrib": 0.9,
+          "outline": 0.72,
+          "outline_px": 1.0,
+          "tip_gain": 0.06
+        }
+      },
+      "grappe_figuier": {
+        "rect": [5, 1, 2, 2],
+        "kind": "cluster",
+        "leaf": "palmate",
+        "origin_y": 0.8,
+        "center_y": 0.48,
+        "radius_x": 0.38,
+        "radius_y": 0.38,
+        "leaves": 60,
+        "twigs": 10,
+        "lobe_spread_rad": 0.62,
+        "leaf_length_px": 82,
+        "leaf_width_px": 26,
+        "leaf_color": [1.0, 1.0, 1.0],
+        "twig_color": [0.95, 0.92, 0.85],
+        "twig_width_px": 3.5,
+        "angle_spread_rad": 0.6,
+        "back_value": 0.6,
+        "style": {
+          "side_contrast": 0.12,
+          "midrib": 0.84,
+          "midrib_width": 0.06,
+          "outline": 0.7,
+          "outline_px": 1.3,
+          "tip_gain": 0.06
+        }
+      },
+      "grappe_grenadier": {
+        "rect": [1, 3, 2, 2],
+        "kind": "cluster",
+        "leaf": "oblong",
+        "origin_y": 0.8,
+        "center_y": 0.5,
+        "radius_x": 0.42,
+        "radius_y": 0.42,
+        "leaves": 620,
+        "twigs": 16,
+        "leaf_length_px": 30,
+        "leaf_width_px": 7.0,
+        "leaf_color": [1.0, 1.0, 0.98],
+        "twig_color": [0.8, 0.7, 0.68],
+        "twig_width_px": 1.8,
+        "angle_spread_rad": 0.8,
+        "back_value": 0.6,
+        "thorns": 0,
+        "style": {
+          "side_contrast": 0.18,
+          "midrib": 0.88,
+          "outline": 0.7,
+          "outline_px": 1.0,
+          "tip_gain": 0.12
+        }
+      },
+      "grappe_acacia": {
+        "rect": [3, 3, 2, 2],
+        "kind": "cluster",
+        "leaf": "pinnate",
+        "origin_y": 0.8,
+        "center_y": 0.5,
+        "radius_x": 0.46,
+        "radius_y": 0.3,
+        "leaves": 220,
+        "twigs": 16,
+        "leaflets": 7,
+        "leaf_length_px": 28,
+        "leaf_width_px": 5.0,
+        "leaf_color": [1.0, 1.02, 0.96],
+        "twig_color": [0.7, 0.62, 0.58],
+        "twig_width_px": 2.2,
+        "angle_spread_rad": 1.0,
+        "back_value": 0.6,
+        "thorns": 3,
+        "thorn_length_px": 9,
+        "thorn_color": [1.6, 1.58, 1.5],
+        "style": {
+          "side_contrast": 0.08,
+          "midrib": 1.0,
+          "outline": 0.78,
+          "outline_px": 0.8,
+          "tip_gain": 0.0
+        }
+      },
+      "grappe_tamaris": {
+        "rect": [5, 3, 2, 2],
+        "kind": "cluster",
+        "leaf": "plume",
+        "origin_y": 0.75,
+        "center_y": 0.5,
+        "radius_x": 0.42,
+        "radius_y": 0.42,
+        "leaves": 150,
+        "twigs": 12,
+        "leaflets": 30,
+        "plume_droop": 0.9,
+        "leaf_length_px": 70,
+        "leaf_width_px": 4.0,
+        "leaf_color": [1.0, 1.0, 1.0],
+        "twig_color": [0.75, 0.62, 0.6],
+        "twig_width_px": 1.8,
+        "angle_spread_rad": 0.6,
+        "back_value": 0.62,
+        "style": {
+          "side_contrast": 0.06,
+          "midrib": 1.0,
+          "outline": 0.82,
+          "outline_px": 0.7,
+          "tip_gain": 0.0
+        }
+      },
+      "grappe_laurier": {
+        "rect": [1, 5, 2, 2],
+        "kind": "cluster",
+        "leaf": "lanceolate",
+        "origin_y": 0.85,
+        "center_y": 0.5,
+        "radius_x": 0.42,
+        "radius_y": 0.44,
+        "leaves": 170,
+        "twigs": 12,
+        "leaf_length_px": 72,
+        "leaf_width_px": 8.0,
+        "leaf_color": [1.0, 1.0, 1.0],
+        "twig_color": [0.85, 0.8, 0.75],
+        "twig_width_px": 2.4,
+        "angle_spread_rad": 0.55,
+        "back_value": 0.6,
+        "style": {
+          "side_contrast": 0.14,
+          "midrib": 0.8,
+          "midrib_width": 0.12,
+          "outline": 0.7,
+          "outline_px": 1.0,
+          "tip_gain": 0.08
+        }
+      },
+      "grappe_jujubier": {
+        "rect": [3, 5, 2, 2],
+        "kind": "cluster",
+        "leaf": "round",
+        "origin_y": 0.85,
+        "center_y": 0.52,
+        "radius_x": 0.44,
+        "radius_y": 0.4,
+        "leaves": 300,
+        "twigs": 26,
+        "leaf_length_px": 16,
+        "leaf_width_px": 6.0,
+        "leaf_color": [1.0, 1.0, 1.0],
+        "twig_color": [1.25, 1.18, 1.05],
+        "twig_width_px": 2.0,
+        "angle_spread_rad": 1.2,
+        "back_value": 0.6,
+        "thorns": 4,
+        "thorn_length_px": 8,
+        "thorn_color": [1.4, 1.35, 1.2],
+        "style": {
+          "side_contrast": 0.14,
+          "midrib": 0.92,
+          "outline": 0.72,
+          "outline_px": 1.0,
+          "tip_gain": 0.05
+        }
+      },
+      "fruits_fleurs": {
+        "rect": [5, 0, 1, 1],
+        "kind": "sprites",
+        "order": ["fruit", "olives", "five_petals", "daisy"],
+        "color": [1.0, 1.0, 1.0],
+        "style": {
+          "side_contrast": 0.15,
+          "midrib": 0.95,
+          "outline": 0.68,
+          "outline_px": 1.2,
+          "tip_gain": 0.1
+        }
+      },
+      "touffe_fleurs": {
+        "rect": [6, 0, 1, 1],
+        "kind": "tuft",
+        "blades": 14,
+        "root_spread": 0.1,
+        "lean": 0.5,
+        "bend": 0.1,
+        "height_min": 0.45,
+        "height_max": 0.95,
+        "blade_width_px": 1.6,
+        "taper": 0.3,
+        "base_color": [0.85, 0.9, 0.8],
+        "tip_color": [1.05, 1.08, 0.95],
+        "back_value": 0.7,
+        "side_leaves": 2,
+        "leaf_color": [1.0, 1.0, 1.0],
+        "leaf_length_px": 22,
+        "leaf_width_px": 3.5,
+        "leaf_profile": "lanceolate",
+        "style": {
+          "side_contrast": 0.1,
+          "midrib": 0.9,
+          "outline": 0.75,
+          "outline_px": 0.8,
+          "tip_gain": 0.05
+        }
+      },
+      "touffe_alfa": {
+        "rect": [7, 2, 1, 2],
+        "kind": "tuft",
+        "blades": 46,
+        "root_spread": 0.12,
+        "lean": 0.9,
+        "bend": 0.35,
+        "droop": 0.4,
+        "height_min": 0.55,
+        "height_max": 0.97,
+        "blade_width_px": 2.2,
+        "taper": 0.9,
+        "base_color": [0.85, 0.85, 0.82],
+        "tip_color": [1.2, 1.15, 1.0],
+        "back_value": 0.65,
+        "style": {
+          "outline": 0.72
+        }
+      },
+      "touffe_drinn": {
+        "rect": [7, 4, 1, 2],
+        "kind": "tuft",
+        "blades": 30,
+        "root_spread": 0.08,
+        "lean": 0.35,
+        "bend": 0.05,
+        "height_min": 0.5,
+        "height_max": 0.95,
+        "blade_width_px": 2.0,
+        "taper": 0.7,
+        "base_color": [0.88, 0.85, 0.8],
+        "tip_color": [1.15, 1.1, 0.98],
+        "back_value": 0.7,
+        "head": "feather",
+        "head_ratio": 0.5,
+        "head_strands": 14,
+        "head_length_px": 26,
+        "head_color": [1.35, 1.32, 1.22],
+        "style": {
+          "side_contrast": 0.05,
+          "midrib": 1.0,
+          "outline": 0.8,
+          "outline_px": 0.6,
+          "tip_gain": 0.0
+        }
+      },
+      "touffe_herbe": {
+        "rect": [7, 6, 1, 2],
+        "kind": "tuft",
+        "blades": 34,
+        "root_spread": 0.14,
+        "lean": 0.8,
+        "bend": 0.3,
+        "droop": 0.2,
+        "height_min": 0.4,
+        "height_max": 0.95,
+        "blade_width_px": 2.6,
+        "taper": 0.9,
+        "base_color": [0.8, 0.8, 0.8],
+        "tip_color": [1.18, 1.12, 1.0],
+        "back_value": 0.65,
+        "head": "feather",
+        "head_ratio": 0.25,
+        "head_strands": 8,
+        "head_length_px": 18,
+        "head_color": [1.2, 1.12, 0.95],
+        "style": {
+          "side_contrast": 0.05,
+          "midrib": 1.0,
+          "outline": 0.74,
+          "outline_px": 0.7,
+          "tip_gain": 0.0
+        }
+      },
+      "touffe_roseau": {
+        "rect": [0, 3, 1, 2],
+        "kind": "tuft",
+        "blades": 7,
+        "root_spread": 0.15,
+        "lean": 0.2,
+        "bend": 0.08,
+        "height_min": 0.72,
+        "height_max": 0.86,
+        "blade_width_px": 3.2,
+        "taper": 0.4,
+        "base_color": [0.9, 0.9, 0.85],
+        "tip_color": [1.1, 1.08, 0.98],
+        "back_value": 0.72,
+        "side_leaves": 3,
+        "leaf_color": [1.0, 1.02, 0.98],
+        "leaf_length_px": 95,
+        "leaf_width_px": 5.0,
+        "leaf_profile": "blade",
+        "head": "panicle",
+        "head_ratio": 0.85,
+        "head_strands": 30,
+        "head_length_px": 40,
+        "head_color": [1.45, 1.3, 1.15],
+        "style": {
+          "side_contrast": 0.1,
+          "midrib": 0.88,
+          "outline": 0.74,
+          "outline_px": 0.8,
+          "tip_gain": 0.1
+        }
+      },
+      "touffe_jonc": {
+        "rect": [0, 5, 1, 2],
+        "kind": "tuft",
+        "blades": 16,
+        "root_spread": 0.1,
+        "lean": 0.5,
+        "bend": 0.02,
+        "height_min": 0.6,
+        "height_max": 0.97,
+        "blade_width_px": 2.2,
+        "taper": 0.6,
+        "base_color": [0.85, 0.88, 0.8],
+        "tip_color": [1.08, 1.1, 0.98],
+        "back_value": 0.68,
+        "head": "cluster",
+        "head_ratio": 0.35,
+        "head_strands": 6,
+        "head_length_px": 9,
+        "head_color": [1.25, 0.95, 0.75],
+        "style": {
+          "side_contrast": 0.08,
+          "midrib": 1.0,
+          "outline": 0.76,
+          "outline_px": 0.7,
+          "tip_gain": 0.0
+        }
+      },
+      "touffe_retam": {
+        "rect": [5, 5, 1, 2],
+        "kind": "tuft",
+        "blades": 48,
+        "root_spread": 0.1,
+        "lean": 0.75,
+        "bend": 0.25,
+        "droop": 0.5,
+        "height_min": 0.55,
+        "height_max": 0.97,
+        "blade_width_px": 1.5,
+        "taper": 0.5,
+        "base_color": [0.85, 0.85, 0.85],
+        "tip_color": [1.12, 1.15, 1.1],
+        "back_value": 0.65,
+        "head": "flowers",
+        "head_ratio": 0.3,
+        "head_strands": 4,
+        "head_length_px": 5,
+        "head_color": [1.8, 1.8, 1.75],
+        "style": {
+          "side_contrast": 0.05,
+          "midrib": 1.0,
+          "outline": 0.8,
+          "outline_px": 0.6,
+          "tip_gain": 0.0
+        }
+      },
+      "touffe_orge": {
+        "rect": [6, 5, 1, 2],
+        "kind": "tuft",
+        "blades": 16,
+        "root_spread": 0.12,
+        "lean": 0.3,
+        "bend": 0.12,
+        "height_min": 0.72,
+        "height_max": 0.88,
+        "blade_width_px": 2.0,
+        "taper": 0.3,
+        "base_color": [0.9, 0.92, 0.85],
+        "tip_color": [1.05, 1.06, 0.98],
+        "back_value": 0.7,
+        "side_leaves": 2,
+        "leaf_color": [1.0, 1.02, 0.98],
+        "leaf_length_px": 70,
+        "leaf_width_px": 4.5,
+        "leaf_profile": "blade",
+        "head": "ear",
+        "head_ratio": 1.0,
+        "head_strands": 9,
+        "head_length_px": 44,
+        "awn_length_px": 40,
+        "head_color": [1.12, 1.1, 1.0],
+        "style": {
+          "side_contrast": 0.08,
+          "midrib": 0.9,
+          "outline": 0.74,
+          "outline_px": 0.7,
+          "tip_gain": 0.06
+        }
+      },
+      "touffe_feve": {
+        "rect": [1, 7, 1, 1],
+        "kind": "tuft",
+        "blades": 7,
+        "root_spread": 0.08,
+        "lean": 0.35,
+        "bend": 0.05,
+        "height_min": 0.7,
+        "height_max": 0.95,
+        "blade_width_px": 3.0,
+        "taper": 0.3,
+        "base_color": [0.9, 0.95, 0.85],
+        "tip_color": [1.0, 1.05, 0.95],
+        "back_value": 0.72,
+        "side_leaves": 6,
+        "leaf_color": [1.0, 1.0, 1.0],
+        "leaf_length_px": 30,
+        "leaf_width_px": 11.0,
+        "leaf_profile": "oblong",
+        "head": "flowers",
+        "head_ratio": 0.6,
+        "head_strands": 3,
+        "head_length_px": 9,
+        "head_color": [1.8, 1.8, 1.8],
+        "style": {
+          "side_contrast": 0.14,
+          "midrib": 0.88,
+          "outline": 0.72,
+          "outline_px": 1.0,
+          "tip_gain": 0.06
+        }
+      },
+      "imposteur_acacia": {
+        "kind": "cluster",
+        "origin_y": 0.97,
+        "twigs": 7,
+        "twig_width_px": 1.6,
+        "twig_color": [0.7, 0.62, 0.58],
+        "angle_spread_rad": 1.2,
+        "back_value": 0.62,
+        "vertical_shade": 0.28,
+        "style": {
+          "side_contrast": 0.12,
+          "midrib": 1.0,
+          "outline": 0.74,
+          "outline_px": 0.8,
+          "tip_gain": 0.0
+        },
+        "rect": [2, 7, 1, 1],
+        "leaf": "round",
+        "center_y": 0.42,
+        "radius_x": 0.47,
+        "radius_y": 0.17,
+        "leaves": 420,
+        "leaf_length_px": 12,
+        "leaf_width_px": 5.0,
+        "leaf_color": [1.0, 1.0, 0.97]
+      },
+      "imposteur_tamaris": {
+        "kind": "cluster",
+        "origin_y": 0.98,
+        "twigs": 7,
+        "twig_width_px": 1.6,
+        "twig_color": [0.7, 0.62, 0.58],
+        "angle_spread_rad": 1.2,
+        "back_value": 0.62,
+        "vertical_shade": 0.28,
+        "style": {
+          "side_contrast": 0.12,
+          "midrib": 1.0,
+          "outline": 0.74,
+          "outline_px": 0.8,
+          "tip_gain": 0.0
+        },
+        "rect": [3, 7, 1, 1],
+        "leaf": "plume",
+        "center_y": 0.48,
+        "radius_x": 0.42,
+        "radius_y": 0.42,
+        "leaves": 120,
+        "leaflets": 12,
+        "plume_droop": 0.9,
+        "leaf_length_px": 28,
+        "leaf_width_px": 2.6,
+        "leaf_color": [1.0, 1.0, 1.0]
+      },
+      "imposteur_olivier": {
+        "kind": "cluster",
+        "origin_y": 0.98,
+        "twigs": 7,
+        "twig_width_px": 1.6,
+        "twig_color": [0.7, 0.62, 0.58],
+        "angle_spread_rad": 1.2,
+        "back_value": 0.62,
+        "vertical_shade": 0.28,
+        "style": {
+          "side_contrast": 0.12,
+          "midrib": 1.0,
+          "outline": 0.74,
+          "outline_px": 0.8,
+          "tip_gain": 0.0
+        },
+        "rect": [4, 7, 1, 1],
+        "leaf": "lanceolate",
+        "center_y": 0.47,
+        "radius_x": 0.42,
+        "radius_y": 0.4,
+        "leaves": 520,
+        "leaf_length_px": 14,
+        "leaf_width_px": 3.0,
+        "leaf_color": [0.95, 0.97, 1.0],
+        "underside_color": [1.3, 1.36, 1.36],
+        "underside_ratio": 0.35
+      },
+      "imposteur_figuier": {
+        "kind": "cluster",
+        "origin_y": 0.98,
+        "twigs": 7,
+        "twig_width_px": 1.6,
+        "twig_color": [0.7, 0.62, 0.58],
+        "angle_spread_rad": 1.2,
+        "back_value": 0.62,
+        "vertical_shade": 0.28,
+        "style": {
+          "side_contrast": 0.12,
+          "midrib": 1.0,
+          "outline": 0.74,
+          "outline_px": 0.8,
+          "tip_gain": 0.0
+        },
+        "rect": [5, 7, 1, 1],
+        "leaf": "oblong",
+        "center_y": 0.46,
+        "radius_x": 0.4,
+        "radius_y": 0.38,
+        "leaves": 260,
+        "leaf_length_px": 22,
+        "leaf_width_px": 9.0,
+        "leaf_color": [1.0, 1.0, 1.0]
+      },
+      "imposteur_grenadier": {
+        "kind": "cluster",
+        "origin_y": 0.98,
+        "twigs": 7,
+        "twig_width_px": 1.6,
+        "twig_color": [0.7, 0.62, 0.58],
+        "angle_spread_rad": 1.2,
+        "back_value": 0.62,
+        "vertical_shade": 0.28,
+        "style": {
+          "side_contrast": 0.12,
+          "midrib": 1.0,
+          "outline": 0.74,
+          "outline_px": 0.8,
+          "tip_gain": 0.0
+        },
+        "rect": [6, 7, 1, 1],
+        "leaf": "oblong",
+        "center_y": 0.47,
+        "radius_x": 0.42,
+        "radius_y": 0.42,
+        "leaves": 600,
+        "leaf_length_px": 11,
+        "leaf_width_px": 3.5,
+        "leaf_color": [1.0, 1.0, 0.98]
+      }
+    },
+    "description": "Atlas de la végétation peint par Scripts/Blender/atlas_vegetation.py (tuiles en unités de tile_px : colonne, ligne, largeur, hauteur). Texture de détail : chaque couleur multiplie la couleur de sommet (1,0 = inchangée) ; l'alpha découpe les feuilles. alpha_threshold : seuil de découpe du shader (les mipmaps conservent la part de texels au-dessus de ce seuil). inset_mip : marge des UV contre le débordement entre tuiles (demi-texel de ce niveau de mipmap).",
+    "alpha_threshold": 0.5
   }
 }

@@ -1,12 +1,15 @@
 class_name DesertFoliageMeshes
 extends RefCounted
 ## Maillages partagés de la végétation du désert, lus dans les modèles générés par Blender (couleurs de
-## sommets) selon data/desert/foliage.json. Chaque maillage reçoit un matériau partagé
-## (desert_foliage.gdshader : vent et saisons). Construits une seule fois au chargement.
+## sommets) selon data/desert/foliage.json. Chaque maillage reçoit un matériau partagé (vent et saisons) :
+## desert_foliage.gdshader pour les modèles texturés (coordonnées d'atlas : cartes de feuillage découpées par l'alpha
+## de l'atlas peint, une seule texture pour toute la végétation), desert_foliage_solid.gdshader pour les autres
+## (rochers, falaises : opaques, sans texture). Construits une seule fois au chargement.
 ## Une espèce a soit un modèle unique (« model »), soit des niveaux de détail (« lods », du plus précis au plus lointain,
 ## avec la distance de fin de chacun) : tous les niveaux d'une espèce partagent le même matériau.
 
 const SHADER_PATH: String = "res://world/desert_jeu/desert_foliage.gdshader"
+const SOLID_SHADER_PATH: String = "res://world/desert_jeu/desert_foliage_solid.gdshader"
 const SETTINGS_PATH: String = "res://data/desert/foliage.json"
 const TINTS: Dictionary[String, int] = {"none": 0, "grass": 1, "palm": 2, "bloom": 3, "flowering": 4, "fruit": 5, "crop": 6}
 
@@ -33,11 +36,17 @@ static func build(settings: Dictionary) -> Dictionary:
 
 ## Niveaux de détail par espèce (StringName -> Array de Dictionary { "mesh": Mesh, "end_m": float }), du plus précis au
 ## plus lointain. end_m vaut 0 pour une espèce à modèle unique (la distance d'affichage vient alors de vegetation.json).
-## Vide si un modèle manque, n'a pas de couleurs de sommets ou si un réglage est invalide.
+## Vide si un modèle manque, n'a pas de couleurs de sommets, si l'atlas manque ou si un réglage est invalide.
 static func build_levels(settings: Dictionary) -> Dictionary:
 	var shader: Shader = load(SHADER_PATH) as Shader
-	if shader == null:
-		push_error("DesertFoliageMeshes : shader %s introuvable." % SHADER_PATH)
+	var solid_shader: Shader = load(SOLID_SHADER_PATH) as Shader
+	if shader == null or solid_shader == null:
+		push_error("DesertFoliageMeshes : shaders %s ou %s introuvables." % [SHADER_PATH, SOLID_SHADER_PATH])
+		return {}
+	var atlas_path: String = JsonData.get_string(JsonData.load_dictionary(SETTINGS_PATH), "atlas", SETTINGS_PATH)
+	var atlas: Texture2D = load(atlas_path) as Texture2D
+	if atlas == null:
+		push_error("DesertFoliageMeshes : atlas %s absent (lancer Scripts/Pipeline/generer-props-desert.ps1)." % atlas_path)
 		return {}
 	var result: Dictionary = {}
 	for id: StringName in settings.keys():
@@ -48,7 +57,6 @@ static func build_levels(settings: Dictionary) -> Dictionary:
 			push_error("DesertFoliageMeshes : teinte inconnue « %s » (%s)." % [tint_name, context])
 			return {}
 		var material := ShaderMaterial.new()
-		material.shader = shader
 		material.set_shader_parameter(&"tint_kind", TINTS[tint_name])
 		material.set_shader_parameter(&"sway_height_m", JsonData.get_float(spec, "sway_height_m", context))
 		material.set_shader_parameter(&"sway_amount_m", JsonData.get_float(spec, "sway_amount_m", context))
@@ -80,10 +88,20 @@ static func build_levels(settings: Dictionary) -> Dictionary:
 			push_error("DesertFoliageMeshes : aucun niveau de détail (%s)." % context)
 			return {}
 		var built: Array[Dictionary] = []
+		var textured: int = -1  # -1 : pas encore connu, 0 : opaque sans texture, 1 : texturé (atlas)
 		for level: Dictionary in levels:
 			var mesh: Mesh = _model_mesh(str(level["path"]))
 			if mesh == null:
 				return {}
+			var has_uv: int = 1 if (mesh.surface_get_format(0) & Mesh.ARRAY_FORMAT_TEX_UV) != 0 else 0
+			if textured >= 0 and has_uv != textured:
+				push_error("DesertFoliageMeshes : niveaux texturés et non texturés mêlés (%s)." % context)
+				return {}
+			if textured < 0:
+				textured = has_uv
+				material.shader = shader if textured == 1 else solid_shader
+				if textured == 1:
+					material.set_shader_parameter(&"foliage_atlas", atlas)
 			var copy: Mesh = mesh.duplicate() as Mesh
 			for surface: int in copy.get_surface_count():
 				copy.surface_set_material(surface, material)
