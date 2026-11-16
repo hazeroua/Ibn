@@ -289,7 +289,11 @@ func _add_wall(
 	var top_height: float = height + (_hash(from.x, from.y) - 0.5) * 2.0 * variation
 	var count: int = maxi(1, ceili(length / step))
 	var half: float = thickness * 0.5
-	var flare: float = thickness * 0.3
+	var flare: float = thickness * JsonData.get_float(walls, "foot_flare_fraction", CONTEXT)
+	var shade_min: float = JsonData.get_float(walls, "shade_min", CONTEXT)
+	var shade_range: float = JsonData.get_float(walls, "shade_range", CONTEXT)
+	var top_lift: float = JsonData.get_float(walls, "top_shade_lift", CONTEXT)
+	var end_shade: float = JsonData.get_float(walls, "end_shade", CONTEXT)
 	var heights := PackedFloat32Array()
 	var rings: Array[PackedVector3Array] = []
 	for i: int in count + 1:
@@ -315,14 +319,14 @@ func _add_wall(
 	for i: int in count:
 		var a: PackedVector3Array = rings[i]
 		var b: PackedVector3Array = rings[i + 1]
-		var shade := Color(1.0, 0.0, 0.35 + 0.3 * _hash(a[1].x, a[1].z), 1.0)
-		var top := Color(1.0, 0.0, minf(shade.b + 0.15, 1.0), 1.0)
+		var shade := Color(1.0, 0.0, shade_min + shade_range * _hash(a[1].x, a[1].z), 1.0)
+		var top := Color(1.0, 0.0, minf(shade.b + top_lift, 1.0), 1.0)
 		surface.quad(a[0], b[0], b[1], a[1], -side3 + UP * 0.5, shade)
 		surface.quad(a[1], b[1], b[2], a[2], UP, top)
 		surface.quad(a[2], b[2], b[3], a[3], side3 + UP * 0.5, shade)
 	var first: PackedVector3Array = rings[0]
 	var last: PackedVector3Array = rings[count]
-	var end_color := Color(1.0, 0.0, 0.45, 1.0)
+	var end_color := Color(1.0, 0.0, end_shade, 1.0)
 	surface.quad(first[0], first[3], first[2], first[1], -dir3, end_color)
 	surface.quad(last[0], last[3], last[2], last[1], dir3, end_color)
 	if body != null:
@@ -397,17 +401,14 @@ func _add_canal(earth: Surface, water: Surface, faces: PackedVector3Array, from:
 	var crest_out: float = crest_in + crest_width
 	var toe: float = crest_out + outer
 	var laterals := PackedFloat32Array([-toe, -crest_out, -crest_in, -half_water, half_water, crest_in, crest_out, toe])
-	# Pisé, humidité, nuance de chaque sommet de la section : talus secs, lit et bas des talus intérieurs mouillés.
-	var tints: Array[Color] = [
-		Color(0.0, 0.0, 0.45, 1.0),
-		Color(0.25, 0.0, 0.6, 1.0),
-		Color(0.25, 0.35, 0.5, 1.0),
-		Color(0.0, 1.0, 0.4, 1.0),
-		Color(0.0, 1.0, 0.4, 1.0),
-		Color(0.25, 0.35, 0.5, 1.0),
-		Color(0.25, 0.0, 0.6, 1.0),
-		Color(0.0, 0.0, 0.45, 1.0)
-	]
+	# Pisé, humidité, nuance de chaque sommet de la section (canal > section_tints, de l'extérieur gauche à droite).
+	var tints: Array[Color] = []
+	for entry: Variant in JsonData.get_array(canal, "section_tints", CONTEXT):
+		var values: Array = entry as Array
+		tints.append(Color(float(values[0]), float(values[1]), float(values[2]), 1.0))
+	if tints.size() != laterals.size():
+		push_error("PalmeraieCells : canal > section_tints doit compter %d entrées (%s)." % [laterals.size(), CONTEXT])
+		return
 	var water_half: float = half_water + inner * water_depth / maxf(crest_height, 0.01)
 	var previous := PackedVector3Array()
 	var previous_wet := PackedVector3Array()

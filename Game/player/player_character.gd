@@ -47,6 +47,8 @@ var _last_gait: int = LocomotionSettings.Gait.IDLE
 var _last_gait_name: StringName = &"idle"
 var _grounded: bool = false
 var _ready_done: bool = false
+## Distance parcourue au sol depuis le dernier appui de pied de l'animation.
+var _contact_travel: float = 0.0
 
 
 func _init(settings: LocomotionSettings = null) -> void:
@@ -241,10 +243,14 @@ func _update_outputs(delta: float, was_grounded: bool) -> void:
 		gait_changed.emit(_last_gait_name)
 	_animator.update(motor, real_speed)
 	if _animator.has_contacts():
-		# Pas calés sur l'animation : un pas par appui de pied franchi par la lecture, seulement au sol.
-		if grounded:
-			for i: int in _animator.crossed_count():
+		# Pas calés sur l'animation : un pas par appui de pied franchi par la lecture, au sol, et seulement si le
+		# personnage a réellement avancé depuis l'appui précédent (poussé contre un mur, l'animation tourne : silence).
+		if grounded and was_grounded and distance < _settings.teleport_distance:
+			_contact_travel += distance
+		for i: int in _animator.crossed_count():
+			if grounded and _contact_travel >= _settings.contact_min_travel:
 				_emit_footstep(real_speed, _animator.foot_of(i))
+			_contact_travel = 0.0
 	elif grounded and was_grounded and distance > 0.0:
 		var stride: float = _settings.stride_for(motor.motion_gait)
 		var count: int = _tracker.advance(distance, stride)

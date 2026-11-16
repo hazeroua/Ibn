@@ -105,3 +105,13 @@ Rien de la série « Nature » n'a été compilé, lancé ni testé : le code a 
   standard) lors des fusions : le contenu est le même, mais le diff Git est bruyant.
 - Deux agents ont ajouté le même mécanisme de floraison avec des sens différents ; séparé en deux variables.
   Un défaut de ce genre peut en cacher d'autres : lire les shaders (`desert_foliage.gdshader`) au premier plantage.
+
+## 9. Après les premiers essais du porteur du projet (16 novembre)
+Corrigé : eau invisible (faces à l'envers), oasis sans profondeur, palmeraie presque vide (relief trop bosselé ; terrasse de jardins ajoutée, 79 parcelles), murets et séguias gris et posés sur le sol, séguias traversables et ouvertes sur les côtés, pas désynchronisés (désormais calés sur les appuis lus dans l'animation, silencieux contre un mur), carrés de sable flottants, rive du chott en cercle parfait, zones carrées relevées au niveau des plans d'eau.
+
+Reste à faire :
+- **Végétation** trop « jouet » : ticket #24, en cours dans la branche `vegetation-texturee`.
+- **Test de charge de la palmeraie** : le pire cas a doublé (au plus 30 parcelles, 152 murets, 289 formes de collision par cellule ; décor construit en 46 ms au pire sur un fil de travail, mesuré sous Linux). Le shader de terre fait 9 lectures de texture par pixel. À mesurer sur la puce Intel Arc.
+- **Tests GUT** : aucun test ne couvre les pas calés sur l'animation (les tests tournent sans squelette), ni la géométrie des séguias. `test_desert_heightfield` est mis à jour (oasis creusée, terrasse).
+- Les rides du lac restent un motif assez régulier ; l'anneau de terre nue entre l'oasis et les jardins est vide ; au-delà du monde chargé, l'horizon est une plaine unie.
+- Deux pas de suite du même pied entre la marche et l'arrêt.

@@ -774,6 +774,7 @@ func _place_parcel_palms() -> void:
 	for i: int in parcel_count:
 		var kind: Dictionary = kinds[_pkind[i]]
 		var step: float = spacing
+		var parcel_jitter: float = jitter
 		var u_start: float = _pu0[i] + edge
 		var v_start: float = _pv0[i] + edge
 		if kind.has("trees"):
@@ -784,13 +785,13 @@ func _place_parcel_palms() -> void:
 			var rows: int = maxi(1, floori((_pv1[i] - _pv0[i]) / tree_spacing))
 			u_start = (_pu0[i] + _pu1[i]) * 0.5 - float(columns - 1) * tree_spacing * 0.5 + tree_spacing * 0.5
 			v_start = (_pv0[i] + _pv1[i]) * 0.5 - float(rows - 1) * tree_spacing * 0.5 + tree_spacing * 0.5
-			jitter = 0.0
+			parcel_jitter = 0.0
 		var u: float = u_start
 		while u <= _pu1[i] - edge:
 			var v: float = v_start
 			while v <= _pv1[i] - edge:
-				var pu: float = clampf(u + _rng.randf_range(-jitter, jitter), _pu0[i] + edge, _pu1[i] - edge)
-				var pv: float = clampf(v + _rng.randf_range(-jitter, jitter), _pv0[i] + edge, _pv1[i] - edge)
+				var pu: float = clampf(u + _rng.randf_range(-parcel_jitter, parcel_jitter), _pu0[i] + edge, _pu1[i] - edge)
+				var pv: float = clampf(v + _rng.randf_range(-parcel_jitter, parcel_jitter), _pv0[i] + edge, _pv1[i] - edge)
 				var scale: float = _rng.randf_range(scale_min, scale_max)
 				var yaw: float = _rng.randf_range(0.0, TAU)
 				if _rng.randf() >= skip:

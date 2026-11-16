@@ -20,6 +20,7 @@
     "near_fade_start_m": 0.6,
     "near_fade_end_m": 3.0,
     "ground_probe_m": 400.0,
+    "ground_mask": 1,
     "update_interval": 0.1
   },
   "haze": {

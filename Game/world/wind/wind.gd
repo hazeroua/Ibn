@@ -151,14 +151,14 @@ func _follow_camera() -> void:
 	_haze.global_position = origin
 
 
-## Hauteur du sol sous la caméra (couche 1, jusqu'à sand_ground_probe_m plus bas) ; inchangée si rien n'est touché.
+## Hauteur du sol sous la caméra (couches sand.ground_mask, jusqu'à sand_ground_probe_m plus bas) ; inchangée si rien n'est touché.
 func _probe_ground() -> void:
 	var camera: Camera3D = get_viewport().get_camera_3d()
 	if camera == null or not camera.is_inside_tree():
 		return
 	if _ground_ray == null:
 		_ground_ray = PhysicsRayQueryParameters3D.new()
-		_ground_ray.collision_mask = 1
+		_ground_ray.collision_mask = _settings.sand_ground_mask
 		_ground_ray.collide_with_areas = false
 	var origin: Vector3 = camera.global_position
 	_ground_ray.from = origin

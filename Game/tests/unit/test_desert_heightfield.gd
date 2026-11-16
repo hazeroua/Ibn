@@ -58,16 +58,37 @@ func test_relief_has_dunes() -> void:
 	assert_gt(high - low, 25.0, "un désert de dunes, pas une plaine")
 
 
-func test_oasis_is_flat_earth() -> void:
-	var center: Vector2 = _field.features.water_center(0)
-	var radius: float = _field.features.water_radius(0)
-	var reference: float = _field.height_at(center.x, center.y)
+func test_oasis_is_a_pool_in_earth() -> void:
+	var features: LandscapeFeatures = _field.features
+	var center: Vector2 = features.water_center(0)
+	var radius: float = features.water_radius(0)
+	var surface: float = features.water_surface(0)
+	var floor_height: float = surface - features.water_depth(0)
+	var flat_radius: float = radius - features.water_shore_width(0)
+	assert_almost_eq(_field.height_at(center.x, center.y), floor_height, 0.001, "fond plat de la vasque")
 	for i: int in 36:
 		var angle: float = float(i) * TAU / 36.0
+		var direction := Vector2(cos(angle), sin(angle))
+		var inner: Vector2 = center + direction * flat_radius * 0.8
+		assert_almost_eq(_field.height_at(inner.x, inner.y), floor_height, 0.001, "fond plat")
 		for fraction: float in [0.3, 0.8, 1.0]:
-			var p: Vector2 = center + Vector2(cos(angle), sin(angle)) * radius * fraction
-			assert_almost_eq(_field.height_at(p.x, p.y), reference, 0.001, "aplani dans le rayon")
+			var p: Vector2 = center + direction * radius * fraction
+			assert_true(_field.height_at(p.x, p.y) <= surface + 0.001, "le sol reste sous l'eau dans le rayon")
 			assert_eq(_field.surface_at(Vector3(p.x, 0.0, p.y)), &"terre")
+
+
+func test_garden_terrace_around_the_oasis_is_gentle() -> void:
+	var features: LandscapeFeatures = _field.features
+	var center: Vector2 = features.water_center(0)
+	var radius: float = features.water_radius(0)
+	for i: int in 24:
+		var direction := Vector2(cos(float(i) * TAU / 24.0), sin(float(i) * TAU / 24.0))
+		var previous: float = _field.height_at(center.x + direction.x * (radius + 20.0), center.y + direction.y * (radius + 20.0))
+		for step: int in range(1, 13):
+			var d: float = radius + 20.0 + float(step) * 10.0
+			var h: float = _field.height_at(center.x + direction.x * d, center.y + direction.y * d)
+			assert_lt(absf(h - previous), 0.5, "pente douce des jardins (moins de 5 %)")
+			previous = h
 
 
 func test_normals_are_unit_and_point_up() -> void:
@@ -76,7 +97,7 @@ func test_normals_are_unit_and_point_up() -> void:
 		assert_almost_eq(normal.length(), 1.0, 0.0001)
 		assert_gt(normal.y, 0.0)
 	var flat: Vector3 = _field.normal_at(_field.features.water_center(0).x, _field.features.water_center(0).y)
-	assert_almost_eq(flat.y, 1.0, 0.0001)
+	assert_almost_eq(flat.y, 1.0, 0.0001, "fond plat de l'oasis")
 
 
 func test_all_surfaces_occur_across_the_desert() -> void:

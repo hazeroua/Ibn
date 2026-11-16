@@ -1,5 +1,5 @@
 {
-  "description": "Palmeraie de l'oasis principale : jardin d'oasis en trois étages (palmiers dattiers le long des séguias, grenadiers, figuiers et oliviers dans les vergers, cultures basses : orge, fèves, luzerne, légumes, vigne). Aucun placement à la main : PalmeraieLayout découpe le contour en parcelles au chargement (subdivision récursive déterministe depuis la graine, voies de 3 à 6 m, séguias sur les voies principales ; une parcelle refusée au bord du contour, près de l'eau ou sur un relief trop marqué est redécoupée jusqu'à edge_min_m), puis PalmeraieCells construit chaque cellule de 250 m à la demande du streaming. Les murets en terre (tabia) entourent les parcelles, une ouverture par parcelle ; murets, berges des séguias et rebords des bassins ont la texture de la terre du terrain (palmeraie_earth.gdshader), pied enfoui dans le sol. Séguias : canal de terre (lit horizontal en travers, crête au-dessus du lit et du sol, bouts fermés), on marche sur les berges et dans le lit ; rebords de bassin assez bas pour être enjambés. Tout est décor. statut_historique P : plausible (jardins d'oasis du Maghreb et du Sahara au XIVe siècle : irrigation par séguias dérivées de la source, culture étagée sous les palmiers dattiers, enclos en pisé), sans lieu précis attesté.",
+  "description": "Palmeraie de l'oasis principale : jardin d'oasis en trois étages (palmiers dattiers le long des séguias, grenadiers, figuiers et oliviers dans les vergers, cultures basses : orge, fèves, luzerne, légumes, vigne). Aucun placement à la main : PalmeraieLayout découpe le contour en parcelles au chargement (subdivision récursive déterministe depuis la graine, voies de 3 à 6 m, séguias sur les voies principales ; une parcelle refusée au bord du contour, près de l'eau ou sur un relief trop marqué est redécoupée jusqu'à edge_min_m), puis PalmeraieCells construit chaque cellule de 250 m à la demande du streaming. Les murets en terre (tabia) entourent les parcelles, une ouverture par parcelle ; murets, berges des séguias et rebords des bassins ont la texture de la terre du terrain (palmeraie_earth.gdshader), pied enfoui dans le sol. Séguias : canal de terre (lit horizontal en travers, crête au-dessus du lit et du sol, bouts fermés), on marche sur les berges et dans le lit ; rebords de bassin assez bas pour être enjambés. Couleurs de sommet de la terre : [pisé, humidité, nuance] (section_tints : les 8 sommets d'une section de séguia ; murets : nuance entre shade_min et shade_min + shade_range). Tout est décor. statut_historique P : plausible (jardins d'oasis du Maghreb et du Sahara au XIVe siècle : irrigation par séguias dérivées de la source, culture étagée sous les palmiers dattiers, enclos en pisé), sans lieu précis attesté.",
   "statut_historique": "P",
   "seed": 1382,
   "contour": [
@@ -82,6 +82,11 @@
     "height_m": 1.1,
     "height_variation_m": 0.18,
     "sink_m": 0.3,
+    "foot_flare_fraction": 0.3,
+    "shade_min": 0.35,
+    "shade_range": 0.3,
+    "top_shade_lift": 0.15,
+    "end_shade": 0.45,
     "gate_m": 2.2,
     "min_piece_m": 0.8,
     "step_m": 3.0,
@@ -98,6 +103,7 @@
     "toe_sink_m": 0.12,
     "water_depth_m": 0.13,
     "step_m": 2.0,
+    "section_tints": [[0.0, 0.0, 0.45], [0.25, 0.0, 0.6], [0.25, 0.35, 0.5], [0.0, 1.0, 0.4], [0.0, 1.0, 0.4], [0.25, 0.35, 0.5], [0.25, 0.0, 0.6], [0.0, 0.0, 0.45]],
     "chunk_m": 24.0,
     "extension_probe_m": 0.5
   },

@@ -87,6 +87,7 @@ var contact_height: float = 0.0
 var contact_lift: float = 0.0
 var contact_samples_per_second: float = 0.0
 var contact_min_gap: float = 0.0
+var contact_min_travel: float = 0.0
 
 # Animation
 var blend_time: float = 0.0
@@ -243,6 +244,7 @@ func _read_footsteps(section: Dictionary) -> void:
 	contact_lift = _ranged(contacts, "lift_m", 0.001, 0.5, contacts_context)
 	contact_samples_per_second = _ranged(contacts, "samples_per_second", 10.0, 1000.0, contacts_context)
 	contact_min_gap = _ranged(contacts, "min_gap_s", 0.0, 1.0, contacts_context)
+	contact_min_travel = _ranged(contacts, "min_travel_m", 0.0, 2.0, contacts_context)
 
 
 func _read_animation(section: Dictionary) -> void:

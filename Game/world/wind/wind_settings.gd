@@ -33,6 +33,7 @@ var sand_color: Color = Color.WHITE
 var sand_near_fade_start: float = 0.0
 var sand_near_fade_end: float = 0.0
 var sand_ground_probe: float = 0.0
+var sand_ground_mask: int = 1
 var sand_update_interval: float = 0.1
 
 var haze_radius: float = 1.0
@@ -101,6 +102,7 @@ static func from_dictionary(data: Dictionary, context: String) -> WindSettings:
 	s.sand_near_fade_start = JsonData.get_float(sand, "near_fade_start_m", context)
 	s.sand_near_fade_end = JsonData.get_float(sand, "near_fade_end_m", context)
 	s.sand_ground_probe = JsonData.get_float(sand, "ground_probe_m", context)
+	s.sand_ground_mask = JsonData.get_int(sand, "ground_mask", context)
 	s.sand_update_interval = JsonData.get_float(sand, "update_interval", context)
 	var haze: Dictionary = JsonData.get_dictionary(data, "haze", context)
 	s.haze_radius = JsonData.get_float(haze, "radius", context)

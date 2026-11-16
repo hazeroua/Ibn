@@ -40,6 +40,10 @@ var _contact_feet: Dictionary[StringName, PackedInt32Array] = {}
 var _contacts_ready: bool = false
 var _tracked_clip: StringName = &""
 var _tracked_position: float = 0.0
+var _tracked_times := PackedFloat32Array()
+var _tracked_feet := PackedInt32Array()
+var _no_times := PackedFloat32Array()
+var _no_feet := PackedInt32Array()
 ## Pieds des appuis franchis à la dernière mise à jour (au plus 8 ; réutilisé, aucune allocation par image).
 var _crossed := PackedInt32Array()
 var _crossed_count: int = 0
@@ -166,21 +170,23 @@ func _track_contacts() -> void:
 		# Nouvelle animation : les appuis depuis son début comptent (une manœuvre démarre à 0).
 		_tracked_clip = _current_clip
 		_tracked_position = -1.0
-	var times: PackedFloat32Array = _contact_times.get(_current_clip, PackedFloat32Array())
-	var feet: PackedInt32Array = _contact_feet.get(_current_clip, PackedInt32Array())
+		# Tableaux de l'animation lus une fois à chaque changement (aucune copie ni allocation par image).
+		_tracked_times = _contact_times[_current_clip] if _contact_times.has(_current_clip) else _no_times
+		_tracked_feet = _contact_feet[_current_clip] if _contact_feet.has(_current_clip) else _no_feet
 	var from: float = _tracked_position
 	_tracked_position = position
 	if position >= from:
-		_collect(times, feet, from, position)
+		_collect(from, position)
 	else:
-		_collect(times, feet, from, INF)
-		_collect(times, feet, -1.0, position)
+		_collect(from, INF)
+		_collect(-1.0, position)
 
 
-func _collect(times: PackedFloat32Array, feet: PackedInt32Array, after: float, until: float) -> void:
-	for i: int in times.size():
-		if times[i] > after and times[i] <= until and _crossed_count < MAX_CROSSED:
-			_crossed[_crossed_count] = feet[i]
+func _collect(after: float, until: float) -> void:
+	for i: int in _tracked_times.size():
+		var time: float = _tracked_times[i]
+		if time > after and time <= until and _crossed_count < MAX_CROSSED:
+			_crossed[_crossed_count] = _tracked_feet[i]
 			_crossed_count += 1
 
 
