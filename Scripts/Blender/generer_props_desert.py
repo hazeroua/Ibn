@@ -1,4 +1,4 @@
-"""Génère les rochers, palmiers, acacias, tamaris, buissons (jujubier, laurier-rose, retam), herbes sèches, les imposteurs
+"""Génère les rochers, palmiers, arbres fruitiers de verger (grenadier, figuier, olivier), touffes de culture (orge, fève), chadouf, acacias, tamaris, buissons (jujubier, laurier-rose, retam), herbes sèches, les imposteurs
 d'arbres et le couvert du sol (alfa, drinn, fleurs, cailloux, pierres plates, bois mort) du désert, avec Blender en ligne de commande.
 
     blender --background --factory-startup --python Scripts/Blender/generer_props_desert.py -- \
@@ -702,6 +702,151 @@ def build_retam(spec: dict, index: int, lod: int) -> bmesh.types.BMesh:
     return bm
 
 
+def build_fruit_tree(spec: dict, index: int, lod: int) -> bmesh.types.BMesh:
+    """Arbre fruitier de verger (grenadier, figuier, olivier) : tronc court en anneaux, maîtresses branches, couronne en dôme de
+    boules à facettes ; les fruits sont de petits plans dont le rouge de sommet dépasse 0,8 (le shader les colore selon season_fruit)."""
+    rng = random.Random(spec["seeds"][index])
+    shape = random.Random(spec["seeds"][index] + 1000)  # silhouette commune à tous les niveaux de détail
+    fruit_shape = random.Random(spec["seeds"][index] + 2000)
+    bm = new_bmesh()
+    height = spec["trunk_height_m"][index]
+    lean = spec["lean_m"][index]
+    segments = spec["trunk_segments"][lod]
+    sides = spec["trunk_sides"][lod]
+    trunk_color = spec["colors"]["trunk"]
+    lean_angle = shape.uniform(0, 2 * math.pi)
+    lean_dir = Vector((math.cos(lean_angle), math.sin(lean_angle), 0.0))
+
+    def trunk_center(t: float) -> Vector:
+        return Vector((lean_dir.x * lean * t * t, lean_dir.y * lean * t * t, height * t))
+
+    rings = []
+    for s in range(segments + 1):
+        t = s / segments
+        radius = spec["trunk_radius_m"] * (1.0 + 0.5 * (1.0 - t) ** 3) * (1.0 - 0.35 * t)
+        rings.append(ring(bm, trunk_center(t), radius, sides, mix(trunk_color, [c * 0.75 for c in trunk_color], t * 0.6)))
+    for s in range(segments):
+        for i in range(sides):
+            j = (i + 1) % sides
+            bm.faces.new((rings[s][i], rings[s][j], rings[s + 1][j], rings[s + 1][i]))
+    fork = trunk_center(1.0)
+    cap = add_vert(bm, fork + Vector((0, 0, 0.1)), trunk_color)
+    for i in range(sides):
+        bm.faces.new((rings[-1][(i + 1) % sides], rings[-1][i], cap))
+
+    crown_radius = spec["canopy_radius_m"][index]
+    crown_height = spec["canopy_height_m"]
+    base = fork + Vector((0.0, 0.0, spec["canopy_rise_m"]))
+    subdivisions = spec["canopy_blob_subdivisions"]
+    blobs = []
+    for k in range(len(subdivisions[0])):
+        if k == 0:
+            blobs.append((Vector((0.0, 0.0, crown_height * 0.15)), crown_radius * 0.68))
+        else:
+            angle = k * 2.39996 + shape.uniform(-0.25, 0.25)
+            distance = crown_radius * shape.uniform(0.5, 0.62)
+            blobs.append((Vector((math.cos(angle) * distance, math.sin(angle) * distance, shape.uniform(-0.1, 0.25) * crown_height)), crown_radius * shape.uniform(0.42, 0.52)))
+    jitters = [shape.uniform(-0.25, 0.25) for _ in range(spec["limb_count"][0])]
+    fruit_angles = [fruit_shape.uniform(0.0, 2 * math.pi) for _ in range(spec["fruit_count"][0])]
+    fruit_rises = [fruit_shape.uniform(-0.3, 0.55) for _ in range(spec["fruit_count"][0])]
+
+    limb_count = spec["limb_count"][lod]
+    limb_segments = spec["limb_segments"][lod]
+    for k in range(limb_count):
+        angle = 2 * math.pi * k / limb_count + jitters[k] + 0.4
+        end = base + Vector((math.cos(angle) * crown_radius * 0.5, math.sin(angle) * crown_radius * 0.5, 0.0))
+        centers = [fork.lerp(end, s / limb_segments) for s in range(limb_segments + 1)]
+        radii = [spec["limb_radius_m"] * (1.0 - 0.5 * s / limb_segments) for s in range(limb_segments + 1)]
+        add_tube(bm, centers, radii, spec["limb_sides"][lod], [mix(trunk_color, [c * 0.7 for c in trunk_color], 0.6)] * (limb_segments + 1))
+
+    scale = spec["canopy_lod_scale"][lod]
+    blob_count = len(subdivisions[lod])
+    for k, blob_subdivisions in enumerate(subdivisions[lod]):
+        offset, size = blobs[k]
+        radius = size * scale
+        add_blob(
+            bm,
+            rng,
+            base + offset,
+            (radius, radius, radius * crown_height / crown_radius),
+            blob_subdivisions,
+            0.14,
+            spec["colors"]["leaf_low"],
+            spec["colors"]["leaf_high"],
+            (base.z - crown_height * 0.8, base.z + crown_height * 1.3),
+        )
+    fruit_size = spec["fruit_size_m"]
+    for k in range(spec["fruit_count"][lod]):
+        offset, size = blobs[k % blob_count]
+        outward = Vector((math.cos(fruit_angles[k]), math.sin(fruit_angles[k]), 0.0))
+        right = Vector((-outward.y, outward.x, 0.0))
+        center = base + offset + outward * size * scale * 0.92 + Vector((0.0, 0.0, fruit_rises[k] * size))
+        color = mix(spec["colors"]["fruit"], [min(1.0, c * 1.1) for c in spec["colors"]["fruit"]], fruit_shape.uniform(0.0, 1.0))
+        bm.faces.new(
+            [
+                add_vert(bm, center - right * fruit_size - Vector((0.0, 0.0, fruit_size)), color),
+                add_vert(bm, center + right * fruit_size - Vector((0.0, 0.0, fruit_size)), color),
+                add_vert(bm, center + right * fruit_size + Vector((0.0, 0.0, fruit_size)), color),
+                add_vert(bm, center - right * fruit_size + Vector((0.0, 0.0, fruit_size)), color),
+            ]
+        )
+    return bm
+
+
+def build_chadouf(spec: dict, index: int, lod: int) -> bmesh.types.BMesh:
+    """Chadouf : socle et deux piliers de pisé, traverse, perche pivotante (bras long vers +X), contrepoids d'argile, corde et seau."""
+    rng = random.Random(spec["seeds"][index])
+    bm = new_bmesh()
+    mud = spec["colors"]["mud"]
+    wood = spec["colors"]["wood"]
+    clay = spec["colors"]["clay"]
+    rope = spec["colors"]["rope"]
+    pillar_height = spec["pillar_height_m"]
+    half = spec["pillar_half_spacing_m"]
+    platform_radius = spec["platform_radius_m"]
+    platform_height = spec["platform_height_m"]
+    base_ring = ring(bm, Vector((0.0, 0.0, 0.0)), platform_radius, 6, [c * 0.85 for c in mud])
+    top_ring = ring(bm, Vector((0.0, 0.0, platform_height)), platform_radius * 0.8, 6, mud)
+    for i in range(6):
+        j = (i + 1) % 6
+        bm.faces.new((base_ring[i], base_ring[j], top_ring[j], top_ring[i]))
+    top_center = add_vert(bm, Vector((0.0, 0.0, platform_height)), mud)
+    for i in range(6):
+        bm.faces.new((top_ring[(i + 1) % 6], top_ring[i], top_center))
+    for side in (-1.0, 1.0):
+        centers = [Vector((0.0, side * half, platform_height - 0.05)), Vector((0.0, side * half * 0.7, pillar_height))]
+        add_tube(bm, centers, [spec["pillar_radius_m"], spec["pillar_radius_m"] * 0.7], 4, [mud, [c * 0.9 for c in mud]])
+    add_tube(bm, [Vector((0.0, -half * 0.8, pillar_height - 0.05)), Vector((0.0, half * 0.8, pillar_height - 0.05))], [0.1, 0.1], 4, [wood, wood])
+    back = Vector((-spec["pole_back_m"], 0.0, pillar_height - 0.25))
+    pivot = Vector((0.0, 0.0, pillar_height + 0.1))
+    tip = Vector((spec["pole_front_m"], 0.0, spec["pole_tip_z_m"]))
+    pole_radius = spec["pole_radius_m"]
+    add_tube(bm, [back, pivot, tip], [pole_radius * 1.2, pole_radius, pole_radius * 0.7], 4, [wood, wood, wood])
+    weight = spec["counterweight_radius_m"]
+    add_blob(bm, rng, back + Vector((-0.05, 0.0, -weight)), (weight, weight, weight), 1, 0.12, clay, clay, (0.0, 1.0))
+    width = 0.015
+    drop = spec["rope_drop_m"]
+    bucket_top = tip - Vector((0.0, 0.0, drop))
+    bm.faces.new(
+        [
+            add_vert(bm, tip - Vector((0.0, width, 0.0)), rope),
+            add_vert(bm, tip + Vector((0.0, width, 0.0)), rope),
+            add_vert(bm, bucket_top + Vector((0.0, width, 0.0)), rope),
+            add_vert(bm, bucket_top - Vector((0.0, width, 0.0)), rope),
+        ]
+    )
+    bucket_radius = spec["bucket_radius_m"]
+    bottom = bucket_top - Vector((0.0, 0.0, spec["bucket_height_m"]))
+    bucket_rings = [ring(bm, bucket_top, bucket_radius, 6, wood), ring(bm, bottom, bucket_radius * 0.75, 6, [c * 0.8 for c in wood])]
+    for i in range(6):
+        j = (i + 1) % 6
+        bm.faces.new((bucket_rings[0][i], bucket_rings[0][j], bucket_rings[1][j], bucket_rings[1][i]))
+    bottom_center = add_vert(bm, bottom, wood)
+    for i in range(6):
+        bm.faces.new((bucket_rings[1][(i + 1) % 6], bucket_rings[1][i], bottom_center))
+    return bm
+
+
 def export(obj: bpy.types.Object, path: str) -> int:
     bpy.ops.object.select_all(action="DESELECT")
     obj.select_set(True)
@@ -765,6 +910,20 @@ def main() -> None:
         spec = manifest["models"][shrub]
         for i, variant in enumerate(spec["variants"]):
             jobs.append((f"{shrub}_{variant}", spec["max_triangles"], lambda i=i, spec=spec, builder=builder: builder(spec, i, 0)))
+    for fruit_tree in ("grenadier", "figuier", "olivier"):
+        spec = manifest["models"][fruit_tree]
+        for i, variant in enumerate(spec["variants"]):
+            for lod in range(3):
+                jobs.append((f"{fruit_tree}_{variant}_lod{lod}", spec["max_triangles"][lod], lambda i=i, lod=lod, spec=spec: build_fruit_tree(spec, i, lod)))
+        fruit_imposter = manifest["models"][f"imposteur_{fruit_tree}"]
+        jobs.append((f"{fruit_tree}_imposteur", fruit_imposter["max_triangles"], lambda fruit_imposter=fruit_imposter: build_tree_imposter(fruit_imposter)))
+    for crop_id in ("orge", "feve"):
+        crop = manifest["models"][crop_id]
+        for i, variant in enumerate(crop["variants"]):
+            jobs.append((f"{crop_id}_{variant}", crop["max_triangles"], lambda i=i, crop=crop: build_grass(crop, i)))
+    chadouf = manifest["models"]["chadouf"]
+    for i, variant in enumerate(chadouf["variants"]):
+        jobs.append((f"chadouf_{variant}", chadouf["max_triangles"], lambda i=i: build_chadouf(chadouf, i, 0)))
     for name, budget, builder in jobs:
         reset_scene()
         material = make_material()

@@ -1,5 +1,5 @@
 {
-  "description": "Affichage et collisions de la végétation du désert (jeu). Modèles générés par Scripts/Blender/generer_props_desert.py (desert_props.json). sway_* : balancement au vent (hauteur où il est maximal, amplitude en mètres). tint : teinte de saison (none, grass, palm, bloom : fleurs visibles seulement quand season_bloom > 0). visibility_range_begin_m et visibility_begin_margin_m : début d'affichage des couches lointaines du couvert du sol (la couche proche s'arrête à sa propre distance, la lointaine commence là, avec fondu). collision : cylindre au pied de chaque instance (rayon et hauteur multipliés par l'échelle de l'instance) (même couche que le terrain de la cellule) ; absente = traversable. lods (arbres) : un niveau de détail par entrée, du plus précis au plus lointain, avec la distance de fin en mètres (le niveau suivant apparaît en fondu à partir de la fin du précédent ; la dernière fin est la distance d'affichage de l'espèce dans vegetation.json) ; remplace model. tint flowering : arbustes dont les fleurs (rouge de sommet supérieur à 0,8) ne sont visibles qu'en saison de floraison (season_flowering ; bloom_leaf_color : couleur des fleurs hors floraison). statut_historique : P = plausible, F = fiction.",
+  "description": "Affichage et collisions de la végétation du désert (jeu). Modèles générés par Scripts/Blender/generer_props_desert.py (desert_props.json). sway_* : balancement au vent (hauteur où il est maximal, amplitude en mètres). tint : teinte de saison (none, grass, palm, bloom : fleurs visibles seulement quand season_bloom > 0). visibility_range_begin_m et visibility_begin_margin_m : début d'affichage des couches lointaines du couvert du sol (la couche proche s'arrête à sa propre distance, la lointaine commence là, avec fondu). collision : cylindre au pied de chaque instance (rayon et hauteur multipliés par l'échelle de l'instance) (même couche que le terrain de la cellule) ; absente = traversable. lods (arbres) : un niveau de détail par entrée, du plus précis au plus lointain, avec la distance de fin en mètres (le niveau suivant apparaît en fondu à partir de la fin du précédent ; la dernière fin est la distance d'affichage de l'espèce dans vegetation.json) ; remplace model. tint fruit : arbres fruitiers dont les fruits (rouge de sommet supérieur à 0,8) passent de fruit_leaf_color à fruit_ripe_color selon season_fruit ; tint crop : cultures basses, la touffe pousse et se dore selon season_crop_growth et season_crop_ripe (crop_min_growth : croissance minimale, crop_ripe_color : couleur à maturité). tint flowering : arbustes dont les fleurs (rouge de sommet supérieur à 0,8) ne sont visibles qu'en saison de floraison (season_flowering ; bloom_leaf_color : couleur des fleurs hors floraison). statut_historique : P = plausible, F = fiction.",
   "species": {
     "palmier": {
       "lods": [
@@ -148,6 +148,77 @@
       "tint": "none",
       "sway_height_m": 1.5,
       "sway_amount_m": 0.2
+    },
+    "grenadier": {
+      "statut_historique": "P",
+      "lods": [
+        { "model": "res://assets/desert/grenadier_a_lod0.glb", "end_m": 40 },
+        { "model": "res://assets/desert/grenadier_a_lod1.glb", "end_m": 110 },
+        { "model": "res://assets/desert/grenadier_a_lod2.glb", "end_m": 220 },
+        { "model": "res://assets/desert/grenadier_imposteur.glb", "end_m": 380 }
+      ],
+      "tint": "fruit",
+      "fruit_leaf_color": [0.34, 0.4, 0.15],
+      "fruit_ripe_color": [0.75, 0.12, 0.1],
+      "sway_height_m": 2.8,
+      "sway_amount_m": 0.1,
+      "collision": { "radius_m": 0.18, "height_m": 2.0 }
+    },
+    "figuier": {
+      "statut_historique": "P",
+      "lods": [
+        { "model": "res://assets/desert/figuier_a_lod0.glb", "end_m": 50 },
+        { "model": "res://assets/desert/figuier_a_lod1.glb", "end_m": 130 },
+        { "model": "res://assets/desert/figuier_a_lod2.glb", "end_m": 260 },
+        { "model": "res://assets/desert/figuier_imposteur.glb", "end_m": 420 }
+      ],
+      "tint": "fruit",
+      "fruit_leaf_color": [0.3, 0.42, 0.16],
+      "fruit_ripe_color": [0.42, 0.18, 0.3],
+      "sway_height_m": 3.6,
+      "sway_amount_m": 0.1,
+      "collision": { "radius_m": 0.25, "height_m": 2.0 }
+    },
+    "olivier": {
+      "statut_historique": "P",
+      "lods": [
+        { "model": "res://assets/desert/olivier_a_lod0.glb", "end_m": 50 },
+        { "model": "res://assets/desert/olivier_a_lod1.glb", "end_m": 130 },
+        { "model": "res://assets/desert/olivier_a_lod2.glb", "end_m": 260 },
+        { "model": "res://assets/desert/olivier_imposteur.glb", "end_m": 420 }
+      ],
+      "tint": "fruit",
+      "fruit_leaf_color": [0.4, 0.46, 0.22],
+      "fruit_ripe_color": [0.2, 0.12, 0.18],
+      "sway_height_m": 3.8,
+      "sway_amount_m": 0.1,
+      "collision": { "radius_m": 0.25, "height_m": 2.0 }
+    },
+    "orge": {
+      "statut_historique": "P",
+      "model": "res://assets/desert/orge_a.glb",
+      "tint": "crop",
+      "crop_min_growth": 0.0,
+      "crop_ripe_color": [0.8, 0.66, 0.28],
+      "sway_height_m": 0.95,
+      "sway_amount_m": 0.07
+    },
+    "feve": {
+      "statut_historique": "P",
+      "model": "res://assets/desert/feve_a.glb",
+      "tint": "crop",
+      "crop_min_growth": 0.0,
+      "crop_ripe_color": [0.5, 0.42, 0.22],
+      "sway_height_m": 0.8,
+      "sway_amount_m": 0.04
+    },
+    "chadouf": {
+      "statut_historique": "P",
+      "model": "res://assets/desert/chadouf_a.glb",
+      "tint": "none",
+      "sway_height_m": 0.0,
+      "sway_amount_m": 0.0,
+      "collision": { "radius_m": 0.9, "height_m": 2.6 }
     }
   }
 }

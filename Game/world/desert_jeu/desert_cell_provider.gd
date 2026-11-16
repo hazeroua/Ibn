@@ -22,6 +22,8 @@ var _begin_margin: Dictionary = {}  # id d'espèce -> marge (m)
 ## Grille des touffes pour les sons de pas : taille des cases (0 = désactivée) et espèces versées dans la grille.
 var _cover_cell_m: float = 0.0
 var _cover_species: Array[StringName] = []
+## Palmeraie de l'oasis (nulle si la carte n'en a pas) : parcelles, murets, séguias, arbres et cultures de la cellule.
+var _palmeraie: PalmeraieCells
 
 
 func _init(
@@ -31,7 +33,8 @@ func _init(
 	meshes: Dictionary,
 	foliage: Dictionary,
 	world_seed: int,
-	cover_settings: Dictionary = {}
+	cover_settings: Dictionary = {},
+	palmeraie: PalmeraieCells = null
 ) -> void:
 	_terrain = terrain
 	_field = field
@@ -55,6 +58,11 @@ func _init(
 	var all: Dictionary = _scatter.get_species_settings()
 	for species: Variant in all.keys():
 		_settings[StringName(str(species))] = all[species]
+	_palmeraie = palmeraie
+	if _palmeraie != null:
+		var display: Dictionary = _palmeraie.species_display()
+		for species_id: Variant in display.keys():
+			_settings[species_id] = display[species_id]
 
 
 func build_cell(cell: Vector2i) -> Node3D:
@@ -62,6 +70,8 @@ func build_cell(cell: Vector2i) -> Node3D:
 	if body == null:
 		return null
 	var result: Dictionary = _scatter.scatter(cell, _field, _seed)
+	if _palmeraie != null:
+		_merge_palmeraie(body, cell, result)
 	_attach_cover_grid(body, cell, result)
 	for species: Variant in result.keys():
 		var transforms: PackedFloat32Array = result[species]
@@ -73,6 +83,19 @@ func build_cell(cell: Vector2i) -> Node3D:
 		if _collision_radius.has(id):
 			_add_trunk_collisions(body as CollisionObject3D, id, transforms)
 	return body
+
+
+## Palmeraie : la végétation générale est retirée des cultures, puis les arbres, palmiers et touffes du plan s'ajoutent aux
+## transformées de la cellule (mêmes espèces et mêmes niveaux de détail) ; murets, séguias, eau et sol cultivé sont du décor.
+func _merge_palmeraie(body: Node3D, cell: Vector2i, result: Dictionary) -> void:
+	_palmeraie.filter_scatter(cell, result)
+	var added: Dictionary = _palmeraie.build_transforms(cell)
+	for species: Variant in added.keys():
+		var extra: PackedFloat32Array = added[species]
+		var current: PackedFloat32Array = result.get(species, PackedFloat32Array())
+		current.append_array(extra)
+		result[species] = current
+	_palmeraie.add_decor(cell, body)
 
 
 ## Grille des touffes de la cellule (sons de pas), construite ici sur le fil de travail et gardée en métadonnée.

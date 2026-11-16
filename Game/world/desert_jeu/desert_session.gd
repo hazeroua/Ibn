@@ -32,6 +32,10 @@ func _ready() -> void:
 	if not scatter.load_rules(VEGETATION_PATH) or not scatter.load_features(DATA_PATH):
 		push_error("DesertSession : règles de végétation invalides : %s" % scatter.get_last_error())
 		return
+	var palmeraie: PalmeraieCells = PalmeraieCells.create(PalmeraieLayout.load_default(field), field)
+	if palmeraie == null:
+		push_error("DesertSession : palmeraie invalide.")
+		return
 	_provider = DesertCellProvider.new(
 		terrain,
 		field,
@@ -39,7 +43,8 @@ func _ready() -> void:
 		meshes,
 		foliage,
 		JsonData.get_int(JsonData.get_dictionary(data, "terrain", "desert.json"), "seed", "desert.json > terrain"),
-		JsonData.load_dictionary(GROUND_COVER_PATH)
+		JsonData.load_dictionary(GROUND_COVER_PATH),
+		palmeraie
 	)
 	_streamer = WorldStreamer.new()
 	_streamer.name = "Streaming"
