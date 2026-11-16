@@ -434,6 +434,7 @@ def build_flowers(spec: dict, index: int) -> bmesh.types.BMesh:
         ]
         for k in range(3):
             bm.faces.new((center, rim[k], rim[(k + 1) % 3]))
+    return bm
 
 
 def add_blob(bm, rng: random.Random, center: Vector, radii: tuple, subdivisions: int, bump: float, low: list, high: list, z_range: tuple) -> None:
