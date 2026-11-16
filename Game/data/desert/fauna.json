@@ -1,0 +1,331 @@
+{
+  "description": "Faune d'ambiance du désert (sans interaction de jeu) : vols d'oiseaux (shader, une transformée de groupe par image), troupeaux de gazelles dorcas (simulation C++ FaunaHerds), libellules (shader) et sons d'ambiance synthétisés par heure. Distances et rayons en mètres, vitesses en m/s, angles en degrés, heures de 0 à 24 (une plage dont la fin précède le début traverse minuit). Espèces présentes au Sahara et au Maghreb au XIVe siècle ; placements inventés : statut_historique P (plausible).",
+  "budget": { "max_animals": 200 },
+  "bus": { "name": "Fauna", "send": "Master", "volume_db": 0.0 },
+  "birds": {
+    "max_groups_per_species": 16,
+    "species": {
+      "tourterelle": {
+        "name_fr": "Tourterelle",
+        "statut_historique": "P",
+        "model": "res://assets/faune/tourterelle.glb",
+        "hours": { "start": 5.5, "end": 19.0, "fade": 1.0 },
+        "flap_hz": 5.5,
+        "flap_amount": 0.7,
+        "fold": 0.75,
+        "airborne_spread_m": 9.0,
+        "perched_spread_m": 3.0,
+        "height_variation_m": 3.0,
+        "flee_distance_m": 14.0,
+        "settle_distance_m": 45.0,
+        "settle_delay_s": 12.0,
+        "transition_s": 3.5,
+        "leave_radius_m": 900.0,
+        "leave_s": 20.0,
+        "groups": [
+          {
+            "id": "tourterelles_oasis_est",
+            "count": 22,
+            "anchor": "oasis",
+            "offset_m": [10.0, 0.0],
+            "orbit_radius_m": 55.0,
+            "altitude_m": 14.0,
+            "angular_speed_deg_s": 11.0,
+            "perch_offset_m": [38.0, 12.0],
+            "start": "perched"
+          },
+          {
+            "id": "tourterelles_oasis_ouest",
+            "count": 14,
+            "anchor": "oasis",
+            "offset_m": [-20.0, 10.0],
+            "orbit_radius_m": 80.0,
+            "altitude_m": 20.0,
+            "angular_speed_deg_s": -8.0,
+            "perch_offset_m": [-48.0, -6.0],
+            "start": "flying"
+          }
+        ]
+      },
+      "moineau": {
+        "name_fr": "Moineau",
+        "statut_historique": "P",
+        "model": "res://assets/faune/moineau.glb",
+        "hours": { "start": 5.25, "end": 19.5, "fade": 1.0 },
+        "flap_hz": 11.0,
+        "flap_amount": 0.8,
+        "fold": 0.7,
+        "airborne_spread_m": 6.0,
+        "perched_spread_m": 2.5,
+        "height_variation_m": 2.0,
+        "flee_distance_m": 10.0,
+        "settle_distance_m": 35.0,
+        "settle_delay_s": 8.0,
+        "transition_s": 2.5,
+        "leave_radius_m": 700.0,
+        "leave_s": 15.0,
+        "groups": [
+          {
+            "id": "moineaux_oasis_nord",
+            "count": 30,
+            "anchor": "oasis",
+            "offset_m": [0.0, -30.0],
+            "orbit_radius_m": 35.0,
+            "altitude_m": 9.0,
+            "angular_speed_deg_s": 18.0,
+            "perch_offset_m": [6.0, -36.0],
+            "start": "perched"
+          },
+          {
+            "id": "moineaux_oasis_sud",
+            "count": 12,
+            "anchor": "oasis",
+            "offset_m": [-6.0, 36.0],
+            "orbit_radius_m": 28.0,
+            "altitude_m": 8.0,
+            "angular_speed_deg_s": -20.0,
+            "perch_offset_m": [-10.0, 32.0],
+            "start": "flying"
+          }
+        ]
+      },
+      "corbeau_brun": {
+        "name_fr": "Corbeau brun",
+        "statut_historique": "P",
+        "model": "res://assets/faune/corbeau_brun.glb",
+        "hours": { "start": 7.0, "end": 18.0, "fade": 1.0 },
+        "flap_hz": 3.2,
+        "flap_amount": 0.55,
+        "fold": 0.6,
+        "airborne_spread_m": 14.0,
+        "perched_spread_m": 4.0,
+        "height_variation_m": 6.0,
+        "flee_distance_m": 25.0,
+        "settle_distance_m": 80.0,
+        "settle_delay_s": 20.0,
+        "transition_s": 5.0,
+        "leave_radius_m": 1100.0,
+        "leave_s": 30.0,
+        "groups": [
+          {
+            "id": "corbeaux_est",
+            "count": 3,
+            "anchor": "oasis",
+            "offset_m": [160.0, 40.0],
+            "orbit_radius_m": 90.0,
+            "altitude_m": 26.0,
+            "angular_speed_deg_s": 7.0,
+            "perch_offset_m": [215.0, 70.0],
+            "start": "perched"
+          }
+        ]
+      },
+      "percnoptere": {
+        "name_fr": "Vautour percnoptère",
+        "statut_historique": "P",
+        "model": "res://assets/faune/percnoptere.glb",
+        "hours": { "start": 8.5, "end": 17.5, "fade": 1.5 },
+        "flap_hz": 0.9,
+        "flap_amount": 0.18,
+        "fold": 0.5,
+        "airborne_spread_m": 25.0,
+        "perched_spread_m": 4.0,
+        "height_variation_m": 10.0,
+        "flee_distance_m": 30.0,
+        "settle_distance_m": 100.0,
+        "settle_delay_s": 30.0,
+        "transition_s": 6.0,
+        "leave_radius_m": 1400.0,
+        "leave_s": 40.0,
+        "groups": [
+          {
+            "id": "percnopteres_cretes_ouest",
+            "count": 2,
+            "anchor": "oasis",
+            "offset_m": [-420.0, 260.0],
+            "orbit_radius_m": 210.0,
+            "altitude_m": 70.0,
+            "angular_speed_deg_s": 3.5,
+            "start": "flying"
+          },
+          {
+            "id": "percnoptere_cretes_est",
+            "count": 1,
+            "anchor": "oasis",
+            "offset_m": [520.0, -310.0],
+            "orbit_radius_m": 160.0,
+            "altitude_m": 85.0,
+            "angular_speed_deg_s": -4.0,
+            "start": "flying"
+          }
+        ]
+      }
+    }
+  },
+  "gazelles": {
+    "name_fr": "Gazelle dorcas",
+    "statut_historique": "P",
+    "model": "res://assets/faune/gazelle_dorcas.glb",
+    "max_animals": 128,
+    "min_herd_size": 3,
+    "max_herd_size": 8,
+    "view_distance_m": 600.0,
+    "flee_distance_m": 80.0,
+    "calm_distance_m": 170.0,
+    "calm_delay_s": 6.0,
+    "walk_speed_mps": 1.1,
+    "run_speed_mps": 13.0,
+    "run_speed_variation": 0.15,
+    "acceleration_mps2": 8.0,
+    "turn_response_per_s": 7.0,
+    "herd_radius_m": 7.0,
+    "separation_m": 1.8,
+    "separation_strength": 2.5,
+    "graze_min_s": 25.0,
+    "graze_max_s": 70.0,
+    "relocate_max_m": 140.0,
+    "flee_repick_s": 1.5,
+    "max_slope_deg": 30.0,
+    "soft_slope_deg": 20.0,
+    "scale_min": 0.92,
+    "scale_max": 1.08,
+    "height_grid_m": 4.0,
+    "max_substep_s": 0.1,
+    "walk_stride_hz": 1.6,
+    "run_stride_hz": 3.4,
+    "flee_candidates": 10,
+    "animation": {
+      "walk_swing_m": 0.1,
+      "run_swing_m": 0.26,
+      "lift_m": 0.1,
+      "bounce_m": 0.06
+    },
+    "zones": [
+      {
+        "id": "reg_est",
+        "shape": { "kind": "circle", "center": [720.0, -330.0], "radius_m": 260.0 },
+        "herds": 2,
+        "size_min": 4,
+        "size_max": 8
+      },
+      {
+        "id": "reg_sud_ouest",
+        "shape": { "kind": "circle", "center": [-330.0, 260.0], "radius_m": 280.0 },
+        "herds": 2,
+        "size_min": 3,
+        "size_max": 7
+      },
+      {
+        "id": "reg_nord",
+        "shape": {
+          "kind": "polygon",
+          "points": [[-250.0, -900.0], [250.0, -820.0], [420.0, -1150.0], [60.0, -1400.0], [-340.0, -1200.0]]
+        },
+        "herds": 2,
+        "size_min": 3,
+        "size_max": 6
+      },
+      {
+        "id": "reg_lointain",
+        "shape": { "kind": "circle", "center": [-1000.0, -450.0], "radius_m": 300.0 },
+        "herds": 1,
+        "size_min": 5,
+        "size_max": 8
+      }
+    ]
+  },
+  "dragonflies": {
+    "name_fr": "Libellule",
+    "statut_historique": "P",
+    "model": "res://assets/faune/libellule.glb",
+    "hours": { "start": 7.5, "end": 18.0, "fade": 0.75 },
+    "min_water_radius_m": 8.0,
+    "per_meter_of_radius": 0.25,
+    "min_per_water": 4,
+    "max_per_water": 16,
+    "max_waters": 16,
+    "scale": 2.2,
+    "flap_hz": 38.0,
+    "flap_amount": 0.5,
+    "hover_min_m": 0.5,
+    "hover_max_m": 1.9,
+    "speed": 0.6
+  },
+  "ambience": {
+    "mix_rate": 16000,
+    "sources": {
+      "chants_aube": {
+        "statut_historique": "P",
+        "kind": "birdsong",
+        "hours": { "start": 4.5, "end": 8.5, "fade": 0.75 },
+        "anchor": "oasis",
+        "offset_m": [0.0, 0.0],
+        "volume_db": -4.0,
+        "unit_size_m": 30.0,
+        "max_distance_m": 220.0,
+        "synth": {
+          "seed": 1401,
+          "loop_s": 14.0,
+          "phrases": 7,
+          "notes_min": 3,
+          "notes_max": 8,
+          "note_s_min": 0.05,
+          "note_s_max": 0.16,
+          "gap_s": 0.04,
+          "freq_hz_min": 2400.0,
+          "freq_hz_max": 4600.0,
+          "sweep_max_hz": 1400.0,
+          "harmonic": 0.3,
+          "amplitude": 0.5
+        }
+      },
+      "criquets": {
+        "statut_historique": "P",
+        "kind": "crickets",
+        "hours": { "start": 19.5, "end": 4.5, "fade": 1.0 },
+        "anchor": "oasis",
+        "offset_m": [0.0, 0.0],
+        "volume_db": -10.0,
+        "unit_size_m": 40.0,
+        "max_distance_m": 260.0,
+        "synth": {
+          "seed": 1402,
+          "loop_s": 4.0,
+          "voices": 3,
+          "carrier_hz_min": 4200.0,
+          "carrier_hz_max": 5100.0,
+          "pulse_hz_min": 24.0,
+          "pulse_hz_max": 34.0,
+          "chirp_hz_min": 1.8,
+          "chirp_hz_max": 2.6,
+          "chirp_duty": 0.55,
+          "amplitude": 0.22
+        }
+      },
+      "rapace_lointain": {
+        "statut_historique": "P",
+        "kind": "raptor_call",
+        "hours": { "start": 12.0, "end": 17.0, "fade": 0.5 },
+        "anchor": "oasis",
+        "offset_m": [0.0, 0.0],
+        "ring_min_m": 150.0,
+        "ring_max_m": 320.0,
+        "interval_s_min": 25.0,
+        "interval_s_max": 70.0,
+        "volume_db": -3.0,
+        "unit_size_m": 60.0,
+        "max_distance_m": 600.0,
+        "synth": {
+          "seed": 1403,
+          "notes": 4,
+          "note_s": 0.2,
+          "gap_s": 0.1,
+          "freq_hz_start": 3400.0,
+          "freq_hz_end": 2500.0,
+          "harmonic": 0.25,
+          "amplitude": 0.55
+        }
+      }
+    }
+  }
+}

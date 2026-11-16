@@ -1,5 +1,6 @@
 #include "register_types.h"
 
+#include "fauna_herds.h"
 #include "perf_recorder.h"
 #include "vegetation_scatter.h"
 #include "world_streamer.h"
@@ -12,6 +13,7 @@ void initialize_ibn_module(godot::ModuleInitializationLevel p_level) {
 	if (p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+	GDREGISTER_CLASS(FaunaHerds);
 	GDREGISTER_CLASS(PerfRecorder);
 	GDREGISTER_CLASS(VegetationScatter);
 	GDREGISTER_CLASS(WorldStreamer);

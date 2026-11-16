@@ -2,7 +2,8 @@ class_name DesertSession
 extends Node3D
 ## Racine du jeu du MVP 2 : désert de 4 × 4 km diffusé par cellules (WorldStreamer), végétation, oasis, cycle
 ## jour/nuit, vent, saisons, panneau de temps (F2), joueur, caméra et sons de pas. Assemblage au chargement ;
-## ensuite seul le streaming travaille (le joueur lui donne sa position et sa vitesse à chaque tick physique).
+## faune d'ambiance (FaunaSystem) ; ensuite seuls le streaming et la faune travaillent (le joueur leur donne sa position
+## et sa vitesse à chaque tick physique).
 
 const DATA_PATH: String = "res://data/desert/desert.json"
 const STREAMING_PATH: String = "res://data/streaming/streaming.json"
@@ -15,6 +16,7 @@ var _streamer: WorldStreamer
 var _provider: DesertCellProvider
 var _player: PlayerCharacter
 var _rig: ThirdPersonCamera
+var _fauna: FaunaSystem
 
 
 func _ready() -> void:
@@ -46,6 +48,9 @@ func _ready() -> void:
 	var day_night: DayNightSystem = get_node("/root/DayNight") as DayNightSystem
 	add_child(day_night.build_environment())
 	_add_oasis(data, field)
+	_fauna = FaunaSystem.create(data, field, day_night)
+	if _fauna != null:
+		add_child(_fauna)
 	var panel: PackedScene = load(TIME_PANEL_SCENE) as PackedScene
 	if panel != null:
 		add_child(panel.instantiate())
@@ -53,6 +58,8 @@ func _ready() -> void:
 	var ground: Vector2 = JsonData.get_vector2(spawn, "position", "desert.json > player_spawn")
 	var position := Vector3(ground.x, field.height_at(ground.x, ground.y) + float(spawn.get("height_offset_m", 0.05)), ground.y)
 	_streamer.set_focus(position, Vector3.ZERO)
+	if _fauna != null:
+		_fauna.set_focus(position, Vector3.ZERO)
 	await _wait_for_cell(_streamer.world_to_cell(position))
 	var yaw: float = deg_to_rad(float(spawn.get("yaw_degrees", 0.0)))
 	_player = GameSession.spawn_player(self, position, yaw, "ibn_khaldoun_jeune")
@@ -62,6 +69,8 @@ func _ready() -> void:
 func _physics_process(_delta: float) -> void:
 	if _player != null:
 		_streamer.set_focus(_player.global_position, _player.velocity)
+		if _fauna != null:
+			_fauna.set_focus(_player.global_position, _player.velocity)
 
 
 func _add_oasis(data: Dictionary, field: DesertHeightfield) -> void:
