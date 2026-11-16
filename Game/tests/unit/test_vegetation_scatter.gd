@@ -65,7 +65,7 @@ func test_class_is_registered_and_rules_are_valid() -> void:
 	assert_true(ClassDB.class_exists(&"VegetationScatter"))
 	var scatter: VegetationScatter = _new_scatter()
 	var ids: PackedStringArray = scatter.get_species_ids()
-	assert_eq(ids, PackedStringArray(["palmier", "buisson", "herbe_seche"]))
+	assert_eq(ids, PackedStringArray(["palmier", "buisson", "herbe_seche", "acacia", "tamaris", "jujubier", "laurier_rose", "retam"]))
 	var settings: Dictionary = scatter.get_species_settings()
 	assert_true(float((settings[&"herbe_seche"] as Dictionary)["visibility_range_end"]) > 0.0)
 

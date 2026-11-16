@@ -10,7 +10,7 @@ var _terrain: DesertTerrainCell
 var _field: DesertHeightfield
 var _scatter: VegetationScatter
 var _seed: int
-var _meshes: Dictionary = {}  # id d'espèce -> Mesh
+var _meshes: Dictionary = {}  # id d'espèce -> Array de { "mesh": Mesh, "end_m": float } (niveaux de détail)
 var _settings: Dictionary = {}  # id d'espèce -> réglages d'affichage
 ## Cylindre partagé et dimensions par espèce qui bloque le joueur (palmier) ; échelle appliquée par instance.
 var _collision_radius: Dictionary = {}  # id d'espèce -> rayon (m)
@@ -51,32 +51,50 @@ func build_cell(cell: Vector2i) -> Node3D:
 		var id := StringName(str(species))
 		if transforms.is_empty() or not _meshes.has(id):
 			continue
-		body.add_child(_build_multimesh(id, transforms, body.position))
+		for instance: DesertFoliageInstance in _build_instances(id, transforms, body.position):
+			body.add_child(instance)
 		if _collision_radius.has(id):
 			_add_trunk_collisions(body as CollisionObject3D, id, transforms)
 	return body
 
 
-func _build_multimesh(id: StringName, transforms: PackedFloat32Array, origin: Vector3) -> DesertFoliageInstance:
-	var multimesh := MultiMesh.new()
-	multimesh.transform_format = MultiMesh.TRANSFORM_3D
-	multimesh.mesh = _meshes[id]
-	var instance := DesertFoliageInstance.new()
-	instance.transform_buffer = transforms
-	instance.name = String(id)
-	instance.multimesh = multimesh
-	# Les transformées sont en coordonnées du monde ; la cellule est posée à son coin : on compense.
-	instance.position = -origin
+## Un MultiMesh par niveau de détail de l'espèce, tous alimentés par les mêmes transformées (tableau partagé, copié à
+## l'écriture). Chaque niveau n'est dessiné que dans sa plage de distance, avec un fondu de part et d'autre.
+func _build_instances(id: StringName, transforms: PackedFloat32Array, origin: Vector3) -> Array[DesertFoliageInstance]:
 	var settings: Dictionary = _settings.get(id, {})
-	instance.visibility_range_end = float(settings.get("visibility_range_end", 0.0))
-	instance.visibility_range_end_margin = float(settings.get("visibility_fade_margin", 0.0))
-	instance.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
-	instance.cast_shadow = (
-		GeometryInstance3D.SHADOW_CASTING_SETTING_ON
-		if bool(settings.get("cast_shadows", false))
-		else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	)
-	return instance
+	var margin: float = float(settings.get("visibility_fade_margin", 0.0))
+	var casts_shadows: bool = bool(settings.get("cast_shadows", false))
+	var levels: Array = _meshes[id]
+	var instances: Array[DesertFoliageInstance] = []
+	var previous_end: float = 0.0
+	for k: int in levels.size():
+		var level: Dictionary = levels[k]
+		var multimesh := MultiMesh.new()
+		multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		multimesh.mesh = level["mesh"]
+		var instance := DesertFoliageInstance.new()
+		instance.transform_buffer = transforms
+		instance.name = String(id) if levels.size() == 1 else "%s_lod%d" % [id, k]
+		instance.multimesh = multimesh
+		# Les transformées sont en coordonnées du monde ; la cellule est posée à son coin : on compense.
+		instance.position = -origin
+		var end_m: float = float(level["end_m"])
+		instance.visibility_range_end = end_m if end_m > 0.0 else float(settings.get("visibility_range_end", 0.0))
+		instance.visibility_range_end_margin = margin
+		if k > 0:
+			instance.visibility_range_begin = maxf(previous_end - margin, 0.0)
+			instance.visibility_range_begin_margin = margin
+		instance.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+		# Le dernier niveau d'une espèce à plusieurs niveaux est l'imposteur : il ne projette pas d'ombre.
+		var is_imposter: bool = levels.size() > 1 and k == levels.size() - 1
+		instance.cast_shadow = (
+			GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+			if casts_shadows and not is_imposter
+			else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		)
+		previous_end = end_m
+		instances.append(instance)
+	return instances
 
 
 ## Un cylindre par instance, sur le corps statique de la cellule (sans nœud supplémentaire). Les formes

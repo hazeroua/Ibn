@@ -1,4 +1,5 @@
-"""Génère les rochers, palmiers, buissons, herbes sèches et l'imposteur de palmier du désert, avec Blender en ligne de commande.
+"""Génère les rochers, palmiers, acacias, tamaris, buissons (jujubier, laurier-rose, retam), herbes sèches et les imposteurs d'arbres du désert,
+avec Blender en ligne de commande.
 
     blender --background --factory-startup --python Scripts/Blender/generer_props_desert.py -- \
         --manifest Game/data/assets/desert_props.json --output-dir Game/assets/desert --report <rapport.json>
@@ -259,6 +260,313 @@ def build_grass(spec: dict, index: int) -> bmesh.types.BMesh:
     return bm
 
 
+def add_blob(bm, rng: random.Random, center: Vector, radii: tuple, subdivisions: int, bump: float, low: list, high: list, z_range: tuple) -> None:
+    """Boule irrégulière à facettes (icosphère déformée) ajoutée à bm ; couleur de bas en haut selon la hauteur z_range."""
+    part = bmesh.new()
+    bmesh.ops.create_icosphere(part, subdivisions=subdivisions, radius=1.0)
+    part.verts.index_update()
+    created = [None] * len(part.verts)
+    span = max(z_range[1] - z_range[0], 0.001)
+    for vert in part.verts:
+        d = vert.co.normalized()
+        scale = 1.0 + rng.uniform(-bump, bump)
+        co = Vector((d.x * radii[0] * scale, d.y * radii[1] * scale, d.z * radii[2] * scale)) + center
+        created[vert.index] = add_vert(bm, co, mix(low, high, (co.z - z_range[0]) / span + rng.uniform(-0.06, 0.06)))
+    for face in part.faces:
+        bm.faces.new([created[v.index] for v in face.verts])
+    part.free()
+
+
+def add_tube(bm, centers: list, radii: list, sides: int, colors: list) -> None:
+    """Tube effilé le long d'une ligne brisée (anneaux perpendiculaires à la direction, repère transporté sans torsion), non refermé."""
+    count = len(centers)
+    rings = []
+    basis = None
+    for k in range(count):
+        tangent = (centers[min(k + 1, count - 1)] - centers[max(k - 1, 0)]).normalized()
+        if basis is None:
+            reference = Vector((1.0, 0.0, 0.0)) if abs(tangent.x) < 0.9 else Vector((0.0, 1.0, 0.0))
+            basis = reference - tangent * reference.dot(tangent)
+        else:
+            basis = basis - tangent * basis.dot(tangent)
+        basis.normalize()
+        other = tangent.cross(basis)
+        rings.append(
+            [
+                add_vert(
+                    bm,
+                    centers[k] + (basis * math.cos(2 * math.pi * i / sides) + other * math.sin(2 * math.pi * i / sides)) * radii[k],
+                    colors[k],
+                )
+                for i in range(sides)
+            ]
+        )
+    for k in range(count - 1):
+        for i in range(sides):
+            j = (i + 1) % sides
+            bm.faces.new((rings[k][i], rings[k][j], rings[k + 1][j], rings[k + 1][i]))
+
+
+def build_acacia(spec: dict, index: int, lod: int) -> bmesh.types.BMesh:
+    """Acacia en parasol : tronc court en anneaux (comme le palmier), quelques maîtresses branches, couronne plate en boules aplaties."""
+    rng = random.Random(spec["seeds"][index])
+    shape = random.Random(spec["seeds"][index] + 1000)  # silhouette commune à tous les niveaux de détail
+    bm = new_bmesh()
+    trunk_height = spec["trunk_height_m"][index]
+    lean = spec["lean_m"][index]
+    segments = spec["trunk_segments"][lod]
+    sides = spec["trunk_sides"][lod]
+    trunk_color = spec["colors"]["trunk"]
+    lean_angle = shape.uniform(0, 2 * math.pi)
+    lean_dir = Vector((math.cos(lean_angle), math.sin(lean_angle), 0.0))
+
+    def trunk_center(t: float) -> Vector:
+        return Vector((lean_dir.x * lean * t * t, lean_dir.y * lean * t * t, trunk_height * t))
+
+    rings = []
+    for s in range(segments + 1):
+        t = s / segments
+        radius = spec["trunk_radius_m"] * (1.0 + 0.6 * (1.0 - t) ** 3) * (1.0 - 0.4 * t)
+        rings.append(ring(bm, trunk_center(t), radius, sides, mix(trunk_color, [c * 0.7 for c in trunk_color], t * 0.7)))
+    for s in range(segments):
+        for i in range(sides):
+            j = (i + 1) % sides
+            bm.faces.new((rings[s][i], rings[s][j], rings[s + 1][j], rings[s + 1][i]))
+    fork = trunk_center(1.0)
+    cap = add_vert(bm, fork + Vector((0, 0, 0.1)), trunk_color)
+    for i in range(sides):
+        bm.faces.new((rings[-1][(i + 1) % sides], rings[-1][i], cap))
+
+    canopy_radius = spec["canopy_radius_m"][index]
+    thickness = spec["canopy_thickness_m"]
+    base = fork + Vector((0.0, 0.0, spec["canopy_rise_m"]))
+    # Paramètres des boules et des branches tirés pour le niveau le plus détaillé : les autres niveaux en gardent les premiers.
+    subdivisions = spec["canopy_blob_subdivisions"]
+    blob_total = len(subdivisions[0])
+    blobs = []
+    for k in range(blob_total):
+        if k == 0:
+            blobs.append((Vector((0.0, 0.0, 0.0)), canopy_radius * 0.72))
+        else:
+            angle = 2 * math.pi * (k - 1) / (blob_total - 1) + shape.uniform(-0.3, 0.3)
+            distance = canopy_radius * shape.uniform(0.5, 0.62)
+            blobs.append((Vector((math.cos(angle) * distance, math.sin(angle) * distance, shape.uniform(-0.12, 0.12))), canopy_radius * shape.uniform(0.42, 0.54)))
+    jitters = [shape.uniform(-0.25, 0.25) for _ in range(spec["limb_count"][0])]
+
+    limb_count = spec["limb_count"][lod]
+    limb_segments = spec["limb_segments"][lod]
+    limb_sides = spec["limb_sides"][lod]
+    for k in range(limb_count):
+        angle = 2 * math.pi * k / limb_count + jitters[k] + 0.4
+        reach = canopy_radius * 0.55
+        start = fork + Vector((0.0, 0.0, -0.15))
+        end = base + Vector((math.cos(angle) * reach, math.sin(angle) * reach, -0.25))
+        centers = [start.lerp(end, s / limb_segments) + Vector((0.0, 0.0, 0.25 * math.sin(math.pi * s / limb_segments))) for s in range(limb_segments + 1)]
+        radii = [spec["limb_radius_m"] * (1.0 - 0.55 * s / limb_segments) for s in range(limb_segments + 1)]
+        colors = [mix(trunk_color, [c * 0.7 for c in trunk_color], 0.7)] * (limb_segments + 1)
+        add_tube(bm, centers, radii, limb_sides, colors)
+
+    scale = spec["canopy_lod_scale"][lod]
+    half = thickness * 0.5
+    for k, blob_subdivisions in enumerate(subdivisions[lod]):
+        offset, size = blobs[k]
+        add_blob(
+            bm,
+            rng,
+            base + offset,
+            (size * scale, size * scale, half),
+            blob_subdivisions,
+            0.14,
+            spec["colors"]["leaf_low"],
+            spec["colors"]["leaf_high"],
+            (base.z - half, base.z + half),
+        )
+    return bm
+
+
+def build_tamaris(spec: dict, index: int, lod: int) -> bmesh.types.BMesh:
+    """Tamaris : quelques tiges sombres qui s'écartent depuis le pied, couronne touffue gris-vert en dôme de boules à facettes."""
+    rng = random.Random(spec["seeds"][index])
+    shape = random.Random(spec["seeds"][index] + 1000)
+    bm = new_bmesh()
+    height = spec["height_m"][index]
+    canopy_radius = spec["canopy_radius_m"][index]
+    trunk_color = spec["colors"]["trunk"]
+    stem_total = spec["stem_count"][0]
+    angle_jitters = [shape.uniform(-0.3, 0.3) for _ in range(stem_total)]
+    stem_lengths = [shape.uniform(0.75, 1.0) for _ in range(stem_total)]
+    stem_leans = [shape.uniform(0.7, 1.2) for _ in range(stem_total)]
+    subdivisions = spec["canopy_blob_subdivisions"]
+    blob_total = len(subdivisions[0])
+    blobs = []
+    for k in range(blob_total):
+        angle = k * 2.39996 + shape.uniform(-0.2, 0.2)  # angle d'or : couverture régulière sans alignement
+        distance = canopy_radius * 0.9 * math.sqrt((k + 0.5) / blob_total)
+        rise = 0.55 + 0.4 * (1.0 - distance / canopy_radius)
+        blobs.append((Vector((math.cos(angle) * distance, math.sin(angle) * distance, height * rise)), canopy_radius * (0.5 if k < 4 else 0.36)))
+
+    stem_count = spec["stem_count"][lod]
+    stem_segments = spec["stem_segments"][lod]
+    stem_sides = spec["stem_sides"][lod]
+    for k in range(stem_count):
+        angle = 2 * math.pi * k / stem_count + angle_jitters[k]
+        outward = Vector((math.cos(angle), math.sin(angle), 0.0))
+        lean = spec["stem_lean_m"][index] * stem_leans[k]
+        top = height * 0.62 * stem_lengths[k]
+        centers = [outward * (0.08 + lean * (s / stem_segments) ** 1.5) + Vector((0.0, 0.0, top * s / stem_segments)) for s in range(stem_segments + 1)]
+        radii = [spec["stem_radius_m"] * (1.0 - 0.5 * s / stem_segments) for s in range(stem_segments + 1)]
+        colors = [mix(trunk_color, [c * 0.75 for c in trunk_color], s / stem_segments) for s in range(stem_segments + 1)]
+        add_tube(bm, centers, radii, stem_sides, colors)
+
+    scale = spec["canopy_lod_scale"][lod]
+    for k, blob_subdivisions in enumerate(subdivisions[lod]):
+        center, size = blobs[k]
+        radius = size * scale
+        add_blob(
+            bm,
+            rng,
+            center,
+            (radius, radius, radius * 0.85),
+            blob_subdivisions,
+            0.16,
+            spec["colors"]["leaf_low"],
+            spec["colors"]["leaf_high"],
+            (height * 0.3, height * 1.05),
+        )
+    return bm
+
+
+def build_tree_imposter(spec: dict) -> bmesh.types.BMesh:
+    """Imposteur d'arbre : deux plans croisés (tronc et couronne en hexagone), 12 triangles au plus."""
+    bm = new_bmesh()
+    half = spec["trunk_width_m"] * 0.5
+    trunk_color = spec["colors"]["trunk"]
+    low = spec["colors"]["leaf_low"]
+    high = spec["colors"]["leaf_high"]
+    top_z = spec["trunk_height_m"]
+    for axis in (Vector((1, 0, 0)), Vector((0, 1, 0))):
+        a = add_vert(bm, -axis * half, trunk_color)
+        b = add_vert(bm, axis * half, trunk_color)
+        c = add_vert(bm, axis * (half * 0.7) + Vector((0, 0, top_z)), trunk_color)
+        d = add_vert(bm, -axis * (half * 0.7) + Vector((0, 0, top_z)), trunk_color)
+        bm.faces.new((a, b, c, d))
+        crown = []
+        for i in range(6):
+            angle = math.pi * i / 3
+            point = axis * (math.cos(angle) * spec["canopy_rx_m"]) + Vector((0, 0, spec["canopy_z_m"] + math.sin(angle) * spec["canopy_rz_m"]))
+            crown.append(add_vert(bm, point, mix(low, high, (math.sin(angle) + 1.0) * 0.5)))
+        bm.faces.new(crown)
+    return bm
+
+
+def build_jujubier(spec: dict, index: int, lod: int) -> bmesh.types.BMesh:
+    """Jujubier sauvage : motte basse de boules à facettes, hérissée de rameaux pâles en zigzag."""
+    rng = random.Random(spec["seeds"][index])
+    bm = new_bmesh()
+    height = spec["height_m"]
+    radius = spec["radius_m"]
+    base = spec["colors"]["base"]
+    top = spec["colors"]["top"]
+    subdivisions = spec["blob_subdivisions"]
+    for k, blob_subdivisions in enumerate(subdivisions):
+        angle = 2 * math.pi * k / len(subdivisions) + rng.uniform(-0.4, 0.4)
+        offset = 0.0 if k == 0 else radius * 0.45
+        size = radius * (0.62 if k == 0 else rng.uniform(0.4, 0.52))
+        rz = height * rng.uniform(0.36, 0.46)
+        center = Vector((math.cos(angle) * offset, math.sin(angle) * offset, rz * 0.8))
+        add_blob(bm, rng, center, (size, size, rz), blob_subdivisions, 0.18, base, top, (0.0, height))
+    twig_color = spec["colors"]["twig"]
+    width = spec["twig_width_m"]
+    for k in range(spec["twig_count"]):
+        angle = 2 * math.pi * k / spec["twig_count"] + rng.uniform(-0.3, 0.3)
+        direction = Vector((math.cos(angle), math.sin(angle), 0.0))
+        side = Vector((-direction.y, direction.x, 0.0))
+        zig = radius * rng.uniform(0.12, 0.2)
+        p0 = direction * radius * 0.25 + Vector((0.0, 0.0, height * 0.3))
+        p1 = p0 + direction * radius * 0.5 + side * zig + Vector((0.0, 0.0, height * 0.4))
+        p2 = p1 + direction * radius * 0.4 - side * zig * 1.4 + Vector((0.0, 0.0, height * 0.3))
+        a0 = add_vert(bm, p0 - side * width, twig_color)
+        b0 = add_vert(bm, p0 + side * width, twig_color)
+        a1 = add_vert(bm, p1 - side * width, twig_color)
+        b1 = add_vert(bm, p1 + side * width, twig_color)
+        tip = add_vert(bm, p2, mix(twig_color, top, 0.5))
+        bm.faces.new((a0, b0, b1, a1))
+        bm.faces.new((a1, b1, tip))
+    return bm
+
+
+def build_laurier_rose(spec: dict, index: int, lod: int) -> bmesh.types.BMesh:
+    """Laurier-rose : tiges arquées, deux masses de feuilles sombres et grappes de fleurs roses (rouge des sommets > 0,8 : repérées par le shader)."""
+    rng = random.Random(spec["seeds"][index])
+    bm = new_bmesh()
+    height = spec["height_m"]
+    spread = spec["spread_m"]
+    colors = spec["colors"]
+    stem_total = spec["stem_count"]
+    segments = spec["stem_segments"]
+    tips = []
+    mids = []
+    for k in range(stem_total):
+        angle = 2 * math.pi * k / stem_total + rng.uniform(-0.3, 0.3)
+        outward = Vector((math.cos(angle), math.sin(angle), 0.0))
+        top = height * rng.uniform(0.8, 1.0)
+        reach = spread * rng.uniform(0.7, 1.0)
+        centers = [outward * (reach * (s / segments) ** 1.4) + Vector((0.0, 0.0, top * s / segments)) for s in range(segments + 1)]
+        radii = [spec["stem_radius_m"] * (1.0 - 0.5 * s / segments) for s in range(segments + 1)]
+        add_tube(bm, centers, radii, spec["stem_sides"], [colors["stem"]] * (segments + 1))
+        tips.append((outward, centers[-1]))
+        mids.append((outward, centers[0].lerp(centers[-1], 0.75)))
+    leaves = spec["leaf_blob_subdivisions"]
+    for k, blob_subdivisions in enumerate(leaves):
+        size = spread * (0.75 if k == 0 else 0.55)
+        center = Vector((rng.uniform(-0.1, 0.1), rng.uniform(-0.1, 0.1), height * (0.5 if k == 0 else 0.78)))
+        add_blob(bm, rng, center, (size, size, height * (0.36 if k == 0 else 0.26)), blob_subdivisions, 0.15, colors["leaf_low"], colors["leaf_high"], (0.0, height))
+    size = spec["flower_size_m"]
+    anchors = tips + mids
+    for k in range(spec["flower_count"]):
+        outward, anchor = anchors[k % len(anchors)]
+        right = Vector((-outward.y, outward.x, 0.0))
+        center = anchor + outward * 0.12 + Vector((0.0, 0.0, 0.06))
+        color = mix(colors["flower"], colors["flower_light"], rng.uniform(0.0, 1.0))
+        corners = [
+            add_vert(bm, center - right * size - Vector((0.0, 0.0, size * 0.8)), color),
+            add_vert(bm, center + right * size - Vector((0.0, 0.0, size * 0.8)), color),
+            add_vert(bm, center + right * size + Vector((0.0, 0.0, size * 0.8)), color),
+            add_vert(bm, center - right * size + Vector((0.0, 0.0, size * 0.8)), color),
+        ]
+        bm.faces.new(corners)
+    return bm
+
+
+def build_retam(spec: dict, index: int, lod: int) -> bmesh.types.BMesh:
+    """Retam : petite motte et gerbe de tiges fines et souples qui retombent en balai (trois triangles par tige)."""
+    rng = random.Random(spec["seeds"][index])
+    bm = new_bmesh()
+    height = spec["height_m"]
+    radius = spec["radius_m"]
+    base = spec["colors"]["base"]
+    tip_color = spec["colors"]["tip"]
+    add_blob(bm, rng, Vector((0.0, 0.0, height * 0.12)), (radius * 0.3, radius * 0.3, height * 0.18), spec["mound_subdivisions"], 0.12, base, base, (0.0, height))
+    width = spec["switch_width_m"]
+    for k in range(spec["switch_count"]):
+        angle = 2 * math.pi * k / spec["switch_count"] + rng.uniform(-0.25, 0.25)
+        direction = Vector((math.cos(angle), math.sin(angle), 0.0))
+        side = Vector((-direction.y, direction.x, 0.0))
+        root = direction * radius * rng.uniform(0.05, 0.15)
+        reach = radius * rng.uniform(0.75, 1.0)
+        top = height * rng.uniform(0.8, 1.0)
+        mid = root + direction * reach * 0.45 + Vector((0.0, 0.0, top * 0.7))
+        tip = root + direction * reach + Vector((0.0, 0.0, top * 0.82))
+        a = add_vert(bm, root - side * width, base)
+        b = add_vert(bm, root + side * width, base)
+        c = add_vert(bm, mid - side * width * 0.7, mix(base, tip_color, 0.5))
+        d = add_vert(bm, mid + side * width * 0.7, mix(base, tip_color, 0.5))
+        e = add_vert(bm, tip, tip_color)
+        bm.faces.new((a, b, d, c))
+        bm.faces.new((c, d, e))
+    return bm
+
+
 def export(obj: bpy.types.Object, path: str) -> int:
     bpy.ops.object.select_all(action="DESELECT")
     obj.select_set(True)
@@ -293,6 +601,18 @@ def main() -> None:
     grass = manifest["models"]["herbe_seche"]
     for i, variant in enumerate(grass["variants"]):
         jobs.append((f"herbe_seche_{variant}", grass["max_triangles"], lambda i=i: build_grass(grass, i)))
+    for tree in ("acacia", "tamaris"):
+        spec = manifest["models"][tree]
+        builder = build_acacia if tree == "acacia" else build_tamaris
+        for i, variant in enumerate(spec["variants"]):
+            for lod in range(3):
+                jobs.append((f"{tree}_{variant}_lod{lod}", spec["max_triangles"][lod], lambda i=i, lod=lod, spec=spec, builder=builder: builder(spec, i, lod)))
+        tree_imposter = manifest["models"][f"imposteur_{tree}"]
+        jobs.append((f"{tree}_imposteur", tree_imposter["max_triangles"], lambda tree_imposter=tree_imposter: build_tree_imposter(tree_imposter)))
+    for shrub, builder in (("jujubier", build_jujubier), ("laurier_rose", build_laurier_rose), ("retam", build_retam)):
+        spec = manifest["models"][shrub]
+        for i, variant in enumerate(spec["variants"]):
+            jobs.append((f"{shrub}_{variant}", spec["max_triangles"], lambda i=i, spec=spec, builder=builder: builder(spec, i, 0)))
     for name, budget, builder in jobs:
         reset_scene()
         material = make_material()
