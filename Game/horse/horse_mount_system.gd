@@ -40,6 +40,8 @@ var _lean_gaits: Array[StringName] = []
 var _current_rider_clip: StringName = &""
 ## Descente demandée en mouvement : Barq s'arrête, puis le cavalier descend.
 var _dismount_requested: bool = false
+## Couches de collision du personnage, retirées pendant la monte (il ne doit pas heurter Barq qui le porte).
+var _player_layers: int = 0
 
 
 func setup(owner_player: PlayerCharacter, rig: ThirdPersonCamera, field: DesertHeightfield) -> void:
@@ -126,12 +128,30 @@ func is_riding() -> bool:
 	return state != State.ON_FOOT
 
 
+## Monte immédiate, sans approche ni animation (chargement d'une partie, scripts, tests).
+func mount() -> void:
+	if state == State.ON_FOOT:
+		_begin_mount()
+	_dismount_requested = false
+	_current_rider_clip = &""
+	_enter(State.MOUNTED)
+
+
+## Descente immédiate, sans animation (chargement d'une partie, scripts, tests).
+func dismount() -> void:
+	_dismount_requested = false
+	if state != State.ON_FOOT:
+		_finish_dismount()
+
+
 func _begin_mount() -> void:
 	mounted = true
 	horse.mounted = true
 	horse.cancel_call()
 	_approach_from = player.global_transform
 	player.process_mode = Node.PROCESS_MODE_DISABLED
+	_player_layers = player.collision_layer
+	player.collision_layer = 0
 	_rider_animation = player.animation_player if player.is_animating() else null
 	if _rider_animation != null:
 		# Le personnage ne fait plus de physique, mais ses animations doivent continuer à jouer.
@@ -149,6 +169,7 @@ func _finish_dismount() -> void:
 	horse.set_input(Vector2.ZERO, false)
 	var ground: Transform3D = _mount_point()
 	player.process_mode = Node.PROCESS_MODE_INHERIT
+	player.collision_layer = _player_layers
 	if _rider_animation != null:
 		_rider_animation.process_mode = Node.PROCESS_MODE_INHERIT
 	player.reset_animation_state()
@@ -219,7 +240,7 @@ func _on_hoofstep(world_position: Vector3, speed: float, surface: StringName) ->
 	if traces != null:
 		traces.place(world_position, horse.rotation.y, surface)
 	if audio != null:
-		audio.hoof(surface, speed)
+		audio.hoof(world_position, speed, horse)
 
 
 ## Même convention que le déplacement à pied : la poussée avant suit la direction regardée par la caméra.

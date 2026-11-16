@@ -1,15 +1,20 @@
 {
   "description": "Réglages définitifs de Barq. Vitesses en m/s, endurance en secondes et distances en mètres.",
   "body": {
-    "radius_m": 0.72,
-    "height_m": 1.9,
-    "collision_layer": 2,
+    "radius_m": 0.4,
+    "height_m": 1.5,
+    "collision_layer": 3,
     "collision_mask": [
-      1
+      1,
+      2
     ],
     "safe_margin_m": 0.01,
-    "floor_max_angle_deg": 38.0,
-    "max_slides": 6
+    "floor_max_angle_deg": 45.0,
+    "max_slides": 6,
+    "description": "Deux formes : une capsule verticale étroite sous le ventre (appui au sol, marches) et une capsule couchée le long du corps (poitrail et croupe heurtent les murs), dont le bas reste au-dessus des marches enjambées. Barq est sur la couche 3 : le personnage (couche 2) le heurte et ne le traverse plus ; Barq heurte le sol (1) et le personnage (2). Pendant la monte, le personnage n'a plus de collision.",
+    "torso_radius_m": 0.42,
+    "torso_length_m": 2.3,
+    "torso_bottom_m": 0.6
   },
   "gaits": {
     "walk": {
@@ -17,28 +22,32 @@
       "acceleration_mps2": 3.0,
       "deceleration_mps2": 4.0,
       "stride_m": 1.4,
-      "energy_per_second": 0.0
+      "energy_per_second": 0.0,
+      "beats_per_stride": 4.0
     },
     "trot": {
       "speed_mps": 3.6,
       "acceleration_mps2": 4.5,
       "deceleration_mps2": 5.5,
       "stride_m": 2.1,
-      "energy_per_second": 0.8
+      "energy_per_second": 0.8,
+      "beats_per_stride": 2.0
     },
     "canter": {
       "speed_mps": 6.8,
       "acceleration_mps2": 5.5,
       "deceleration_mps2": 7.0,
       "stride_m": 3.1,
-      "energy_per_second": 1.7
+      "energy_per_second": 1.7,
+      "beats_per_stride": 3.0
     },
     "sprint": {
       "speed_mps": 11.5,
       "acceleration_mps2": 7.0,
       "deceleration_mps2": 10.0,
       "stride_m": 4.4,
-      "energy_per_second": 3.8
+      "energy_per_second": 3.8,
+      "beats_per_stride": 4.0
     }
   },
   "endurance": {
@@ -48,13 +57,21 @@
     "sprint_recovery_gait": "canter"
   },
   "terrain": {
-    "max_slope_deg": 34.0,
-    "dangerous_drop_m": 1.15,
-    "look_ahead_m": 7.0,
-    "obstacle_probe_radius_m": 0.82,
-    "obstacle_probe_height_m": 1.1,
-    "obstacle_probe_distance_m": 2.2,
-    "avoidance_turn_deg": 22.0
+    "description": "Prudence de Barq. Le relief est lu sur la heightfield le long du trajet, un point tous les sample_spacing_m jusqu'à la distance d'arrêt (vitesse × look_ahead_time_s, bornée) : il refuse une pente plus raide que max_slope_deg (la même que le personnage) ou un à-pic (dénivelé de plus de cliff_drop_m entre deux points voisins). Les obstacles posés (rochers, murets, troncs) sont sondés par une sphère qui suit le relief, sa base à obstacle_clearance_m au-dessus du sol : tout ce qui est plus bas que step_max_height_m est enjambé (montée de marche), seul ce qui dépasse l'arrête.",
+    "max_slope_deg": 45.0,
+    "cliff_drop_m": 1.15,
+    "sample_spacing_m": 1.0,
+    "look_ahead_time_s": 0.45,
+    "look_ahead_min_m": 1.5,
+    "look_ahead_max_m": 7.0,
+    "obstacle_probe_radius_m": 0.38,
+    "obstacle_clearance_m": 0.5,
+    "obstacle_probe_distance_m": 1.0,
+    "step_max_height_m": 0.45,
+    "step_min_height_m": 0.03,
+    "step_clearance_m": 0.01,
+    "step_surface_inset_m": 0.06,
+    "step_retry_delay_s": 0.25
   },
   "call": {
     "arrival_distance_m": 2.6,
@@ -78,10 +95,9 @@
     "sand_surface": "sable"
   },
   "audio": {
-    "hoof_frequency_hz": 110.0,
-    "breath_frequency_hz": 75.0,
-    "max_distance_m": 42.0,
-    "voice_count": 4
+    "description": "Sabots : sons de pas du jeu (selon la surface), plus graves et plus forts.",
+    "hoof_pitch_scale": 0.62,
+    "hoof_volume_offset_db": 4.0
   },
   "model": {
     "path": "res://assets/horse/barq.glb",

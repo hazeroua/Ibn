@@ -262,9 +262,9 @@ func _attach(body: Node3D, surface: Surface, material: Material, node_name: Stri
 	# Sommets en coordonnées du monde : la cellule est posée à son coin, on compense.
 	instance.position = -body.position
 	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	instance.visibility_range_end = range_end
-	instance.visibility_range_end_margin = margin
-	instance.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+	# Fondu tramé (pas de transparence triée par objet : murets et cultures restent dans la passe opaque).
+	# Sommets en coordonnées du monde et nœud ramené à l'origine du monde : le centre est celui du maillage.
+	LodFade.apply(instance, instance.mesh.get_aabb().get_center(), 0.0, 0.0, range_end, margin)
 	body.add_child(instance)
 
 

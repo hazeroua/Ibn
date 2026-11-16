@@ -1,5 +1,6 @@
 shader_type spatial;
 render_mode diffuse_burley, specular_disabled;
+#include "res://world/common/lod_fade.gdshaderinc"
 // Sol cultivé de la palmeraie : un seul maillage par cellule, aucun coût par image côté processeur. La couleur de sommet porte
 // la teinte de la culture (rgb) et sa croissance minimale (alpha : les cultures qui restent vertes toute l'année) ; UV est le
 // repère local en mètres ; UV2 donne le style de semis (0 couvert plein, 1 semis dense, 2 rangs, 3 rangs larges) et l'écart
@@ -41,6 +42,9 @@ void vertex() {
 }
 
 void fragment() {
+	if (lod_fade_discard(FRAGCOORD.xy, CAMERA_POSITION_WORLD)) {
+		discard;
+	}
 	vec2 earth_uv = v_world.xz * earth_uv_scale;
 	vec3 earth = texture(earth_albedo, earth_uv).rgb;
 	float grain = dot(earth, vec3(0.333));

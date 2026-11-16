@@ -1,5 +1,6 @@
 shader_type spatial;
 render_mode blend_mix, depth_draw_never, cull_back, diffuse_lambert, specular_schlick_ggx;
+#include "res://world/common/lod_fade.gdshaderinc"
 // Filet d'eau des séguias et du bassin de répartition : version étroite du shader de l'oasis, sans lecture de profondeur ni
 // de texture d'écran. UV.x vaut 0 à une rive et 1 à l'autre ; UV.y est la distance parcourue en mètres (l'eau s'écoule dans ce sens).
 
@@ -10,6 +11,9 @@ uniform float ripple_scale = 5.0;
 uniform float roughness_value = 0.1;
 
 void fragment() {
+	if (lod_fade_discard(FRAGCOORD.xy, CAMERA_POSITION_WORLD)) {
+		discard;
+	}
 	float across = abs(UV.x * 2.0 - 1.0);
 	float flow = UV.y * ripple_scale - TIME * flow_speed * ripple_scale;
 	float ripple = sin(flow + UV.x * 6.0) * 0.5 + sin(flow * 1.7 - UV.x * 9.0) * 0.5;

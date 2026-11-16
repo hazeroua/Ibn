@@ -71,3 +71,46 @@ func test_gait_speed_data_is_positive() -> void:
 	var motor := HorseLocomotion.new(_settings())
 	for gait: int in motor.GAIT_NAMES.size():
 		assert_gt(motor.get_gait_speed(gait), 0.0)
+
+
+## Obstacles : Barq enjambe un muret bas (que le personnage franchit aussi) et s'arrête devant un mur.
+## Pire cas : galop sur un sol couvert de bordures de séguias, sans heightfield (corps de collision seuls).
+func test_barq_steps_over_low_walls() -> void:
+	var low: Dictionary = await _run_into_wall(0.3)
+	assert_gt(low["travelled"] as float, 12.0, "Barq doit franchir un muret de 0,30 m")
+	assert_gt(low["height"] as float, 0.25, "Barq doit être monté sur le muret")
+
+
+func test_barq_stops_at_high_walls() -> void:
+	var high: Dictionary = await _run_into_wall(1.4)
+	assert_lt(high["travelled"] as float, 9.0, "Barq doit s'arrêter devant un mur de 1,40 m")
+
+
+func _run_into_wall(wall_height: float) -> Dictionary:
+	var world := Node3D.new()
+	add_child_autofree(world)
+	var ground := StaticBody3D.new()
+	ground.collision_layer = 1
+	var ground_shape := CollisionShape3D.new()
+	var ground_box := BoxShape3D.new()
+	ground_box.size = Vector3(80.0, 1.0, 80.0)
+	ground_shape.shape = ground_box
+	ground_shape.position = Vector3(0.0, -0.5, 0.0)
+	ground.add_child(ground_shape)
+	# Plateau surélevé de la hauteur du muret, à 8 m devant Barq (axe -z, son avant au repos).
+	var wall_shape := CollisionShape3D.new()
+	var wall_box := BoxShape3D.new()
+	wall_box.size = Vector3(20.0, wall_height, 20.0)
+	wall_shape.shape = wall_box
+	wall_shape.position = Vector3(0.0, wall_height * 0.5, -18.0)
+	ground.add_child(wall_shape)
+	world.add_child(ground)
+	var horse := HorseController.new(null)
+	world.add_child(horse)
+	await get_tree().physics_frame
+	var start: Vector3 = horse.global_position
+	for index: int in 240:
+		horse.set_input(Vector2(0.0, -1.0), false)
+		await get_tree().physics_frame
+	var travelled: float = -(horse.global_position.z - start.z)
+	return {"travelled": travelled, "height": horse.global_position.y}

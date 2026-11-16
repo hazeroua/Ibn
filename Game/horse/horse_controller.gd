@@ -24,6 +24,10 @@ var _animation_player: AnimationPlayer
 ## Clip et vitesse de référence par allure (indices de HorseLocomotion.Gait), clip d'arrêt et de saut.
 var _gait_clips: Array[StringName] = []
 var _gait_reference: PackedFloat32Array = PackedFloat32Array()
+## Foulée (m) et battues par foulée de chaque allure, côté du dernier sabot.
+var _gait_stride: PackedFloat32Array = PackedFloat32Array()
+var _gait_beats: PackedFloat32Array = PackedFloat32Array()
+var _hoof_side: float = 1.0
 var _idle_clip: StringName = &""
 var _jump_clip: StringName = &""
 var _idle_speed: float = 0.0
@@ -50,6 +54,21 @@ var _stride_distance: float = 0.0
 var _probe: PhysicsShapeQueryParameters3D
 var _probe_shape: SphereShape3D
 var _exclude: Array[RID] = []
+var _step_collision := KinematicCollision3D.new()
+var _step_retry: float = 0.0
+var _max_slope_cos: float = 0.0
+var _cliff_drop: float = 0.0
+var _sample_spacing: float = 1.0
+var _look_time: float = 0.0
+var _look_min: float = 0.0
+var _look_max: float = 0.0
+var _probe_clearance: float = 0.0
+var _probe_distance: float = 0.0
+var _step_max: float = 0.0
+var _step_min: float = 0.0
+var _step_clearance: float = 0.0
+var _step_inset: float = 0.0
+var _step_retry_delay: float = 0.0
 var _last_gait: StringName = &"walk"
 
 
@@ -57,14 +76,35 @@ func _init(field: DesertHeightfield = null) -> void:
 	settings = JsonData.load_dictionary(SETTINGS_PATH)
 	heightfield = field
 	locomotion = HorseLocomotion.new(settings)
+	var gaits: Dictionary = JsonData.get_dictionary(settings, "gaits", "horse.json")
+	for gait_name: StringName in HorseLocomotion.GAIT_NAMES:
+		var gait_data: Dictionary = JsonData.get_dictionary(gaits, String(gait_name), "horse.json > gaits")
+		_gait_stride.append(JsonData.get_float(gait_data, "stride_m", "horse.json > gaits"))
+		_gait_beats.append(JsonData.get_float(gait_data, "beats_per_stride", "horse.json > gaits"))
 	var jump_data: Dictionary = JsonData.get_dictionary(settings, "jump", "horse.json")
 	_jump_speed = JsonData.get_float(jump_data, "speed_mps", "horse.json > jump")
 	_gravity = JsonData.get_float(jump_data, "gravity_mps2", "horse.json > jump")
 	_jump_min_speed = JsonData.get_float(jump_data, "min_speed_mps", "horse.json > jump")
 	_jump_rest = JsonData.get_float(jump_data, "cooldown_s", "horse.json > jump")
+	var terrain: Dictionary = JsonData.get_dictionary(settings, "terrain", "horse.json")
+	const T: String = "horse.json > terrain"
+	_max_slope_cos = cos(deg_to_rad(JsonData.get_float(terrain, "max_slope_deg", T)))
+	_cliff_drop = JsonData.get_float(terrain, "cliff_drop_m", T)
+	_sample_spacing = maxf(JsonData.get_float(terrain, "sample_spacing_m", T), 0.25)
+	_look_time = JsonData.get_float(terrain, "look_ahead_time_s", T)
+	_look_min = JsonData.get_float(terrain, "look_ahead_min_m", T)
+	_look_max = maxf(JsonData.get_float(terrain, "look_ahead_max_m", T), _look_min)
+	_probe_clearance = JsonData.get_float(terrain, "obstacle_clearance_m", T)
+	_probe_distance = JsonData.get_float(terrain, "obstacle_probe_distance_m", T)
+	_step_max = JsonData.get_float(terrain, "step_max_height_m", T)
+	_step_min = JsonData.get_float(terrain, "step_min_height_m", T)
+	_step_clearance = JsonData.get_float(terrain, "step_clearance_m", T)
+	_step_inset = JsonData.get_float(terrain, "step_surface_inset_m", T)
+	_step_retry_delay = JsonData.get_float(terrain, "step_retry_delay_s", T)
+	if _probe_clearance <= _step_max:
+		push_error("horse.json > terrain : obstacle_clearance_m doit dépasser step_max_height_m (sinon les marches arrêtent Barq).")
 	_probe_shape = SphereShape3D.new()
-	var terrain: Dictionary = settings.get("terrain", {}) as Dictionary
-	_probe_shape.radius = float(terrain.get("obstacle_probe_radius_m", 0.82))
+	_probe_shape.radius = JsonData.get_float(terrain, "obstacle_probe_radius_m", T)
 	_probe = PhysicsShapeQueryParameters3D.new()
 	_probe.shape = _probe_shape
 	_probe.collision_mask = GROUND_LAYER
@@ -76,20 +116,32 @@ func _init(field: DesertHeightfield = null) -> void:
 func _ready() -> void:
 	var body: Dictionary = settings.get("body", {}) as Dictionary
 	var capsule := CapsuleShape3D.new()
-	capsule.radius = float(body.get("radius_m", 0.72))
-	capsule.height = float(body.get("height_m", 1.9))
+	capsule.radius = float(body.get("radius_m", 0.4))
+	capsule.height = float(body.get("height_m", 1.5))
 	var collision := CollisionShape3D.new()
 	collision.name = "Collision"
 	collision.shape = capsule
 	collision.position = Vector3(0.0, capsule.height * 0.5, 0.0)
 	add_child(collision)
-	collision_layer = int(body.get("collision_layer", 2))
+	# Corps couché le long de l'axe avant-arrière (z local), au-dessus des marches que Barq enjambe.
+	var torso := CapsuleShape3D.new()
+	torso.radius = float(body.get("torso_radius_m", 0.42))
+	torso.height = maxf(float(body.get("torso_length_m", 2.3)), torso.radius * 2.0)
+	var torso_shape := CollisionShape3D.new()
+	torso_shape.name = "Torso"
+	torso_shape.shape = torso
+	torso_shape.transform = Transform3D(
+		Basis(Vector3.RIGHT, PI * 0.5), Vector3(0.0, float(body.get("torso_bottom_m", 0.6)) + torso.radius, 0.0)
+	)
+	add_child(torso_shape)
+	if float(body.get("torso_bottom_m", 0.6)) <= _step_max:
+		push_error("horse.json > body : torso_bottom_m doit dépasser terrain > step_max_height_m.")
+	collision_layer = _layers_to_mask([body.get("collision_layer", 3)])
 	collision_mask = _layers_to_mask(body.get("collision_mask", [1]) as Array)
 	up_direction = Vector3.UP
 	floor_max_angle = deg_to_rad(float(body.get("floor_max_angle_deg", 38.0)))
 	max_slides = int(body.get("max_slides", 6))
 	safe_margin = float(body.get("safe_margin_m", 0.01))
-	floor_snap_length = 0.5
 	_exclude = [get_rid()]
 	_probe.exclude = _exclude
 	_build_visual()
@@ -151,11 +203,18 @@ func _physics_process(delta: float) -> void:
 		intended = Vector3.ZERO
 	velocity = intended / delta if delta > 0.0 else Vector3.ZERO
 	_jump_cooldown = maxf(_jump_cooldown - delta, 0.0)
-	if is_on_floor() and not _airborne:
+	var grounded: bool = is_on_floor() and not _airborne
+	if grounded:
 		_vertical_speed = 0.0
 	else:
 		_vertical_speed -= _gravity * delta
 	velocity.y = _vertical_speed
+	_step_retry = maxf(_step_retry - delta, 0.0)
+	if grounded and intended.length_squared() > 0.0 and _try_step_up(intended):
+		velocity.x = 0.0
+		velocity.z = 0.0
+	# L'accrochage couvre une marche descendante et la descente d'une pente à l'angle maximal.
+	floor_snap_length = maxf(_step_max, 0.05 + intended.length() * tan(floor_max_angle))
 	move_and_slide()
 	if _airborne and is_on_floor() and _vertical_speed <= 0.0:
 		_airborne = false
@@ -170,29 +229,68 @@ func _physics_process(delta: float) -> void:
 	last_step_usec = Time.get_ticks_usec() - started
 
 
+## Barq refuse d'avancer vers une pente impraticable, un à-pic ou un obstacle plus haut qu'une marche.
+## Relief : au plus ceil(look_ahead_max_m / sample_spacing_m) lectures de la heightfield ; obstacles : un seul
+## balayage de sphère qui suit le relief (base au-dessus des marches). Aucune allocation.
 func _safe_to_move(motion: Vector3) -> bool:
 	if motion.length_squared() < 0.000001:
 		return true
-	var terrain: Dictionary = settings.get("terrain", {}) as Dictionary
-	var look_ahead: float = maxf(float(terrain.get("look_ahead_m", 7.0)), motion.length())
 	var direction: Vector3 = motion.normalized()
+	var origin: Vector3 = global_position
+	var ground_here: float = origin.y
 	if heightfield != null:
-		var now: float = heightfield.height_at(global_position.x, global_position.z)
-		var ahead: Vector3 = global_position + direction * look_ahead
-		var ahead_height: float = heightfield.height_at(ahead.x, ahead.z)
-		var slope: Vector3 = heightfield.normal_at(ahead.x, ahead.z)
-		var max_slope: float = deg_to_rad(float(terrain.get("max_slope_deg", 34.0)))
-		if acos(clampf(slope.y, -1.0, 1.0)) > max_slope:
-			return false
-		if now - ahead_height > float(terrain.get("dangerous_drop_m", 1.15)):
-			return false
+		ground_here = heightfield.height_at(origin.x, origin.z)
+		var look_ahead: float = clampf(locomotion.speed * _look_time, _look_min, _look_max)
+		var count: int = ceili(look_ahead / _sample_spacing)
+		var previous: float = ground_here
+		for index: int in range(1, count + 1):
+			var distance: float = minf(float(index) * _sample_spacing, look_ahead)
+			var x: float = origin.x + direction.x * distance
+			var z: float = origin.z + direction.z * distance
+			var height: float = heightfield.height_at(x, z)
+			if heightfield.normal_at(x, z).y < _max_slope_cos or previous - height > _cliff_drop:
+				return false
+			previous = height
 	if get_world_3d() == null:
 		return true
-	var probe_height: float = float(terrain.get("obstacle_probe_height_m", 1.1))
-	_probe.transform = Transform3D(Basis.IDENTITY, global_position + Vector3.UP * probe_height)
-	_probe.motion = motion.normalized() * float(terrain.get("obstacle_probe_distance_m", 2.2))
+	var reach: float = motion.length() + _probe_distance
+	var ahead: Vector3 = origin + direction * reach
+	var ground_ahead: float = ground_here if heightfield == null else heightfield.height_at(ahead.x, ahead.z)
+	var lift: float = _probe_clearance + _probe_shape.radius
+	var start := Vector3(origin.x, ground_here + lift, origin.z)
+	_probe.transform = Transform3D(Basis.IDENTITY, start)
+	_probe.motion = Vector3(ahead.x, ground_ahead + lift, ahead.z) - start
 	var result: PackedFloat32Array = get_world_3d().direct_space_state.cast_motion(_probe)
 	return result.is_empty() or result[0] >= 0.9999
+
+
+## Enjambe une marche (rocher bas, muret, bord de séguia) : au plus quatre requêtes, seulement quand le
+## mouvement de l'image est bloqué par un mur ; après un échec, aucune tentative avant step_retry_delay_s.
+func _try_step_up(motion: Vector3) -> bool:
+	if _step_retry > 0.0:
+		return false
+	var origin: Transform3D = global_transform
+	if not test_move(origin, motion, _step_collision, safe_margin, false, 1):
+		return false
+	if _step_collision.get_normal(0).y > cos(floor_max_angle):
+		return false
+	var direction: Vector3 = motion.normalized()
+	var contact: Vector3 = _step_collision.get_position(0) - origin.origin
+	var forward: Vector3 = direction * maxf(contact.dot(direction) + _step_inset, motion.length())
+	var raise: float = _step_max
+	if test_move(origin, Vector3.UP * (raise + _step_clearance), _step_collision, safe_margin, false, 1):
+		raise = _step_collision.get_travel().y
+	if raise >= _step_min:
+		var raised: Transform3D = origin.translated(Vector3.UP * raise)
+		if not test_move(raised, forward, null, safe_margin, false, 1):
+			var landing: Transform3D = raised.translated(forward)
+			if test_move(landing, Vector3.DOWN * (raise + _step_clearance), _step_collision, safe_margin, false, 1):
+				var gained: float = raise + _step_collision.get_travel().y
+				if gained >= _step_min and _step_collision.get_normal(0).y >= cos(floor_max_angle):
+					global_position = landing.origin + _step_collision.get_travel()
+					return true
+	_step_retry = _step_retry_delay
+	return false
 
 
 ## Saut demandé (monté) : seulement au sol, en mouvement et hors du temps de repos entre deux sauts.
@@ -231,17 +329,19 @@ func saddle_position() -> Vector3:
 	return global_transform * _seat_local
 
 
+## Un son de sabot à chaque battue : la foulée de l'allure est partagée en beats_per_stride battues (pas : 4,
+## trot : 2, galop : 3). Les sabots alternent de part et d'autre du corps.
 func _emit_hoofsteps(distance: float) -> void:
-	if distance <= 0.0 or not is_on_floor():
+	if distance <= 0.0 or not is_on_floor() or _airborne:
 		return
 	_stride_distance += distance
-	var gaits: Dictionary = settings.get("gaits", {}) as Dictionary
-	var gait_data: Dictionary = gaits.get(String(locomotion.get_gait_name()), {}) as Dictionary
-	var stride: float = float(gait_data.get("stride_m", 1.4))
-	if _stride_distance < stride * 0.5:
+	var gait: int = locomotion.gait
+	var beat: float = _gait_stride[gait] / maxf(_gait_beats[gait], 1.0)
+	if _stride_distance < beat:
 		return
-	_stride_distance = fmod(_stride_distance, stride * 0.5)
-	var hoof_position: Vector3 = global_position + global_basis.x * 0.35
+	_stride_distance = fmod(_stride_distance, beat)
+	_hoof_side = -_hoof_side
+	var hoof_position: Vector3 = global_position + global_basis.x * (0.25 * _hoof_side)
 	hoofstep.emit(hoof_position, locomotion.speed, surface_at(global_position))
 
 

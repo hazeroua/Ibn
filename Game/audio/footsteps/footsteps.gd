@@ -196,7 +196,10 @@ func is_emitter_connected(emitter: Object) -> bool:
 
 ## Joue un pas à l'instant now_usec (horloge de Time.get_ticks_usec()). Renvoie l'indice de la voix
 ## utilisée, ou -1 si le pas est ignoré (trop loin, valeurs invalides, système non prêt).
-func play_footstep(world_position: Vector3, speed: float, collider: Variant, now_usec: int) -> int:
+## pitch_scale et volume_offset_db adaptent le même son à un autre marcheur (sabots de Barq : plus grave, plus fort).
+func play_footstep(
+	world_position: Vector3, speed: float, collider: Variant, now_usec: int, pitch_scale: float = 1.0, volume_offset_db: float = 0.0
+) -> int:
 	_steps_received += 1
 	if not _voices_created or not is_inside_tree() or not world_position.is_finite() or is_nan(speed):
 		_steps_rejected += 1
@@ -214,9 +217,11 @@ func play_footstep(world_position: Vector3, speed: float, collider: Variant, now
 	var gait: int = _gait_for_speed(speed)
 	var pitch_variation: float = _surface_pitch_variation[surface]
 	var semitones: float = _rng.randf_range(-pitch_variation, pitch_variation)
-	var pitch: float = _gait_pitch_scale[gait] * pow(2.0, semitones / SEMITONES_PER_OCTAVE)
+	var pitch: float = _gait_pitch_scale[gait] * pow(2.0, semitones / SEMITONES_PER_OCTAVE) * pitch_scale
 	var volume_variation: float = _surface_volume_variation_db[surface]
-	var volume: float = _surface_volume_db[surface] + _gait_volume_db[gait] + _rng.randf_range(-volume_variation, volume_variation)
+	var volume: float = (
+		_surface_volume_db[surface] + _gait_volume_db[gait] + _rng.randf_range(-volume_variation, volume_variation) + volume_offset_db
+	)
 	var voice: AudioStreamPlayer3D = _voices[voice_index]
 	voice.stream = _variant_streams[variant]
 	voice.pitch_scale = pitch

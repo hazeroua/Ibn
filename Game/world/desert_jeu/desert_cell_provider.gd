@@ -122,6 +122,21 @@ func _attach_cover_grid(body: Node3D, cell: Vector2i, result: Dictionary) -> voi
 
 ## Un MultiMesh par niveau de détail de l'espèce, tous alimentés par les mêmes transformées (tableau partagé, copié à
 ## l'écriture). Chaque niveau n'est dessiné que dans sa plage de distance, avec un fondu de part et d'autre.
+## Centre des instances (repère du monde) : milieu des origines plus le centre du maillage, comme l'AABB de Godot.
+## Transformées de 12 flottants par instance (origine aux indices 3, 7, 11). Une fois par cellule et par niveau.
+static func _instances_center(transforms: PackedFloat32Array, mesh: Mesh) -> Vector3:
+	var count: int = transforms.size() / 12
+	if count == 0:
+		return Vector3.ZERO
+	var low := Vector3(INF, INF, INF)
+	var high := Vector3(-INF, -INF, -INF)
+	for i: int in count:
+		var origin := Vector3(transforms[i * 12 + 3], transforms[i * 12 + 7], transforms[i * 12 + 11])
+		low = low.min(origin)
+		high = high.max(origin)
+	return (low + high) * 0.5 + mesh.get_aabb().get_center()
+
+
 func _build_instances(id: StringName, transforms: PackedFloat32Array, origin: Vector3) -> Array[DesertFoliageInstance]:
 	var settings: Dictionary = _settings.get(id, {})
 	var margin: float = float(settings.get("visibility_fade_margin", 0.0))
@@ -141,16 +156,19 @@ func _build_instances(id: StringName, transforms: PackedFloat32Array, origin: Ve
 		# Les transformées sont en coordonnées du monde ; la cellule est posée à son coin : on compense.
 		instance.position = -origin
 		var end_m: float = float(level["end_m"])
-		instance.visibility_range_end = end_m if end_m > 0.0 else float(settings.get("visibility_range_end", 0.0))
-		instance.visibility_range_end_margin = margin
+		var range_end: float = end_m if end_m > 0.0 else float(settings.get("visibility_range_end", 0.0))
+		var range_begin: float = 0.0
+		var begin_margin: float = 0.0
 		if k > 0:
-			instance.visibility_range_begin = maxf(previous_end - margin, 0.0)
-			instance.visibility_range_begin_margin = margin
+			range_begin = maxf(previous_end, 0.0)
+			begin_margin = margin
 		elif _begin_range.has(id):
 			# Couche lointaine du couvert du sol : n'apparaît qu'au-delà de la couche proche.
-			instance.visibility_range_begin = float(_begin_range[id])
-			instance.visibility_range_begin_margin = float(_begin_margin.get(id, 0.0))
-		instance.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+			range_begin = float(_begin_range[id])
+			begin_margin = float(_begin_margin.get(id, 0.0))
+		# Fondu tramé : chaque niveau disparaît dans la marge où le suivant apparaît, sans passe transparente.
+		# Centre de l'instance : transformées en coordonnées du monde, nœud ramené à l'origine du monde.
+		LodFade.apply(instance, _instances_center(transforms, multimesh.mesh), range_begin, begin_margin, range_end, margin)
 		# Le dernier niveau d'une espèce à plusieurs niveaux est l'imposteur : il ne projette pas d'ombre.
 		var is_imposter: bool = levels.size() > 1 and k == levels.size() - 1
 		instance.cast_shadow = (

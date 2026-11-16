@@ -1,3 +1,4 @@
+#include "res://world/common/lod_fade.gdshaderinc"
 // Corps commun des shaders de la végétation et des décors du désert : balancement par le vent (uniformes globaux du
 // ticket vent) et teinte de saison (uniformes globaux du ticket saisons). Aucun coût par image côté processeur.
 // Inclus par desert_foliage.gdshader (végétation texturée : cartes découpées par l'alpha de l'atlas, FOLIAGE_CARDS
@@ -53,6 +54,9 @@ void vertex() {
 }
 
 void fragment() {
+	if (lod_fade_discard(FRAGCOORD.xy, CAMERA_POSITION_WORLD)) {
+		discard;
+	}
 	vec3 tint = vec3(1.0);
 	if (tint_kind == 1) {
 		tint = season_grass_color;

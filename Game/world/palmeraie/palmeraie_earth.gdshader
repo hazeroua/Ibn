@@ -4,6 +4,7 @@ shader_type spatial;
 // murets ne sont pas étirées). Les pieds des ouvrages, enfouis dans le sol, se confondent donc avec le terrain.
 // COULEUR du sommet : r = part de pisé séché (plus clair), g = part de terre humide (plus sombre), b = nuance (0,5 neutre).
 render_mode diffuse_burley, specular_schlick_ggx;
+#include "res://world/common/lod_fade.gdshaderinc"
 
 uniform sampler2D earth_albedo : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D earth_normal : filter_linear_mipmap_anisotropic, repeat_enable;
@@ -30,6 +31,9 @@ vec3 triplanar_weights(vec3 n) {
 }
 
 void fragment() {
+	if (lod_fade_discard(FRAGCOORD.xy, CAMERA_POSITION_WORLD)) {
+		discard;
+	}
 	vec3 w = triplanar_weights(world_normal);
 	vec3 p = world_position * earth_uv_scale;
 	vec3 albedo = texture(earth_albedo, p.zy).rgb * w.x + texture(earth_albedo, p.xz).rgb * w.y + texture(earth_albedo, p.xy).rgb * w.z;
