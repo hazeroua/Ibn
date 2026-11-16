@@ -93,7 +93,18 @@ func test_day_and_night_are_coherent() -> void:
 
 
 func test_all_values_finite_and_non_negative() -> void:
+	var invalid_count: int = 0
+	var first_invalid_minute: int = -1
+	var first_invalid_channel: int = -1
 	for minute: int in MINUTES_PER_DAY:
 		var out: PackedFloat32Array = _sample(float(minute) / 60.0 + 0.0123)
 		for channel: int in DayNightCurves.CHANNEL_COUNT:
-			assert_true(is_finite(out[channel]) and out[channel] >= 0.0, "canal %d à la minute %d" % [channel, minute])
+			if not is_finite(out[channel]) or out[channel] < 0.0:
+				invalid_count += 1
+				if first_invalid_minute < 0:
+					first_invalid_minute = minute
+					first_invalid_channel = channel
+	var detail: String = (
+		"valeurs invalides : %d (première minute %d, canal %d)" % [invalid_count, first_invalid_minute, first_invalid_channel]
+	)
+	assert_eq(invalid_count, 0, detail)
