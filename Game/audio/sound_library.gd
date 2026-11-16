@@ -38,6 +38,12 @@ static func load_streams(manifest: Dictionary, ids: PackedStringArray) -> Dictio
 	for id: String in ids:
 		if streams.has(id):
 			continue
+		var synthesized: Dictionary = manifest.get("synthesized", {})
+		if synthesized.has(id):
+			var made: AudioStream = _synthesize(id, synthesized[id])
+			if made != null:
+				streams[id] = made
+			continue
 		if not paths.has(id):
 			push_error("SoundLibrary : son « %s » absent du manifeste %s." % [id, MANIFEST_PATH])
 			continue
@@ -51,3 +57,16 @@ static func load_streams(manifest: Dictionary, ids: PackedStringArray) -> Dictio
 			continue
 		streams[id] = stream
 	return streams
+
+
+## Son calculé (section « synthesized » du manifeste) ; null (avec erreur) si son type est inconnu.
+static func _synthesize(id: String, params: Variant) -> AudioStream:
+	if typeof(params) != TYPE_DICTIONARY:
+		push_error("SoundLibrary : le son synthétisé « %s » doit être un objet JSON (%s)." % [id, MANIFEST_PATH])
+		return null
+	var settings: Dictionary = params
+	var kind: String = JsonData.get_string(settings, "kind", MANIFEST_PATH)
+	if kind == "water_step":
+		return SoundSynth.water_step(settings, id)
+	push_error("SoundLibrary : type de son synthétisé inconnu « %s » (%s)." % [kind, id])
+	return null

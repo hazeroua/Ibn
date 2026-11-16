@@ -1,0 +1,92 @@
+{
+  "description": "Réglages des plans d'eau par type (WaterBody ; distances et hauteurs en mètres, les clés des types sont les uniformes du shader) : maillage, matériau, couleurs, vagues. Un maillage par (type, rayon, rive) et un matériau par type, partagés. Aucun contenu codé en dur dans les scripts.",
+  "midday": {
+    "uniform": "water_midday",
+    "sun_height_low": 0.55,
+    "sun_height_high": 0.8
+  },
+  "barrier": {
+    "thickness_m": 0.6,
+    "height_above_surface_m": 0.7,
+    "max_chord_m": 3.0,
+    "max_segments": 160,
+    "depth_below_floor_m": 0.5
+  },
+  "kinds": {
+    "oasis": {
+      "shader": "res://world/desert/water_body.gdshader",
+      "mesh": { "segments": 48, "inner_rings": 1, "shore_rings": 1 },
+      "max_triangles": 200,
+      "surface_offset_m": 0.04,
+      "shallow_color": [0.18, 0.55, 0.52, 0.55],
+      "deep_color": [0.03, 0.2, 0.3, 0.9],
+      "foam_color": [0.9, 0.95, 0.95, 1.0],
+      "wave_speed": 0.35,
+      "wave_scale": 0.9,
+      "wave_height": 0.03,
+      "normal_strength": 0.6,
+      "edge_width": 0.12,
+      "roughness_value": 0.08,
+      "reflection": 0.15,
+      "wind_gain": 1.0
+    },
+    "lac": {
+      "shader": "res://world/desert/water_body.gdshader",
+      "mesh": { "segments": 64, "inner_rings": 3, "shore_rings": 6 },
+      "max_triangles": 2000,
+      "surface_offset_m": 0.0,
+      "shallow_color": [0.25, 0.6, 0.55, 0.45],
+      "deep_color": [0.04, 0.24, 0.34, 0.92],
+      "foam_color": [0.92, 0.96, 0.96, 1.0],
+      "wave_speed": 0.55,
+      "wave_scale": 0.7,
+      "wave_height": 0.07,
+      "normal_strength": 0.8,
+      "edge_width": 0.1,
+      "roughness_value": 0.06,
+      "reflection": 0.35,
+      "wind_gain": 1.6
+    },
+    "guelta": {
+      "shader": "res://world/desert/water_body.gdshader",
+      "mesh": { "segments": 40, "inner_rings": 2, "shore_rings": 4 },
+      "max_triangles": 2000,
+      "surface_offset_m": 0.0,
+      "shallow_color": [0.1, 0.3, 0.3, 0.7],
+      "deep_color": [0.01, 0.06, 0.09, 0.97],
+      "foam_color": [0.7, 0.75, 0.72, 1.0],
+      "wave_speed": 0.2,
+      "wave_scale": 1.2,
+      "wave_height": 0.008,
+      "normal_strength": 0.25,
+      "edge_width": 0.06,
+      "roughness_value": 0.03,
+      "reflection": 0.6,
+      "wind_gain": 0.3
+    },
+    "chott": {
+      "shader": "res://world/desert/salt_flat.gdshader",
+      "mesh": { "segments": 96, "rings": 40, "edge_power": 0.8 },
+      "max_triangles": 8000,
+      "surface_offset_m": 0.05,
+      "salt_color": [0.93, 0.91, 0.84],
+      "crack_color": [0.66, 0.62, 0.52],
+      "mud_color": [0.42, 0.36, 0.28],
+      "water_color": [0.62, 0.74, 0.84],
+      "crack_scale": 0.35,
+      "crack_width": 0.06,
+      "crack_fade_start": 60.0,
+      "crack_fade_end": 220.0,
+      "wet_roughness": 0.03,
+      "dry_roughness": 0.85,
+      "mirror_metallic": 0.85,
+      "far_lift_per_m": 0.0003,
+      "mirage_start": 300.0,
+      "mirage_end": 700.0,
+      "mirage_horizon": 0.12,
+      "mirage_color": [0.78, 0.88, 0.97],
+      "mirage_wobble": 2.0,
+      "edge_fade": 0.92
+    }
+  }
+}

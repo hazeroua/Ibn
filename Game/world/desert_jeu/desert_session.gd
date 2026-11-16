@@ -57,6 +57,10 @@ func _ready() -> void:
 	var yaw: float = deg_to_rad(float(spawn.get("yaw_degrees", 0.0)))
 	_player = GameSession.spawn_player(self, position, yaw, "ibn_khaldoun_jeune")
 	_rig = GameSession.attach_camera(self, _player)
+	var wading := WaterWading.new()
+	wading.name = "WaterWading"
+	wading.setup(_player, field)
+	add_child(wading)
 
 
 func _physics_process(_delta: float) -> void:
@@ -64,16 +68,28 @@ func _physics_process(_delta: float) -> void:
 		_streamer.set_focus(_player.global_position, _player.velocity)
 
 
-## Un disque d'eau par plan d'eau de type « oasis » (les autres types sont rendus par leurs propres systèmes).
+## Un plan d'eau par entrée de water_bodies (oasis, lac, guelta, chott), avec sa limite invisible quand il est plus
+## profond que le gué, et l'ambiance commune (midi du mirage).
 func _add_water(field: DesertHeightfield) -> void:
 	var features: LandscapeFeatures = field.features
+	var max_depth: float = LocomotionSettings.load_file().wading_max_depth
+	var ids: Array[StringName] = features.water_ids()
 	for index: int in features.water_count:
-		if features.water_kind(index) != &"oasis":
-			continue
-		var center: Vector2 = features.water_center(index)
-		var water: Node3D = OasisWater.build(center, features.water_radius(index))
-		water.position = Vector3(center.x, field.height_at(center.x, center.y), center.y)
-		add_child(water)
+		var spec: Dictionary = {
+			"id": String(ids[index]),
+			"kind": String(features.water_kind(index)),
+			"center": features.water_center(index),
+			"radius_m": features.water_radius(index),
+			"surface_height_m": features.water_surface(index),
+			"depth_m": features.water_depth(index),
+			"shore_width_m": features.water_shore_width(index),
+			"heightfield": field,
+			"barrier_radius_m": features.wading_ring_radius(index, max_depth),
+		}
+		var water: Node3D = WaterBody.build(spec)
+		if water != null:
+			add_child(water)
+	add_child(WaterAtmosphere.new())
 
 
 func _wait_for_cell(cell: Vector2i) -> void:

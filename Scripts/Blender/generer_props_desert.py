@@ -293,6 +293,11 @@ def main() -> None:
     grass = manifest["models"]["herbe_seche"]
     for i, variant in enumerate(grass["variants"]):
         jobs.append((f"herbe_seche_{variant}", grass["max_triangles"], lambda i=i: build_grass(grass, i)))
+    # Roseau et jonc (rives des plans d'eau) : mêmes brins effilés que l'herbe sèche, plus hauts, 40 triangles au plus.
+    for reed_name in ("roseau", "jonc"):
+        reed = manifest["models"][reed_name]
+        for i, variant in enumerate(reed["variants"]):
+            jobs.append((f"{reed_name}_{variant}", reed["max_triangles"], lambda i=i, reed=reed: build_grass(reed, i)))
     for name, budget, builder in jobs:
         reset_scene()
         material = make_material()

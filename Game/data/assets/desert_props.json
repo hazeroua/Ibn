@@ -158,6 +158,26 @@
         ]
       }
     },
+    "roseau": {
+      "variants": ["a"],
+      "seeds": [61],
+      "height_m": 2.4,
+      "radius_m": 0.35,
+      "blade_width_m": 0.035,
+      "blades": 12,
+      "max_triangles": 40,
+      "colors": { "base": [0.3, 0.32, 0.14], "tip": [0.62, 0.58, 0.3] }
+    },
+    "jonc": {
+      "variants": ["a"],
+      "seeds": [67],
+      "height_m": 1.3,
+      "radius_m": 0.28,
+      "blade_width_m": 0.03,
+      "blades": 13,
+      "max_triangles": 40,
+      "colors": { "base": [0.2, 0.3, 0.12], "tip": [0.45, 0.55, 0.25] }
+    },
     "imposteur_palmier": {
       "height_m": 8.5,
       "width_m": 6.0,

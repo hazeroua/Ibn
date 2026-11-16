@@ -15,6 +15,7 @@ const DEFAULT_PATH: String = "res://data/desert/desert.json"
 const SURFACE_SABLE: StringName = &"sable"
 const SURFACE_PIERRE: StringName = &"pierre"
 const SURFACE_TERRE: StringName = &"terre"
+const SURFACE_EAU: StringName = &"eau"
 const NO_CELL: Vector2i = Vector2i(-1, -1)
 
 ## Plans d'eau et oueds (index spatial lu dans desert.json), en lecture seule pour les autres systèmes.
@@ -45,6 +46,7 @@ var _slope_full: float = 1.0
 var _terre_margin: float = 1.0
 var _rock_threshold: float = 0.0
 var _rock_band: float = 1.0
+var _water_min_depth: float = 0.03
 
 
 ## Charge desert.json (réglages par défaut). Renvoie null si les données sont invalides.
@@ -151,8 +153,9 @@ func _setup_surfaces(config: Dictionary, seed_value: int) -> bool:
 	_terre_margin = JsonData.get_float(config, "terre_margin_m", context)
 	_rock_threshold = JsonData.get_float(config, "rock_threshold", context)
 	_rock_band = JsonData.get_float(config, "rock_band", context)
+	_water_min_depth = JsonData.get_float(config, "water_min_depth_m", context)
 	var rock_wavelength: float = JsonData.get_float(config, "rock_wavelength_m", context)
-	if _slope_full <= _slope_start or _terre_margin <= 0.0 or _rock_band <= 0.0 or rock_wavelength <= 0.0:
+	if _slope_full <= _slope_start or _terre_margin <= 0.0 or _rock_band <= 0.0 or rock_wavelength <= 0.0 or _water_min_depth < 0.0:
 		push_error("DesertHeightfield : seuils des surfaces incohérents (%s)." % context)
 		return false
 	_rock = FastNoiseLite.new()
@@ -199,8 +202,19 @@ func slope_tangent_at(x: float, z: float) -> float:
 	return sqrt(dx * dx + dz * dz)
 
 
-## Surface du sol sous la position : « sable », « pierre » ou « terre ». O(1).
+## Profondeur (m) de l'eau en (x, z) : hauteur de la surface du plan d'eau praticable à gué (oasis, lac, guelta)
+## qui contient le point moins la hauteur du sol ; 0 hors de l'eau. O(1).
+func water_depth_at(x: float, z: float) -> float:
+	var surface: float = features.standing_water_height(x, z)
+	if surface == LandscapeFeatures.NO_WATER:
+		return 0.0
+	return maxf(surface - height_at(x, z), 0.0)
+
+
+## Surface du sol sous la position : « eau » sous l'eau peu profonde, sinon « sable », « pierre » ou « terre ». O(1).
 func surface_at(world_position: Vector3) -> StringName:
+	if water_depth_at(world_position.x, world_position.z) > _water_min_depth:
+		return SURFACE_EAU
 	var weights: Vector2 = surface_weights(world_position.x, world_position.z, slope_tangent_at(world_position.x, world_position.z))
 	return surface_from_weights(weights)
 

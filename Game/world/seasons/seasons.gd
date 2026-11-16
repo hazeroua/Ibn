@@ -5,7 +5,7 @@ extends Node
 ## - Variables : season (printemps, ete, automne, hiver), transitioning.
 ## - Uniformes globaux de shader (déclarés ici s'ils ne le sont pas déjà) : season_sun_color (vec3),
 ##   season_sun_intensity, season_sun_max_height (degrés), season_day_length (heures), season_fog_density,
-##   season_grass_color (vec3), season_palm_color (vec3), season_wind_strength, season_dust (floats).
+##   season_grass_color (vec3), season_palm_color (vec3), season_wind_strength, season_dust, season_wetness (floats).
 ## - Lecture sans dépendance de code : get_value(name), get_multiplier(name), get_color(name), ou les uniformes.
 ##   DayNight, Wind et la végétation les lisent par get_node_or_null ou par les uniformes.
 ##
@@ -35,7 +35,8 @@ const PALM_G: int = 11
 const PALM_B: int = 12
 const WIND_STRENGTH: int = 13
 const DUST: int = 14
-const VALUE_COUNT: int = 15
+const WETNESS: int = 15
+const VALUE_COUNT: int = 16
 
 ## Saison courante (la cible quand une transition est en cours).
 var season: StringName = &"ete"
@@ -222,6 +223,7 @@ func _read_season(entry: Dictionary, context: String) -> PackedFloat32Array:
 	out[FOG_DENSITY] = JsonData.get_float(entry, "fog_density", context)
 	out[WIND_STRENGTH] = JsonData.get_float(entry, "wind_strength", context)
 	out[DUST] = JsonData.get_float(entry, "dust", context)
+	out[WETNESS] = JsonData.get_float(entry, "wetness", context)
 	return out
 
 
@@ -236,6 +238,7 @@ func _declare_globals() -> void:
 		["palm_color", RenderingServer.GLOBAL_VAR_TYPE_VEC3, Vector3.ONE],
 		["wind_strength", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0],
 		["dust", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0],
+		["wetness", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0],
 	]
 	_uniform_names.clear()
 	for spec: Array in specs:
@@ -244,7 +247,7 @@ func _declare_globals() -> void:
 		ShaderGlobals.declare(uniform, spec[1] as RenderingServer.GlobalShaderParameterType, spec[2])
 
 
-## Écrit les neuf uniformes (ordre de _declare_globals) ; aucune allocation de tableau.
+## Écrit les dix uniformes (ordre de _declare_globals) ; aucune allocation de tableau.
 func _publish() -> void:
 	var c: PackedFloat32Array = _current
 	RenderingServer.global_shader_parameter_set(_uniform_names[0], Vector3(c[SUN_R], c[SUN_G], c[SUN_B]))
@@ -256,3 +259,4 @@ func _publish() -> void:
 	RenderingServer.global_shader_parameter_set(_uniform_names[6], Vector3(c[PALM_R], c[PALM_G], c[PALM_B]))
 	RenderingServer.global_shader_parameter_set(_uniform_names[7], c[WIND_STRENGTH])
 	RenderingServer.global_shader_parameter_set(_uniform_names[8], c[DUST])
+	RenderingServer.global_shader_parameter_set(_uniform_names[9], c[WETNESS])

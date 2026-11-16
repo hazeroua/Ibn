@@ -24,7 +24,30 @@ constexpr float kPi = 3.14159265358979323846f;
 constexpr uint8_t kSurfaceSand = 1;
 constexpr uint8_t kSurfaceStone = 2;
 constexpr uint8_t kSurfaceEarth = 4;
-constexpr uint8_t kSurfaceAll = kSurfaceSand | kSurfaceStone | kSurfaceEarth;
+constexpr uint8_t kSurfaceWater = 8;
+constexpr uint8_t kSurfaceAll = kSurfaceSand | kSurfaceStone | kSurfaceEarth | kSurfaceWater;
+// Types de plans d'eau (bits de WaterBody::kinds et de Species::water_kinds).
+constexpr uint8_t kKindOasis = 1;
+constexpr uint8_t kKindLake = 2;
+constexpr uint8_t kKindGuelta = 4;
+constexpr uint8_t kKindChott = 8;
+
+// Bit d'un type de plan d'eau ; 0 si le nom est inconnu.
+uint8_t kind_bit(const String &p_name) {
+	if (p_name == "oasis") {
+		return kKindOasis;
+	}
+	if (p_name == "lac") {
+		return kKindLake;
+	}
+	if (p_name == "guelta") {
+		return kKindGuelta;
+	}
+	if (p_name == "chott") {
+		return kKindChott;
+	}
+	return 0;
+}
 constexpr int64_t kMaxInstancesLimit = 200000;
 constexpr int32_t kMaxGridCells = 4000000;
 constexpr int32_t kMaxHeightSegments = 256;
@@ -189,8 +212,24 @@ bool VegetationScatter::load_rules(const String &p_path) {
 				s.surface_mask |= kSurfaceStone;
 			} else if (name == "terre") {
 				s.surface_mask |= kSurfaceEarth;
+			} else if (name == "eau") {
+				s.surface_mask |= kSurfaceWater;
 			} else {
 				return fail("Surface inconnue « " + name + " »," + ctx);
+			}
+		}
+		if (d.has("water_kinds")) {
+			if (d["water_kinds"].get_type() != Variant::ARRAY || Array(d["water_kinds"]).is_empty()) {
+				return fail("water_kinds : tableau non vide de types de plans d'eau attendu," + ctx);
+			}
+			const Array kinds = d["water_kinds"];
+			s.water_kinds = 0;
+			for (int64_t k = 0; k < kinds.size(); k++) {
+				const uint8_t bit = kind_bit(String(kinds[k]));
+				if (bit == 0) {
+					return fail("Type de plan d'eau inconnu « " + String(kinds[k]) + " »," + ctx);
+				}
+				s.water_kinds |= bit;
 			}
 		}
 		String curve_error;
@@ -320,6 +359,12 @@ bool VegetationScatter::set_features(const Array &p_water_bodies, const Array &p
 		}
 		const Array center = body["center"];
 		WaterBody w;
+		if (body.has("kind")) {
+			w.kinds = kind_bit(String(body["kind"]));
+			if (w.kinds == 0) {
+				return fail("Plan d'eau : type inconnu (oasis, lac, guelta ou chott)");
+			}
+		}
 		w.x = static_cast<float>(static_cast<double>(center[0]));
 		w.z = static_cast<float>(static_cast<double>(center[1]));
 		w.radius = static_cast<float>(radius);
@@ -463,6 +508,9 @@ void VegetationScatter::scatter_species(size_t p_index, float p_x0, float p_z0, 
 	float nearest = std::numeric_limits<float>::infinity();
 	float farthest = std::numeric_limits<float>::infinity();
 	for (const WaterBody &w : water_bodies_) {
+		if ((w.kinds & s.water_kinds) == 0) {
+			continue;
+		}
 		const float near_dx = std::max(std::fabs(w.x - cell_cx) - half, 0.0f);
 		const float near_dz = std::max(std::fabs(w.z - cell_cz) - half, 0.0f);
 		const float far_dx = std::fabs(w.x - cell_cx) + half;
@@ -490,6 +538,9 @@ void VegetationScatter::scatter_species(size_t p_index, float p_x0, float p_z0, 
 
 		float normalized = std::numeric_limits<float>::infinity();
 		for (const WaterBody &w : water_bodies_) {
+			if ((w.kinds & s.water_kinds) == 0) {
+				continue;
+			}
 			const float odx = x - w.x;
 			const float odz = z - w.z;
 			normalized = std::min(normalized, std::sqrt(odx * odx + odz * odz) / w.radius);
@@ -651,6 +702,7 @@ Dictionary VegetationScatter::scatter(const godot::Vector2i &p_cell, godot::Obje
 	static const StringName sand("sable");
 	static const StringName stone("pierre");
 	static const StringName earth("terre");
+	static const StringName water("eau");
 	const size_t stride = static_cast<size_t>(height_segments_ + 1);
 	for (size_t iz = 0; iz < stride; iz++) {
 		for (size_t ix = 0; ix < stride; ix++) {
@@ -675,6 +727,8 @@ Dictionary VegetationScatter::scatter(const godot::Vector2i &p_cell, godot::Obje
 					mask = kSurfaceStone;
 				} else if (name == earth) {
 					mask = kSurfaceEarth;
+				} else if (name == water) {
+					mask = kSurfaceWater;
 				}
 				surfaces_[iz * stride + ix] = mask;
 			}
