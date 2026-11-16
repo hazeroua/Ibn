@@ -1,4 +1,4 @@
-"""Génère les rochers, palmiers et l'imposteur de palmier du désert, avec Blender en ligne de commande.
+"""Génère les rochers, palmiers, buissons, herbes sèches et l'imposteur de palmier du désert, avec Blender en ligne de commande.
 
     blender --background --factory-startup --python Scripts/Blender/generer_props_desert.py -- \
         --manifest Game/data/assets/desert_props.json --output-dir Game/assets/desert --report <rapport.json>
@@ -58,6 +58,13 @@ def finish(name: str, bm: bmesh.types.BMesh, material: bpy.types.Material) -> bp
             loop[layer] = tuple(loop.vert[source]) + (1.0,)
     bm.to_mesh(mesh)
     bm.free()
+    # Couleur active et de rendu : sans cela, l'export glTF (export_vertex_color="ACTIVE") n'écrit
+    # aucune couleur et le modèle apparaît blanc dans Godot.
+    attribute = mesh.color_attributes.get("Col")
+    if attribute is None:
+        raise RuntimeError(f"{name} : attribut de couleur Col absent")
+    mesh.color_attributes.active_color = attribute
+    mesh.color_attributes.render_color_index = list(mesh.color_attributes).index(attribute)
     mesh.materials.append(material)
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
@@ -193,6 +200,65 @@ def build_imposter(spec: dict) -> bmesh.types.BMesh:
     return bm
 
 
+def build_bush(spec: dict, index: int) -> bmesh.types.BMesh:
+    """Touffe de feuillage : quelques boules irrégulières à facettes, base sombre, sommet clair."""
+    rng = random.Random(spec["seeds"][index])
+    bm = new_bmesh()
+    layer = bm.verts.layers.float_vector.get("c")
+    base = spec["colors"]["base"]
+    top = spec["colors"]["top"]
+    height = spec["height_m"]
+    radius = spec["radius_m"]
+    for blob in range(spec["blobs"]):
+        angle = 2 * math.pi * blob / spec["blobs"] + rng.uniform(-0.4, 0.4)
+        offset = radius * 0.45 * (0.0 if blob == 0 else 1.0)
+        center = Vector((math.cos(angle) * offset, math.sin(angle) * offset, 0.0))
+        size = radius * (0.75 if blob == 0 else rng.uniform(0.5, 0.65))
+        part = bmesh.new()
+        bmesh.ops.create_icosphere(part, subdivisions=spec["subdivisions"], radius=1.0)
+        for vert in part.verts:
+            d = vert.co.normalized()
+            bump = 1.0 + rng.uniform(-0.18, 0.18)
+            co = Vector((d.x * size * bump, d.y * size * bump, max(d.z, -0.35) * size * bump * (height / radius)))
+            co += center + Vector((0.0, 0.0, size * 0.35 * (height / radius)))
+            new = bm.verts.new(co)
+            new[layer] = mix(base, top, max(0.0, co.z) / height + rng.uniform(-0.08, 0.08))
+            vert.index = len(bm.verts) - 1
+        bm.verts.ensure_lookup_table()
+        for face in part.faces:
+            bm.faces.new([bm.verts[v.index] for v in face.verts])
+        part.free()
+    low = min(v.co.z for v in bm.verts)
+    for vert in bm.verts:
+        vert.co.z -= low + 0.05
+    return bm
+
+
+def build_grass(spec: dict, index: int) -> bmesh.types.BMesh:
+    """Touffe d'herbe sèche : brins effilés et courbés (trois triangles par brin), base sombre, pointe claire."""
+    rng = random.Random(spec["seeds"][index])
+    bm = new_bmesh()
+    base = spec["colors"]["base"]
+    tip = spec["colors"]["tip"]
+    for blade in range(spec["blades"]):
+        angle = 2 * math.pi * blade / spec["blades"] + rng.uniform(-0.3, 0.3)
+        direction = Vector((math.cos(angle), math.sin(angle), 0.0))
+        side = Vector((-direction.y, direction.x, 0.0))
+        height = spec["height_m"] * rng.uniform(0.7, 1.15)
+        width = spec["blade_width_m"]
+        root = direction * rng.uniform(0.0, spec["radius_m"] * 0.4)
+        lean = spec["radius_m"] * rng.uniform(0.6, 1.0)
+        a = add_vert(bm, root - side * width, base)
+        b = add_vert(bm, root + side * width, base)
+        mid = root + direction * lean * 0.35 + Vector((0.0, 0.0, height * 0.55))
+        c = add_vert(bm, mid + side * width * 0.6, mix(base, tip, 0.55))
+        d = add_vert(bm, mid - side * width * 0.6, mix(base, tip, 0.55))
+        e = add_vert(bm, root + direction * lean + Vector((0.0, 0.0, height)), tip)
+        bm.faces.new((a, b, c, d))
+        bm.faces.new((d, c, e))
+    return bm
+
+
 def export(obj: bpy.types.Object, path: str) -> int:
     bpy.ops.object.select_all(action="DESELECT")
     obj.select_set(True)
@@ -221,6 +287,12 @@ def main() -> None:
             jobs.append((f"palmier_{variant}_lod{lod}", palm["max_triangles"][lod], lambda i=i, lod=lod: build_palm(palm, i, lod)))
     imposter = manifest["models"]["imposteur_palmier"]
     jobs.append(("palmier_imposteur", imposter["max_triangles"], lambda: build_imposter(imposter)))
+    bush = manifest["models"]["buisson"]
+    for i, variant in enumerate(bush["variants"]):
+        jobs.append((f"buisson_{variant}", bush["max_triangles"], lambda i=i: build_bush(bush, i)))
+    grass = manifest["models"]["herbe_seche"]
+    for i, variant in enumerate(grass["variants"]):
+        jobs.append((f"herbe_seche_{variant}", grass["max_triangles"], lambda i=i: build_grass(grass, i)))
     for name, budget, builder in jobs:
         reset_scene()
         material = make_material()
