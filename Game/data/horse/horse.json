@@ -4,16 +4,42 @@
     "radius_m": 0.72,
     "height_m": 1.9,
     "collision_layer": 2,
-    "collision_mask": [1],
+    "collision_mask": [
+      1
+    ],
     "safe_margin_m": 0.01,
     "floor_max_angle_deg": 38.0,
     "max_slides": 6
   },
   "gaits": {
-    "walk": { "speed_mps": 1.7, "acceleration_mps2": 3.0, "deceleration_mps2": 4.0, "stride_m": 1.4, "energy_per_second": 0.0 },
-    "trot": { "speed_mps": 3.6, "acceleration_mps2": 4.5, "deceleration_mps2": 5.5, "stride_m": 2.1, "energy_per_second": 0.8 },
-    "canter": { "speed_mps": 6.8, "acceleration_mps2": 5.5, "deceleration_mps2": 7.0, "stride_m": 3.1, "energy_per_second": 1.7 },
-    "sprint": { "speed_mps": 11.5, "acceleration_mps2": 7.0, "deceleration_mps2": 10.0, "stride_m": 4.4, "energy_per_second": 3.8 }
+    "walk": {
+      "speed_mps": 1.7,
+      "acceleration_mps2": 3.0,
+      "deceleration_mps2": 4.0,
+      "stride_m": 1.4,
+      "energy_per_second": 0.0
+    },
+    "trot": {
+      "speed_mps": 3.6,
+      "acceleration_mps2": 4.5,
+      "deceleration_mps2": 5.5,
+      "stride_m": 2.1,
+      "energy_per_second": 0.8
+    },
+    "canter": {
+      "speed_mps": 6.8,
+      "acceleration_mps2": 5.5,
+      "deceleration_mps2": 7.0,
+      "stride_m": 3.1,
+      "energy_per_second": 1.7
+    },
+    "sprint": {
+      "speed_mps": 11.5,
+      "acceleration_mps2": 7.0,
+      "deceleration_mps2": 10.0,
+      "stride_m": 4.4,
+      "energy_per_second": 3.8
+    }
   },
   "endurance": {
     "maximum": 100.0,
@@ -42,8 +68,7 @@
     "body_height_m": 1.25,
     "leg_length_m": 1.05,
     "leg_radius_m": 0.09,
-    "saddle_height_m": 1.72,
-    "animation_frequency": 2.4
+    "saddle_height_m": 1.72
   },
   "traces": {
     "pool_size": 128,
@@ -57,5 +82,84 @@
     "breath_frequency_hz": 75.0,
     "max_distance_m": 42.0,
     "voice_count": 4
+  },
+  "model": {
+    "path": "res://assets/horse/barq.glb",
+    "height_m": 2.2,
+    "yaw_offset_deg": 180.0,
+    "looped_clips": [
+      "Idle",
+      "WalkSlow",
+      "Walk",
+      "Run"
+    ],
+    "coat": {
+      "shader": "res://horse/horse_coat.gdshader",
+      "coat_color": "#7a4527",
+      "points_color": "#1f1712",
+      "points_height_m": 0.42,
+      "points_blend_m": 0.1,
+      "hair_variation": 0.12,
+      "roughness": 0.75,
+      "hair_surfaces": [
+        1
+      ]
+    },
+    "description": "Modèle CC0 de Barq (Quaternius). height_m : hauteur réelle du sommet de la tête au repos (l'échelle en découle). yaw_offset_deg : le modèle regarde vers +Z, Godot vers -Z. Robe bai (bai : corps brun-roux, crins et bas des jambes noirs), cheval arabe.",
+    "width_scale": 0.78
+  },
+  "animations": {
+    "description": "Clip du modèle par allure. reference_speed_mps : vitesse au sol du clip (mesurée sur les sabots posés, modèle à l'échelle) ; la lecture est accélérée ou ralentie dans [speed_scale_min, speed_scale_max] pour que les sabots ne glissent pas. idle_speed_mps : en dessous, Barq est à l'arrêt.",
+    "idle": {
+      "clip": "Idle"
+    },
+    "walk": {
+      "clip": "WalkSlow",
+      "reference_speed_mps": 0.77
+    },
+    "trot": {
+      "clip": "WalkSlow",
+      "reference_speed_mps": 0.77
+    },
+    "canter": {
+      "clip": "Run",
+      "reference_speed_mps": 4.1
+    },
+    "sprint": {
+      "clip": "Run",
+      "reference_speed_mps": 4.1
+    },
+    "jump": {
+      "clip": "Jump"
+    },
+    "idle_speed_mps": 0.15,
+    "speed_scale_min": 0.6,
+    "speed_scale_max": 2.8,
+    "blend_s": 0.25
+  },
+  "jump": {
+    "description": "Saut de Barq monté (barre d'espace, bouton A) : seulement au sol et en mouvement. speed_mps : vitesse verticale au départ ; gravity_mps2 : pesanteur appliquée à Barq en l'air ; min_speed_mps : vitesse au sol minimale pour sauter.",
+    "speed_mps": 4.2,
+    "gravity_mps2": 9.81,
+    "min_speed_mps": 1.0,
+    "cooldown_s": 0.4
+  },
+  "rider": {
+    "description": "Cavalier. Os de selle et décalage (repère de Barq, mètres réels) du point de selle : le bassin du cavalier y est posé et suit les mouvements du dos. Montée par la gauche : le cavalier se place à mount_side_m à gauche du point de selle, au sol ; ces valeurs sont aussi celles des animations mount et dismount (characters.json). approach_s : glissement vers le point de montée. gallop_lean_gaits : allures où le cavalier se penche en avant.",
+    "saddle_bone": "Torso",
+    "seat_offset_m": [
+      0.0,
+      0.25,
+      0.15
+    ],
+    "mount_side_m": 0.8,
+    "mount_seat_height_m": 1.5,
+    "approach_s": 0.3,
+    "mount_range_m": 3.5,
+    "gallop_lean_gaits": [
+      "canter",
+      "sprint"
+    ],
+    "blend_s": 0.3
   }
 }

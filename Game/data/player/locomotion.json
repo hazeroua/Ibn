@@ -4,8 +4,12 @@
     "description": "Capsule de collision : pieds à l'origine du personnage, regard vers -Z. Couches de collision par numéro (2 = joueur, 1 = monde).",
     "radius": 0.3,
     "height": 1.75,
-    "collision_layers": [2],
-    "collision_mask_layers": [1],
+    "collision_layers": [
+      2
+    ],
+    "collision_mask_layers": [
+      1
+    ],
     "safe_margin": 0.001
   },
   "physics": {
@@ -89,11 +93,16 @@
     "foot_lateral_offset": 0.11,
     "ray_start_height": 0.3,
     "ray_depth": 0.5,
-    "ray_collision_mask_layers": [1],
+    "ray_collision_mask_layers": [
+      1
+    ],
     "rest_speed": 0.05,
     "stop_step_min_fraction": 0.3,
     "animation_contacts": {
-      "foot_bones": ["DEF-foot.L", "DEF-foot.R"],
+      "foot_bones": [
+        "DEF-foot.L",
+        "DEF-foot.R"
+      ],
       "height_m": 0.03,
       "lift_m": 0.04,
       "samples_per_second": 120.0,
@@ -133,5 +142,13 @@
     "description": "Budgets du test de charge (1 000 obstacles autour du joueur) : temps de calcul du déplacement d'une image, en millisecondes.",
     "step_average_ms": 1.0,
     "step_p95_ms": 2.0
+  },
+  "jump": {
+    "description": "Saut à pied (barre d'espace, bouton A). speed_mps : vitesse verticale au départ (hauteur ≈ v²/2g). coyote_s : délai pendant lequel on peut encore sauter après avoir quitté le sol ; buffer_s : un appui juste avant l'atterrissage est gardé ; landing_min_air_s : temps en l'air au-delà duquel l'atterrissage est joué ; landing_lock_s : durée de l'atterrissage pendant laquelle la course reprend en douceur.",
+    "speed_mps": 4.4,
+    "coyote_s": 0.12,
+    "buffer_s": 0.15,
+    "landing_min_air_s": 0.3,
+    "blend_s": 0.08
   }
 }

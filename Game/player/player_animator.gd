@@ -13,9 +13,24 @@ extends RefCounted
 ## que la lecture vient de franchir. Le bruit des pas tombe ainsi exactement quand le pied touche le sol, quelle que
 ## soit la vitesse de lecture. Sans squelette, has_contacts() est faux et le personnage compte les pas à la distance.
 
-## Boucles indexées par LocomotionSettings.Gait.
+## Phases d'un saut ou d'une chute.
+enum Air { NONE, TAKEOFF, AIRBORNE, LANDING }
+
 ## Appuis relevés au plus par mise à jour (une image de 100 ms en course en franchit au plus deux).
 const MAX_CROSSED: int = 8
+## Saut : départ, en l'air, réception (contrat « locomotion » des personnages, characters.json).
+const JUMP_START_CLIP: StringName = &"locomotion/jump_start"
+const JUMP_AIR_CLIP: StringName = &"locomotion/jump_air"
+const JUMP_LAND_CLIP: StringName = &"locomotion/jump_land"
+## Monte : assise, assise en avant (galop), montée et descente de cheval.
+const RIDE_CLIP: StringName = &"locomotion/ride_idle"
+const RIDE_GALLOP_CLIP: StringName = &"locomotion/ride_gallop"
+const MOUNT_CLIP: StringName = &"locomotion/mount"
+const DISMOUNT_CLIP: StringName = &"locomotion/dismount"
+const EXTRA_CLIPS: Array[StringName] = [
+	JUMP_START_CLIP, JUMP_AIR_CLIP, JUMP_LAND_CLIP, RIDE_CLIP, RIDE_GALLOP_CLIP, MOUNT_CLIP, DISMOUNT_CLIP
+]
+## Boucles indexées par LocomotionSettings.Gait.
 const LOOP_CLIPS: Array[StringName] = [&"locomotion/idle", &"locomotion/walk_slow", &"locomotion/walk", &"locomotion/run"]
 ## Manœuvres indexées par LocomotionMotor.Maneuver (la case NONE est vide).
 const MANEUVER_CLIPS: Array[StringName] = [
@@ -32,6 +47,8 @@ var _player: AnimationPlayer
 var _maneuver_lengths := PackedFloat64Array()
 var _current_clip: StringName = &""
 var _current_serial: int = -1
+var _air: int = Air.NONE
+var _air_timer: float = 0.0
 var _skeleton: Skeleton3D
 var _foot_bones := PackedInt32Array()
 ## Appuis par animation : nom -> PackedFloat32Array des temps ; pieds correspondants dans _contact_feet.
@@ -64,6 +81,9 @@ static func missing_clips(player: AnimationPlayer) -> PackedStringArray:
 	for index: int in range(1, MANEUVER_CLIPS.size()):
 		if not player.has_animation(MANEUVER_CLIPS[index]):
 			missing.append(MANEUVER_CLIPS[index])
+	for clip: StringName in EXTRA_CLIPS:
+		if not player.has_animation(clip):
+			missing.append(clip)
 	return missing
 
 
@@ -200,9 +220,67 @@ func current_clip() -> StringName:
 
 
 ## Met à jour l'animation à partir de l'état du moteur et de la vitesse horizontale réelle (m/s).
-func update(motor: LocomotionMotor, real_speed: float) -> void:
+## Saut : le personnage quitte le sol (départ joué puis boucle en l'air). jumped = faux pour une simple chute.
+func begin_air(jumped: bool) -> void:
+	if _player == null or _air == Air.TAKEOFF or _air == Air.AIRBORNE:
+		return
+	_air = Air.TAKEOFF if jumped else Air.AIRBORNE
+	_air_timer = 0.0
+	_play_air(JUMP_START_CLIP if jumped else JUMP_AIR_CLIP)
+
+
+## Le personnage reprend le sol ; land = vrai pour jouer la réception (après une chute assez longue).
+func end_air(land: bool) -> void:
+	if _player == null or _air == Air.NONE or _air == Air.LANDING:
+		return
+	if land:
+		_air = Air.LANDING
+		_air_timer = 0.0
+		_play_air(JUMP_LAND_CLIP)
+	else:
+		_air = Air.NONE
+		_current_clip = &""
+
+
+## Oublie l'animation en cours (après la monte, quand un autre système a piloté le lecteur).
+func reset_state() -> void:
+	_air = Air.NONE
+	_current_clip = &""
+	_current_serial = -1
+	_tracked_clip = &""
+
+
+func _play_air(clip: StringName) -> void:
+	_player.play(clip, _settings.jump_blend)
+	_player.speed_scale = 1.0
+	_current_clip = clip
+	_current_serial = -1
+
+
+## Saut en cours : départ puis boucle en l'air ; la réception laisse reprendre la marche dès qu'on bouge.
+func _update_air(motor: LocomotionMotor, delta: float) -> bool:
+	_air_timer += delta
+	match _air:
+		Air.TAKEOFF:
+			if _air_timer >= _player.get_animation(JUMP_START_CLIP).length:
+				_air = Air.AIRBORNE
+				_play_air(JUMP_AIR_CLIP)
+			return true
+		Air.AIRBORNE:
+			return true
+		Air.LANDING:
+			if _air_timer < _player.get_animation(JUMP_LAND_CLIP).length and motor.gait == LocomotionSettings.Gait.IDLE:
+				return true
+			_air = Air.NONE
+			_current_clip = &""
+	return false
+
+
+func update(motor: LocomotionMotor, real_speed: float, delta: float = 0.0) -> void:
 	_crossed_count = 0
 	if _player == null:
+		return
+	if _air != Air.NONE and _update_air(motor, delta):
 		return
 	if motor.maneuver != LocomotionMotor.Maneuver.NONE:
 		if motor.maneuver_serial != _current_serial:

@@ -28,7 +28,7 @@ import re
 import sys
 
 import bpy
-from mathutils import Matrix, Quaternion, Vector
+from mathutils import Euler, Matrix, Quaternion, Vector
 
 CHANNEL_PATTERN = re.compile(r'^pose\.bones\["(.+)"\]\.(location|rotation_quaternion|scale)$')
 # Hauteur au-dessus du point le plus bas d'un pied en dessous de laquelle le pied est considéré au sol.
@@ -454,6 +454,163 @@ def build_turn(rig: Rig, step_frames: list, idle_pose: list, start: int, recipe:
     return frames
 
 
+def offset_quaternion(degrees: list, context: str) -> Quaternion:
+    """Rotation locale d'un os (degrés, ordre XYZ dans le repère de l'os)."""
+    if len(degrees) != 3:
+        raise PreparationError(f"Décalage d'os : trois angles attendus ({context}).")
+    return Euler([math.radians(float(v)) for v in degrees], "XYZ").to_quaternion()
+
+
+class PoseAdjustment:
+    """Retouche d'une pose source : rotations locales ajoutées à certains os et déplacement de la racine
+    exprimé dans le repère de l'armature (X droite, Y avant, Z haut, en mètres)."""
+
+    def __init__(self, rig: Rig, data: dict, context: str):
+        self.rig = rig
+        self.anchor = None
+        if "anchor" in data:
+            # Ancrage : après les retouches, la racine est déplacée pour que la tête de l'os indiqué tombe à la
+            # position voulue (repère de l'armature) : le bassin posé sur la selle, quelle que soit la pose source.
+            anchor = require(data, "anchor", dict, context)
+            position = require(anchor, "position_m", list, context)
+            if len(position) != 3:
+                raise PreparationError(f"anchor > position_m : trois valeurs attendues ({context}).")
+            self.anchor = (rig.bone(require(anchor, "bone", str, context)), Vector([float(v) for v in position]))
+        # Jambes posées par cinématique inverse (deux os) : cheville sur un point voulu, genou vers un point de visée.
+        self.legs = []
+        for leg_index, leg in enumerate(data.get("legs", [])):
+            leg_context = f"{context} > jambe {leg_index}"
+            ankle = require(leg, "ankle_m", list, leg_context)
+            pole = require(leg, "pole_m", list, leg_context)
+            if len(ankle) != 3 or len(pole) != 3:
+                raise PreparationError(f"ankle_m et pole_m : trois valeurs attendues ({leg_context}).")
+            self.legs.append(
+                (
+                    rig.bone(require(leg, "thigh", str, leg_context)),
+                    rig.bone(require(leg, "shin", str, leg_context)),
+                    rig.bone(require(leg, "foot", str, leg_context)),
+                    Vector([float(v) for v in ankle]),
+                    Vector([float(v) for v in pole]),
+                )
+            )
+        self.rotations = []
+        for bone_name, degrees in data.get("offsets", {}).items():
+            self.rotations.append((rig.bone(bone_name), offset_quaternion(degrees, f"{context} > {bone_name}")))
+        root_offset = data.get("root_offset_m", [0.0, 0.0, 0.0])
+        if len(root_offset) != 3:
+            raise PreparationError(f"root_offset_m : trois valeurs attendues ({context}).")
+        # Déplacement de l'armature exprimé dans le repère de repos de l'os racine (premier os, sans parent).
+        self.root_shift = rig.rest[0].to_3x3().inverted() @ Vector([float(v) for v in root_offset])
+
+    def apply(self, pose: list) -> list:
+        result = [(loc.copy(), rot.copy(), scl.copy()) for loc, rot, scl in pose]
+        for bone, offset in self.rotations:
+            loc, rot, scl = result[bone]
+            result[bone] = (loc, rot @ offset, scl)
+        loc, rot, scl = result[0]
+        result[0] = (loc + self.root_shift, rot, scl)
+        if self.anchor is not None:
+            bone, target = self.anchor
+            current = self.rig.armature_matrices(result)[bone].translation
+            loc, rot, scl = result[0]
+            result[0] = (loc + self.rig.rest[0].to_3x3().inverted() @ (target - current), rot, scl)
+        for thigh, shin, foot, ankle, pole in self.legs:
+            result = solve_leg(self.rig, result, thigh, shin, foot, ankle, pole)
+        return result
+
+
+def remove_rise(rig: Rig, pose: list, rest_pose: list, bone: int) -> list:
+    """Abaisse la racine pour que l'os ne dépasse jamais sa hauteur dans la pose de repos."""
+    height = rig.armature_matrices(pose)[bone].translation.z
+    limit = rig.armature_matrices(rest_pose)[bone].translation.z
+    if height <= limit:
+        return pose
+    result = list(pose)
+    loc, rot, scl = result[0]
+    result[0] = (loc + rig.rest[0].to_3x3().inverted() @ Vector((0.0, 0.0, limit - height)), rot, scl)
+    return result
+
+
+def rotate_bone_world(rig: Rig, pose: list, bone: int, world_rotation: Quaternion) -> list:
+    """Tourne un os d'une rotation exprimée dans le repère de l'armature, autour de sa tête (enfants entraînés)."""
+    matrices = rig.armature_matrices(pose)
+    parent = rig.parents[bone]
+    parent_rot = matrices[parent].to_quaternion() if parent >= 0 else Quaternion()
+    frame = parent_rot @ rig.rest[bone].to_quaternion()
+    loc, rot, scl = pose[bone]
+    result = list(pose)
+    result[bone] = (loc, frame.inverted() @ world_rotation @ frame @ rot, scl)
+    return result
+
+
+def solve_leg(rig: Rig, pose: list, thigh: int, shin: int, foot: int, ankle: Vector, pole: Vector) -> list:
+    """Cinématique inverse à deux os : la cheville (tête de l'os du pied) va sur `ankle`, le genou se plie vers `pole`."""
+    matrices = rig.armature_matrices(pose)
+    hip = matrices[thigh].translation.copy()
+    knee = matrices[shin].translation.copy()
+    heel = matrices[foot].translation.copy()
+    upper = (knee - hip).length
+    lower = (heel - knee).length
+    to_target = ankle - hip
+    distance = min(max(to_target.length, abs(upper - lower) + 1e-4), upper + lower - 1e-4)
+    axis = to_target.normalized()
+    # Genou : sur le cercle de la loi des cosinus, du côté du point de visée.
+    along = (upper * upper - lower * lower + distance * distance) / (2.0 * distance)
+    radius = math.sqrt(max(upper * upper - along * along, 0.0))
+    side = pole - hip
+    side = (side - axis * side.dot(axis))
+    if side.length < 1e-6:
+        raise PreparationError("Point de visée du genou aligné avec la hanche et la cheville.")
+    knee_target = hip + axis * along + side.normalized() * radius
+    pose = rotate_bone_world(rig, pose, thigh, (knee - hip).rotation_difference(knee_target - hip))
+    matrices = rig.armature_matrices(pose)
+    knee_now = matrices[shin].translation.copy()
+    heel_now = matrices[foot].translation.copy()
+    ankle_target = hip + axis * distance
+    return rotate_bone_world(rig, pose, shin, (heel_now - knee_now).rotation_difference(ankle_target - knee_now))
+
+
+def build_clip(clip: SourceClip, recipe: dict, fps: float, context: str) -> list:
+    """Animation ponctuelle rééchantillonnée (début et fin facultatifs, en secondes de la source)."""
+    time_scale = require(recipe, "time_scale", float, context)
+    start = float(recipe.get("start_s", 0.0))
+    end = float(recipe.get("end_s", clip.length_s))
+    if time_scale <= 0.0 or not 0.0 <= start < end <= clip.length_s + 1e-6:
+        raise PreparationError(f"Plage ou échelle de temps incohérente ({context}).")
+    count = max(2, round((end - start) * time_scale * fps))
+    return [clip.pose_at(start + (end - start) * i / count) for i in range(count + 1)]
+
+
+def build_sequence(rig: Rig, key_pose, recipe: dict, fps: float, context: str) -> list:
+    """Suite de poses clés (chacune : animation source, instant, retouches), enchaînées en douceur.
+    key_pose(source, seconds) rend la pose source à l'instant voulu."""
+    keys = require(recipe, "keys", list, context)
+    if len(keys) < 2:
+        raise PreparationError(f"Une séquence demande au moins deux poses clés ({context}).")
+    poses = []
+    times = []
+    for index, key in enumerate(keys):
+        key_context = f"{context} > clé {index}"
+        at = require(key, "at_s", float, key_context)
+        if times and at <= times[-1]:
+            raise PreparationError(f"Instants des poses clés non croissants ({key_context}).")
+        source_pose = key_pose(require(key, "source", str, key_context), float(key.get("source_time_s", 0.0)))
+        poses.append(PoseAdjustment(rig, key, key_context).apply(source_pose))
+        times.append(at)
+    if times[0] != 0.0:
+        raise PreparationError(f"La première pose clé doit être à 0 s ({context}).")
+    count = max(2, round(times[-1] * fps))
+    frames = []
+    segment = 0
+    for i in range(count + 1):
+        t = times[-1] * i / count
+        while segment < len(times) - 2 and t > times[segment + 1]:
+            segment += 1
+        weight = smoothstep(times[segment], times[segment + 1], t)
+        frames.append(blend_pose(poses[segment], poses[segment + 1], weight))
+    return frames
+
+
 # ---------------------------------------------------------------------------
 # Écriture des actions et export
 # ---------------------------------------------------------------------------
@@ -654,6 +811,37 @@ def prepare(args: argparse.Namespace) -> dict:
             frames = build_turn(rig, step_frames, idle_pose, start, recipe, fps, anim_context)
             info["start_frame"] = start
             info["root_yaw_deg"] = require(recipe, "angle_deg", float, anim_context)
+        elif kind == "clip":
+            if info["loop"]:
+                raise PreparationError(f"Une animation ponctuelle ne boucle pas ({anim_context}).")
+            frames = build_clip(clip(require(recipe, "source", str, anim_context)), recipe, fps, anim_context)
+            frames = [PoseAdjustment(rig, recipe, anim_context).apply(pose) for pose in frames]
+            if "no_rise_bone" in recipe:
+                # Le saut du jeu est porté par la physique : l'élévation propre de l'animation est retirée (le
+                # bassin ne monte jamais au-dessus de sa hauteur de repos, les flexions sont gardées).
+                idle_pose = loop_frames(require(recipe, "rest_source", str, anim_context), 1.0)[0]
+                frames = [remove_rise(rig, pose, idle_pose, rig.bone(recipe["no_rise_bone"])) for pose in frames]
+        elif kind == "loop_no_rise":
+            if not info["loop"]:
+                raise PreparationError(f"Une recette « loop_no_rise » doit être une boucle ({anim_context}).")
+            idle_pose = loop_frames(require(recipe, "rest_source", str, anim_context), 1.0)[0]
+            bone = rig.bone(require(recipe, "no_rise_bone", str, anim_context))
+            frames = [remove_rise(rig, pose, idle_pose, bone) for pose in loop_frames(require(recipe, "source", str, anim_context), 1.0)]
+        elif kind == "pose_loop":
+            if not info["loop"]:
+                raise PreparationError(f"Une recette « pose_loop » doit être une boucle ({anim_context}).")
+            source = require(recipe, "source", str, anim_context)
+            time_scale = require(recipe, "time_scale", float, anim_context)
+            adjustment = PoseAdjustment(rig, recipe, anim_context)
+            frames = [adjustment.apply(pose) for pose in loop_frames(source, time_scale)]
+        elif kind == "sequence":
+            if info["loop"]:
+                raise PreparationError(f"Une séquence ne boucle pas ({anim_context}).")
+
+            def key_pose(source: str, seconds: float) -> list:
+                return clip(source).pose_at(min(max(seconds, 0.0), clip(source).length_s))
+
+            frames = build_sequence(rig, key_pose, recipe, fps, anim_context)
         else:
             raise PreparationError(f"Type de recette inconnu « {kind} » ({anim_context}).")
         info["frames"] = len(frames)

@@ -88,6 +88,12 @@ var contact_lift: float = 0.0
 var contact_samples_per_second: float = 0.0
 var contact_min_gap: float = 0.0
 var contact_min_travel: float = 0.0
+## Saut (section « jump »).
+var jump_speed: float = 0.0
+var jump_coyote: float = 0.0
+var jump_buffer: float = 0.0
+var jump_landing_min_air: float = 0.0
+var jump_blend: float = 0.0
 
 # Animation
 var blend_time: float = 0.0
@@ -123,6 +129,7 @@ static func from_dictionary(data: Dictionary) -> LocomotionSettings:
 	settings._read_gaits(JsonData.get_dictionary(data, "gaits", CONTEXT))
 	settings._read_turns(JsonData.get_dictionary(data, "turns", CONTEXT))
 	settings._read_stops(JsonData.get_dictionary(data, "stops", CONTEXT))
+	settings._read_jump(JsonData.get_dictionary(data, "jump", CONTEXT))
 	settings._read_footsteps(JsonData.get_dictionary(data, "footsteps", CONTEXT))
 	settings._read_animation(JsonData.get_dictionary(data, "animation", CONTEXT))
 	settings._read_wading(JsonData.get_dictionary(data, "wading", CONTEXT))
@@ -308,3 +315,12 @@ func _check(condition: bool, message: String, context: String) -> void:
 	if not condition:
 		error_count += 1
 		push_error("LocomotionSettings : %s (%s)." % [message, context])
+
+
+func _read_jump(jump: Dictionary) -> void:
+	var jump_context: String = CONTEXT + " > jump"
+	jump_speed = _ranged(jump, "speed_mps", 0.5, 20.0, jump_context)
+	jump_coyote = _ranged(jump, "coyote_s", 0.0, 1.0, jump_context)
+	jump_buffer = _ranged(jump, "buffer_s", 0.0, 1.0, jump_context)
+	jump_landing_min_air = _ranged(jump, "landing_min_air_s", 0.0, 5.0, jump_context)
+	jump_blend = _ranged(jump, "blend_s", 0.0, 1.0, jump_context)

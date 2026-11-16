@@ -49,6 +49,10 @@ var _grounded: bool = false
 var _ready_done: bool = false
 ## Distance parcourue au sol depuis le dernier appui de pied de l'animation.
 var _contact_travel: float = 0.0
+## Saut : appui gardé quelques instants, temps passé hors du sol, saut en cours.
+var _jump_buffer: float = 0.0
+var _air_time: float = 0.0
+var _jumping: bool = false
 
 
 func _init(settings: LocomotionSettings = null) -> void:
@@ -117,6 +121,11 @@ func get_gait() -> StringName:
 	return LocomotionSettings.GAIT_NAMES[motor.gait]
 
 
+## Reprend le pilotage des animations après la monte.
+func reset_animation_state() -> void:
+	_animator.reset_state()
+
+
 ## Place le personnage sans déclencher de pas ni de virage.
 func teleport_to(world_position: Vector3, yaw: float = 0.0) -> void:
 	global_position = world_position
@@ -128,6 +137,9 @@ func teleport_to(world_position: Vector3, yaw: float = 0.0) -> void:
 	_last_position = world_position
 	real_speed = 0.0
 	_step_retry_timer = 0.0
+	_jumping = false
+	_air_time = 0.0
+	_jump_buffer = 0.0
 
 
 ## Une image de déplacement (appelée par la physique ; publique pour les tests).
@@ -139,6 +151,17 @@ func step(delta: float) -> void:
 	var right: Vector2 = _view_right()
 	var forward := Vector2(right.y, -right.x)
 	var was_grounded: bool = _grounded
+	# Saut : appui gardé buffer_s, accepté jusqu'à coyote_s après avoir quitté le sol (bord de dune, marche).
+	_jump_buffer = _settings.jump_buffer if input.jump else maxf(_jump_buffer - delta, 0.0)
+	var jumped: bool = false
+	if _jump_buffer > 0.0 and not _jumping and (was_grounded or _air_time < _settings.jump_coyote):
+		_jump_buffer = 0.0
+		_jumping = true
+		jumped = true
+		was_grounded = false
+		_grounded = false
+		velocity.y = _settings.jump_speed
+		_animator.begin_air(true)
 	motor.update(input.move, input.sprint, input.walk_slow, forward, right, was_grounded, delta)
 	rotation.y = motor.yaw
 	var heading: Vector2 = motor.forward_xz() * motor.speed * speed_multiplier
@@ -146,7 +169,7 @@ func step(delta: float) -> void:
 	velocity.z = heading.y
 	if was_grounded:
 		velocity.y = 0.0
-	else:
+	elif not jumped:
 		velocity.y = maxf(velocity.y - _settings.gravity * delta, -_settings.terminal_fall_speed)
 	_step_retry_timer = maxf(_step_retry_timer - delta, 0.0)
 	var stepped: bool = false
@@ -159,6 +182,16 @@ func step(delta: float) -> void:
 	floor_snap_length = maxf(_settings.step_max_height, _settings.floor_snap_base_length + motor.speed * delta * tan(floor_max_angle))
 	move_and_slide()
 	_grounded = is_on_floor() or (was_grounded and _regain_ground())
+	if _grounded:
+		if _air_time > 0.0:
+			_animator.end_air(_air_time >= _settings.jump_landing_min_air)
+		_air_time = 0.0
+		_jumping = false
+	else:
+		_air_time += delta
+		if _air_time >= _settings.jump_landing_min_air:
+			# Chute sans saut (bord d'une falaise) : la boucle en l'air prend le relais.
+			_animator.begin_air(false)
 	_update_outputs(delta, was_grounded)
 	last_step_usec = Time.get_ticks_usec() - started
 
@@ -241,7 +274,7 @@ func _update_outputs(delta: float, was_grounded: bool) -> void:
 			if _tracker.stop(_settings.stride_for(previous)) and not _animator.has_contacts():
 				_emit_footstep(real_speed, -1)
 		gait_changed.emit(_last_gait_name)
-	_animator.update(motor, real_speed)
+	_animator.update(motor, real_speed, delta)
 	if _animator.has_contacts():
 		# Pas calés sur l'animation : un pas par appui de pied franchi par la lecture, au sol, et seulement si le
 		# personnage a réellement avancé depuis l'appui précédent (poussé contre un mur, l'animation tourne : silence).

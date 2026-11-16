@@ -80,3 +80,4 @@ __pycache__/
 
 # Espace de travail local Codex (rapports, scripts et worktrees temporaires)
 /.codex/
+/Game/world/desert/desert.tscn

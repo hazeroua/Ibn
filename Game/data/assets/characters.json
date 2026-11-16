@@ -1,5 +1,5 @@
 {
-  "description": "Personnages 3D du jeu. Les sources libres sont téléchargées par Scripts/Pipeline/importer-personnages.ps1 (vérification SHA-256), puis chaque personnage est préparé par Scripts/Blender/preparer_personnage.py (échelle, orientation, nettoyage, couleurs, animations du contrat, export GLB) dans res://assets/characters/<id>/<id>.glb, et importé par Godot avec res://assets/characters/character_post_import.gd. Les fichiers produits ne sont pas versionnés : ce manifeste est la source de vérité.",
+  "description": "Personnages 3D du jeu. Les sources libres sont téléchargées par Scripts/Pipeline/importer-personnages.ps1 (vérification SHA-256), puis chaque personnage est préparé par Scripts/Blender/preparer_personnage.py (échelle, orientation, nettoyage, couleurs, animations du contrat, export GLB) dans res://assets/characters/<id>/<id>.glb, et importé par Godot avec res://assets/characters/character_post_import.gd. Les fichiers produits ne sont pas versionnés : ce manifeste est la source de vérité. Monte de Barq : ride_idle et ride_gallop (assise et position en avant au galop, bassin ancré sur le point de selle à l'origine, jambes posées par cinématique inverse de part et d'autre du tronc), mount et dismount (montée par la gauche : l'origine reste au sol, à 0,8 m à gauche du point de selle et 1,5 m plus bas, valeurs reprises dans horse.json > rider). Recettes : clip (animation ponctuelle), pose_loop (boucle retouchée : offsets en degrés par os, anchor, legs), sequence (poses clés enchaînées).",
   "sources": [
     {
       "id": "quaternius_ual_standard",
@@ -12,9 +12,18 @@
       "mirror_note": "Copie fidèle (format glTF) de l'archive Standard publiée par Quaternius sur itch.io le 10 juin 2025, figée à un commit précis : l'adresse et le contenu ne peuvent plus changer.",
       "base_url": "https://raw.githubusercontent.com/J-Ponzo/gltf-universal-animation-library/e24c23cf2a1323488a3faa226ea7ea21f644b73e/",
       "files": [
-        { "path": "glTF/AnimationLibrary_Godot_Standard.gltf", "sha256": "0ff075c7ad6855c5c2c37a171592ee8f0d6ab2f58259e2be77a9b63dd8027765" },
-        { "path": "glTF/AnimationLibrary_Godot_Standard.bin", "sha256": "6e65377d81558333c4093dbb144a48fd19019343d82b1a3a7992a98ec0e0543c" },
-        { "path": "LICENSE", "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499" }
+        {
+          "path": "glTF/AnimationLibrary_Godot_Standard.gltf",
+          "sha256": "0ff075c7ad6855c5c2c37a171592ee8f0d6ab2f58259e2be77a9b63dd8027765"
+        },
+        {
+          "path": "glTF/AnimationLibrary_Godot_Standard.bin",
+          "sha256": "6e65377d81558333c4093dbb144a48fd19019343d82b1a3a7992a98ec0e0543c"
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+        }
       ]
     }
   ],
@@ -38,10 +47,17 @@
       "forward": "-Z",
       "outfit": "neutre",
       "outfit_note": "Mannequin humain sans vêtements d'époque : la source libre ne fournit ni tunique, ni burnous, ni turban. La tenue d'époque est prévue au MVP 5 (Les habitants), avec les autres personnages.",
-      "palette": { "M_Main": "#cdbb98", "M_Joints": "#5f4630" },
+      "palette": {
+        "M_Main": "#cdbb98",
+        "M_Joints": "#5f4630"
+      },
       "roughness": 0.85,
       "uv_maps": 1,
-      "budget": { "max_triangles": 14000, "max_bones": 64, "max_surfaces": 1 },
+      "budget": {
+        "max_triangles": 14000,
+        "max_bones": 64,
+        "max_surfaces": 1
+      },
       "skeleton": {
         "root_bone": "root",
         "hips_bone": "DEF-hips",
@@ -54,39 +70,559 @@
       "animation_library": "locomotion",
       "ground_speed_tolerance": 0.1,
       "animations": [
-        { "name": "idle", "loop": true, "recipe": { "type": "loop", "source": "Idle_Loop", "time_scale": 1.0 } },
+        {
+          "name": "idle",
+          "loop": true,
+          "recipe": {
+            "type": "loop",
+            "source": "Idle_Loop",
+            "time_scale": 1.0
+          }
+        },
         {
           "name": "walk_slow",
           "loop": true,
           "ground_speed_m_s": 0.774,
-          "recipe": { "type": "loop", "source": "Walk_Formal_Loop", "time_scale": 1.3 }
+          "recipe": {
+            "type": "loop",
+            "source": "Walk_Formal_Loop",
+            "time_scale": 1.3
+          }
         },
-        { "name": "walk", "loop": true, "ground_speed_m_s": 1.006, "recipe": { "type": "loop", "source": "Walk_Loop", "time_scale": 1.0 } },
-        { "name": "run", "loop": true, "ground_speed_m_s": 5.167, "recipe": { "type": "loop", "source": "Jog_Fwd_Loop", "time_scale": 1.0 } },
+        {
+          "name": "walk",
+          "loop": true,
+          "ground_speed_m_s": 1.006,
+          "recipe": {
+            "type": "loop",
+            "source": "Walk_Loop",
+            "time_scale": 1.0
+          }
+        },
+        {
+          "name": "run",
+          "loop": true,
+          "ground_speed_m_s": 5.167,
+          "recipe": {
+            "type": "loop",
+            "source": "Jog_Fwd_Loop",
+            "time_scale": 1.0
+          }
+        },
         {
           "name": "stop_walk",
           "loop": false,
-          "recipe": { "type": "stop", "source": "Walk_Loop", "idle": "Idle_Loop", "duration_s": 0.6, "deceleration_s": 0.4, "settle_s": 0.1 }
+          "recipe": {
+            "type": "stop",
+            "source": "Walk_Loop",
+            "idle": "Idle_Loop",
+            "duration_s": 0.6,
+            "deceleration_s": 0.4,
+            "settle_s": 0.1
+          }
         },
         {
           "name": "stop_run",
           "loop": false,
-          "recipe": { "type": "stop", "source": "Jog_Fwd_Loop", "idle": "Idle_Loop", "duration_s": 0.8, "deceleration_s": 0.5, "settle_s": 0.12 }
+          "recipe": {
+            "type": "stop",
+            "source": "Jog_Fwd_Loop",
+            "idle": "Idle_Loop",
+            "duration_s": 0.8,
+            "deceleration_s": 0.5,
+            "settle_s": 0.12
+          }
         },
         {
           "name": "turn_left_90",
           "loop": false,
-          "recipe": { "type": "turn", "angle_deg": 90.0, "duration_s": 0.6, "step_source": "Walk_Loop", "step_weight": 0.5, "step_rate": 1.0, "idle": "Idle_Loop" }
+          "recipe": {
+            "type": "turn",
+            "angle_deg": 90.0,
+            "duration_s": 0.6,
+            "step_source": "Walk_Loop",
+            "step_weight": 0.5,
+            "step_rate": 1.0,
+            "idle": "Idle_Loop"
+          }
         },
         {
           "name": "turn_right_90",
           "loop": false,
-          "recipe": { "type": "turn", "angle_deg": -90.0, "duration_s": 0.6, "step_source": "Walk_Loop", "step_weight": 0.5, "step_rate": 1.0, "idle": "Idle_Loop" }
+          "recipe": {
+            "type": "turn",
+            "angle_deg": -90.0,
+            "duration_s": 0.6,
+            "step_source": "Walk_Loop",
+            "step_weight": 0.5,
+            "step_rate": 1.0,
+            "idle": "Idle_Loop"
+          }
         },
         {
           "name": "turn_180",
           "loop": false,
-          "recipe": { "type": "turn", "angle_deg": 180.0, "duration_s": 0.9, "step_source": "Walk_Loop", "step_weight": 0.55, "step_rate": 1.0, "idle": "Idle_Loop" }
+          "recipe": {
+            "type": "turn",
+            "angle_deg": 180.0,
+            "duration_s": 0.9,
+            "step_source": "Walk_Loop",
+            "step_weight": 0.55,
+            "step_rate": 1.0,
+            "idle": "Idle_Loop"
+          }
+        },
+        {
+          "name": "jump_start",
+          "loop": false,
+          "recipe": {
+            "type": "clip",
+            "source": "Jump_Start",
+            "time_scale": 0.7,
+            "start_s": 0.2,
+            "end_s": 0.65,
+            "no_rise_bone": "DEF-hips",
+            "rest_source": "Idle_Loop"
+          }
+        },
+        {
+          "name": "jump_air",
+          "loop": true,
+          "recipe": {
+            "type": "loop_no_rise",
+            "source": "Jump_Loop",
+            "no_rise_bone": "DEF-hips",
+            "rest_source": "Idle_Loop"
+          }
+        },
+        {
+          "name": "jump_land",
+          "loop": false,
+          "recipe": {
+            "type": "clip",
+            "source": "Jump_Land",
+            "time_scale": 0.6,
+            "start_s": 0.0,
+            "end_s": 0.75,
+            "no_rise_bone": "DEF-hips",
+            "rest_source": "Idle_Loop"
+          }
+        },
+        {
+          "name": "ride_idle",
+          "loop": true,
+          "recipe": {
+            "type": "pose_loop",
+            "source": "Driving_Loop",
+            "time_scale": 1.0,
+            "anchor": {
+              "bone": "DEF-hips",
+              "position_m": [
+                0.0,
+                0.0,
+                0.12
+              ]
+            },
+            "legs": [
+              {
+                "thigh": "DEF-thigh.L",
+                "shin": "DEF-shin.L",
+                "foot": "DEF-foot.L",
+                "ankle_m": [
+                  -0.46,
+                  -0.02,
+                  -0.5
+                ],
+                "pole_m": [
+                  -0.8,
+                  1.0,
+                  -0.1
+                ]
+              },
+              {
+                "thigh": "DEF-thigh.R",
+                "shin": "DEF-shin.R",
+                "foot": "DEF-foot.R",
+                "ankle_m": [
+                  0.46,
+                  -0.02,
+                  -0.5
+                ],
+                "pole_m": [
+                  0.8,
+                  1.0,
+                  -0.1
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "ride_gallop",
+          "loop": true,
+          "recipe": {
+            "type": "pose_loop",
+            "source": "Driving_Loop",
+            "time_scale": 1.0,
+            "offsets": {
+              "DEF-spine.001": [
+                20,
+                0,
+                0
+              ],
+              "DEF-spine.002": [
+                10,
+                0,
+                0
+              ]
+            },
+            "anchor": {
+              "bone": "DEF-hips",
+              "position_m": [
+                0.0,
+                -0.05,
+                0.2
+              ]
+            },
+            "legs": [
+              {
+                "thigh": "DEF-thigh.L",
+                "shin": "DEF-shin.L",
+                "foot": "DEF-foot.L",
+                "ankle_m": [
+                  -0.46,
+                  -0.02,
+                  -0.47
+                ],
+                "pole_m": [
+                  -0.8,
+                  1.0,
+                  -0.1
+                ]
+              },
+              {
+                "thigh": "DEF-thigh.R",
+                "shin": "DEF-shin.R",
+                "foot": "DEF-foot.R",
+                "ankle_m": [
+                  0.46,
+                  -0.02,
+                  -0.47
+                ],
+                "pole_m": [
+                  0.8,
+                  1.0,
+                  -0.1
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "mount",
+          "loop": false,
+          "recipe": {
+            "type": "sequence",
+            "keys": [
+              {
+                "at_s": 0.0,
+                "source": "Idle_Loop",
+                "source_time_s": 0.0
+              },
+              {
+                "at_s": 0.4,
+                "source": "Idle_Loop",
+                "source_time_s": 0.0,
+                "offsets": {
+                  "DEF-upper_arm.L": [
+                    -70,
+                    0,
+                    0
+                  ],
+                  "DEF-upper_arm.R": [
+                    -70,
+                    0,
+                    0
+                  ]
+                },
+                "anchor": {
+                  "bone": "DEF-hips",
+                  "position_m": [
+                    0.12,
+                    0.05,
+                    0.9
+                  ]
+                },
+                "legs": [
+                  {
+                    "thigh": "DEF-thigh.L",
+                    "shin": "DEF-shin.L",
+                    "foot": "DEF-foot.L",
+                    "ankle_m": [
+                      0.38000000000000006,
+                      0.05,
+                      0.82
+                    ],
+                    "pole_m": [
+                      0.0,
+                      1.0,
+                      1.2
+                    ]
+                  }
+                ]
+              },
+              {
+                "at_s": 0.85,
+                "source": "Driving_Loop",
+                "source_time_s": 0.0,
+                "offsets": {
+                  "DEF-spine.001": [
+                    25,
+                    0,
+                    0
+                  ]
+                },
+                "anchor": {
+                  "bone": "DEF-hips",
+                  "position_m": [
+                    0.44000000000000006,
+                    -0.05,
+                    1.95
+                  ]
+                },
+                "legs": [
+                  {
+                    "thigh": "DEF-thigh.L",
+                    "shin": "DEF-shin.L",
+                    "foot": "DEF-foot.L",
+                    "ankle_m": [
+                      0.38000000000000006,
+                      0.05,
+                      0.82
+                    ],
+                    "pole_m": [
+                      0.0,
+                      1.0,
+                      1.2
+                    ]
+                  },
+                  {
+                    "thigh": "DEF-thigh.R",
+                    "shin": "DEF-shin.R",
+                    "foot": "DEF-foot.R",
+                    "ankle_m": [
+                      0.79,
+                      -0.55,
+                      2.05
+                    ],
+                    "pole_m": [
+                      1.2400000000000002,
+                      0.2,
+                      2.4
+                    ]
+                  }
+                ]
+              },
+              {
+                "at_s": 1.25,
+                "source": "Driving_Loop",
+                "source_time_s": 0.0,
+                "anchor": {
+                  "bone": "DEF-hips",
+                  "position_m": [
+                    0.8,
+                    0.0,
+                    1.62
+                  ]
+                },
+                "legs": [
+                  {
+                    "thigh": "DEF-thigh.L",
+                    "shin": "DEF-shin.L",
+                    "foot": "DEF-foot.L",
+                    "ankle_m": [
+                      0.34,
+                      -0.02,
+                      1.0
+                    ],
+                    "pole_m": [
+                      0.0,
+                      1.0,
+                      1.4
+                    ]
+                  },
+                  {
+                    "thigh": "DEF-thigh.R",
+                    "shin": "DEF-shin.R",
+                    "foot": "DEF-foot.R",
+                    "ankle_m": [
+                      1.26,
+                      -0.02,
+                      1.0
+                    ],
+                    "pole_m": [
+                      1.6,
+                      1.0,
+                      1.4
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "dismount",
+          "loop": false,
+          "recipe": {
+            "type": "sequence",
+            "keys": [
+              {
+                "at_s": 0.0,
+                "source": "Driving_Loop",
+                "source_time_s": 0.0,
+                "anchor": {
+                  "bone": "DEF-hips",
+                  "position_m": [
+                    0.8,
+                    0.0,
+                    1.62
+                  ]
+                },
+                "legs": [
+                  {
+                    "thigh": "DEF-thigh.L",
+                    "shin": "DEF-shin.L",
+                    "foot": "DEF-foot.L",
+                    "ankle_m": [
+                      0.34,
+                      -0.02,
+                      1.0
+                    ],
+                    "pole_m": [
+                      0.0,
+                      1.0,
+                      1.4
+                    ]
+                  },
+                  {
+                    "thigh": "DEF-thigh.R",
+                    "shin": "DEF-shin.R",
+                    "foot": "DEF-foot.R",
+                    "ankle_m": [
+                      1.26,
+                      -0.02,
+                      1.0
+                    ],
+                    "pole_m": [
+                      1.6,
+                      1.0,
+                      1.4
+                    ]
+                  }
+                ]
+              },
+              {
+                "at_s": 0.35,
+                "source": "Driving_Loop",
+                "source_time_s": 0.0,
+                "offsets": {
+                  "DEF-spine.001": [
+                    25,
+                    0,
+                    0
+                  ]
+                },
+                "anchor": {
+                  "bone": "DEF-hips",
+                  "position_m": [
+                    0.44000000000000006,
+                    -0.05,
+                    1.95
+                  ]
+                },
+                "legs": [
+                  {
+                    "thigh": "DEF-thigh.L",
+                    "shin": "DEF-shin.L",
+                    "foot": "DEF-foot.L",
+                    "ankle_m": [
+                      0.38000000000000006,
+                      0.05,
+                      0.82
+                    ],
+                    "pole_m": [
+                      0.0,
+                      1.0,
+                      1.2
+                    ]
+                  },
+                  {
+                    "thigh": "DEF-thigh.R",
+                    "shin": "DEF-shin.R",
+                    "foot": "DEF-foot.R",
+                    "ankle_m": [
+                      0.79,
+                      -0.55,
+                      2.05
+                    ],
+                    "pole_m": [
+                      1.2400000000000002,
+                      0.2,
+                      2.4
+                    ]
+                  }
+                ]
+              },
+              {
+                "at_s": 0.75,
+                "source": "Idle_Loop",
+                "source_time_s": 0.0,
+                "offsets": {
+                  "DEF-upper_arm.L": [
+                    -70,
+                    0,
+                    0
+                  ],
+                  "DEF-upper_arm.R": [
+                    -70,
+                    0,
+                    0
+                  ]
+                },
+                "anchor": {
+                  "bone": "DEF-hips",
+                  "position_m": [
+                    0.12,
+                    0.05,
+                    0.9
+                  ]
+                },
+                "legs": [
+                  {
+                    "thigh": "DEF-thigh.L",
+                    "shin": "DEF-shin.L",
+                    "foot": "DEF-foot.L",
+                    "ankle_m": [
+                      0.38000000000000006,
+                      0.05,
+                      0.82
+                    ],
+                    "pole_m": [
+                      0.0,
+                      1.0,
+                      1.2
+                    ]
+                  }
+                ]
+              },
+              {
+                "at_s": 1.05,
+                "source": "Idle_Loop",
+                "source_time_s": 0.0
+              }
+            ]
+          }
         }
       ]
     }

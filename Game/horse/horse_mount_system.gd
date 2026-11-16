@@ -1,10 +1,22 @@
 class_name HorseMountSystem
 extends Node3D
-## Montage, démontage, appel et caméra de monte de Barq.
+## Monte de Barq : appel (sifflet), montée par la gauche, conduite, saut, descente, et caméra de monte.
+##
+## États : à pied → approche (le cavalier glisse vers le point de montée, à gauche de la selle) → montée (animation
+## « mount ») → monté (le bassin suit le point de selle, qui suit le dos du cheval ; assise droite au pas et au trot,
+## penchée en avant au galop) → descente (animation « dismount ») → à pied. Pendant la monte, le personnage ne fait
+## plus de physique (il n'a pas de collision avec Barq) et son lecteur d'animation est piloté ici.
+## Par image : quelques lectures de transformations, aucune allocation.
+
+enum State { ON_FOOT, APPROACH, MOUNTING, MOUNTED, DISMOUNTING }
 
 const SETTINGS_PATH: String = "res://data/horse/horse.json"
 const MOUNT_ACTION: StringName = &"mount_horse"
 const WHISTLE_ACTION: StringName = &"horse_whistle"
+const JUMP_ACTION: StringName = &"jump"
+const SPRINT_ACTION: StringName = &"sprint"
+## Vitesse en dessous de laquelle on peut descendre (m/s).
+const DISMOUNT_MAX_SPEED: float = 0.3
 
 var player: PlayerCharacter
 var camera_rig: ThirdPersonCamera
@@ -13,8 +25,21 @@ var heightfield: DesertHeightfield
 var traces: HorseTraces
 var audio: HorseAudio
 var mounted: bool = false
+var state: int = State.ON_FOOT
+
 var _settings: Dictionary
-var _last_hoof_position: Vector3 = Vector3.ZERO
+var _rider_animation: AnimationPlayer
+var _state_time: float = 0.0
+var _approach_from := Transform3D.IDENTITY
+var _mount_side: float = 0.0
+var _seat_height: float = 0.0
+var _approach_time: float = 0.0
+var _mount_range: float = 0.0
+var _rider_blend: float = 0.0
+var _lean_gaits: Array[StringName] = []
+var _current_rider_clip: StringName = &""
+## Descente demandée en mouvement : Barq s'arrête, puis le cavalier descend.
+var _dismount_requested: bool = false
 
 
 func setup(owner_player: PlayerCharacter, rig: ThirdPersonCamera, field: DesertHeightfield) -> void:
@@ -22,6 +47,15 @@ func setup(owner_player: PlayerCharacter, rig: ThirdPersonCamera, field: DesertH
 	camera_rig = rig
 	heightfield = field
 	_settings = JsonData.load_dictionary(SETTINGS_PATH)
+	var rider: Dictionary = JsonData.get_dictionary(_settings, "rider", "horse.json")
+	var context: String = "horse.json > rider"
+	_mount_side = JsonData.get_float(rider, "mount_side_m", context)
+	_seat_height = JsonData.get_float(rider, "mount_seat_height_m", context)
+	_approach_time = JsonData.get_float(rider, "approach_s", context)
+	_mount_range = JsonData.get_float(rider, "mount_range_m", context)
+	_rider_blend = JsonData.get_float(rider, "blend_s", context)
+	for gait: Variant in JsonData.get_array(rider, "gallop_lean_gaits", context):
+		_lean_gaits.append(StringName(str(gait)))
 	_spawn_horse()
 
 
@@ -29,46 +63,138 @@ func _ready() -> void:
 	process_priority = -10
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if horse == null or player == null:
 		return
-	if Input.is_action_just_pressed(WHISTLE_ACTION) and not mounted:
-		horse.call_to_node(player)
-	if Input.is_action_just_pressed(MOUNT_ACTION):
-		if mounted:
-			dismount()
-		elif (
-			player.global_position.distance_to(horse.global_position)
-			<= float((_settings.get("call", {}) as Dictionary).get("stop_distance_m", 5.0))
-		):
-			mount()
-	if mounted:
-		var move: Vector2 = _camera_relative_move()
-		horse.set_input(move, Input.is_action_pressed(&"sprint"))
-		player.global_position = horse.saddle_position()
-		player.rotation = horse.rotation
+	_state_time += delta
+	match state:
+		State.ON_FOOT:
+			if Input.is_action_just_pressed(WHISTLE_ACTION):
+				horse.call_to_node(player)
+			if Input.is_action_just_pressed(MOUNT_ACTION) and player.is_grounded():
+				if player.global_position.distance_to(_mount_point().origin) <= _mount_range:
+					_begin_mount()
+		State.APPROACH:
+			horse.set_input(Vector2.ZERO, false)
+			if _state_time >= _approach_time:
+				_enter(State.MOUNTING)
+				_play_rider(PlayerAnimator.MOUNT_CLIP, 0.1)
+		State.MOUNTING:
+			horse.set_input(Vector2.ZERO, false)
+			if _state_time >= _clip_length(PlayerAnimator.MOUNT_CLIP):
+				_enter(State.MOUNTED)
+				_current_rider_clip = &""
+		State.MOUNTED:
+			if Input.is_action_just_pressed(MOUNT_ACTION):
+				_dismount_requested = true
+			if _dismount_requested:
+				# Descente : Barq s'arrête d'abord (et se pose s'il saute), puis le cavalier descend.
+				horse.set_input(Vector2.ZERO, false)
+				if not horse.is_airborne() and horse.locomotion.speed < DISMOUNT_MAX_SPEED:
+					_dismount_requested = false
+					_enter(State.DISMOUNTING)
+					_play_rider(PlayerAnimator.DISMOUNT_CLIP, 0.1)
+					return
+			else:
+				horse.set_input(_camera_relative_move(), Input.is_action_pressed(SPRINT_ACTION))
+				if Input.is_action_just_pressed(JUMP_ACTION):
+					horse.request_jump()
+			_update_rider_pose()
+		State.DISMOUNTING:
+			horse.set_input(Vector2.ZERO, false)
+			if _state_time >= _clip_length(PlayerAnimator.DISMOUNT_CLIP):
+				_finish_dismount()
 
 
-func mount() -> void:
+## Le cavalier est placé après l'animation de l'image (le dos du cheval a bougé) : pas de décalage visible.
+func _process(_delta: float) -> void:
+	if horse == null or player == null:
+		return
+	match state:
+		State.APPROACH:
+			var weight: float = smoothstep(0.0, 1.0, clampf(_state_time / maxf(_approach_time, 0.001), 0.0, 1.0))
+			player.global_transform = _approach_from.interpolate_with(_mount_point(), weight)
+		State.MOUNTING, State.DISMOUNTING:
+			# Les animations de montée et de descente partent du point de montée (au sol, à gauche de la selle).
+			player.global_transform = _mount_point()
+		State.MOUNTED:
+			player.global_transform = horse.seat_transform()
+
+
+## Monté : vrai entre le début de la montée et la fin de la descente.
+func is_riding() -> bool:
+	return state != State.ON_FOOT
+
+
+func _begin_mount() -> void:
 	mounted = true
 	horse.mounted = true
 	horse.cancel_call()
+	_approach_from = player.global_transform
 	player.process_mode = Node.PROCESS_MODE_DISABLED
+	_rider_animation = player.animation_player if player.is_animating() else null
+	if _rider_animation != null:
+		# Le personnage ne fait plus de physique, mais ses animations doivent continuer à jouer.
+		_rider_animation.process_mode = Node.PROCESS_MODE_PAUSABLE
+		_rider_animation.play(PlayerAnimator.LOOP_CLIPS[LocomotionSettings.Gait.WALK], 0.15)
+		_rider_animation.speed_scale = 1.0
 	if camera_rig != null:
 		camera_rig.set_target(horse)
-		camera_rig.snap()
+	_enter(State.APPROACH)
 
 
-func dismount() -> void:
+func _finish_dismount() -> void:
 	mounted = false
 	horse.mounted = false
 	horse.set_input(Vector2.ZERO, false)
+	var ground: Transform3D = _mount_point()
 	player.process_mode = Node.PROCESS_MODE_INHERIT
-	var side: Vector3 = horse.global_basis.x * 1.5
-	player.teleport_to(horse.global_position + side, horse.rotation.y)
+	if _rider_animation != null:
+		_rider_animation.process_mode = Node.PROCESS_MODE_INHERIT
+	player.reset_animation_state()
+	player.teleport_to(ground.origin, horse.rotation.y)
 	if camera_rig != null:
 		camera_rig.set_target(player)
-		camera_rig.snap()
+	_enter(State.ON_FOOT)
+
+
+## Point de montée : au sol, à gauche du point de selle, tourné comme Barq.
+func _mount_point() -> Transform3D:
+	var seat: Transform3D = Transform3D(horse.global_basis.orthonormalized(), horse.saddle_position())
+	var origin: Vector3 = seat.origin - seat.basis.x * _mount_side
+	origin.y = seat.origin.y - _seat_height
+	if heightfield != null:
+		origin.y = heightfield.height_at(origin.x, origin.z)
+	return Transform3D(seat.basis, origin)
+
+
+## Assise droite, ou penchée en avant aux allures rapides ; même vitesse de lecture que le cheval.
+func _update_rider_pose() -> void:
+	if _rider_animation == null:
+		return
+	var lean: bool = _lean_gaits.has(horse.locomotion.get_gait_name()) and horse.locomotion.speed > 0.5
+	var clip: StringName = PlayerAnimator.RIDE_GALLOP_CLIP if lean or horse.is_airborne() else PlayerAnimator.RIDE_CLIP
+	if clip != _current_rider_clip:
+		_play_rider(clip, _rider_blend)
+
+
+func _play_rider(clip: StringName, blend: float) -> void:
+	_current_rider_clip = clip
+	if _rider_animation == null:
+		return
+	_rider_animation.play(clip, blend)
+	_rider_animation.speed_scale = 1.0
+
+
+func _clip_length(clip: StringName) -> float:
+	if _rider_animation == null or not _rider_animation.has_animation(clip):
+		return 0.0
+	return _rider_animation.get_animation(clip).length
+
+
+func _enter(next: int) -> void:
+	state = next
+	_state_time = 0.0
 
 
 func _spawn_horse() -> void:
