@@ -5,8 +5,8 @@ extends Node
 ## - Variables : season (printemps, ete, automne, hiver), transitioning.
 ## - Uniformes globaux de shader (déclarés ici s'ils ne le sont pas déjà) : season_sun_color (vec3),
 ##   season_sun_intensity, season_sun_max_height (degrés), season_day_length (heures), season_fog_density,
-##   season_grass_color (vec3), season_palm_color (vec3), season_wind_strength, season_dust,
-##   season_bloom (floats ; bloom : 1 en pleine saison des fleurs éphémères, 0 hors saison), season_flowering
+##   season_grass_color (vec3), season_palm_color (vec3), season_wind_strength, season_dust, season_wetness (floats),
+##   season_bloom (bloom : 1 en pleine saison des fleurs éphémères, 0 hors saison), season_flowering
 ##   (floraison des arbustes, de 0 à 1, facultative dans le fichier : 0 par défaut).
 ## - Lecture sans dépendance de code : get_value(name), get_multiplier(name), get_color(name), ou les uniformes.
 ##   DayNight, Wind et la végétation les lisent par get_node_or_null ou par les uniformes.
@@ -39,7 +39,8 @@ const WIND_STRENGTH: int = 13
 const DUST: int = 14
 const BLOOM: int = 15
 const FLOWERING: int = 16
-const VALUE_COUNT: int = 17
+const WETNESS: int = 17
+const VALUE_COUNT: int = 18
 
 ## Saison courante (la cible quand une transition est en cours).
 var season: StringName = &"ete"
@@ -230,6 +231,7 @@ func _read_season(entry: Dictionary, context: String) -> PackedFloat32Array:
 	out[DUST] = JsonData.get_float(entry, "dust", context)
 	out[BLOOM] = JsonData.get_float(entry, "bloom", context)
 	out[FLOWERING] = clampf(JsonData.get_float_or(entry, "flowering", 0.0, context), 0.0, 1.0)
+	out[WETNESS] = JsonData.get_float(entry, "wetness", context)
 	return out
 
 
@@ -246,6 +248,7 @@ func _declare_globals() -> void:
 		["dust", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0],
 		["bloom", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0],
 		["flowering", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0],
+		["wetness", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0],
 	]
 	_uniform_names.clear()
 	for spec: Array in specs:
@@ -268,3 +271,4 @@ func _publish() -> void:
 	RenderingServer.global_shader_parameter_set(_uniform_names[8], c[DUST])
 	RenderingServer.global_shader_parameter_set(_uniform_names[9], c[BLOOM])
 	RenderingServer.global_shader_parameter_set(_uniform_names[10], c[FLOWERING])
+	RenderingServer.global_shader_parameter_set(_uniform_names[11], c[WETNESS])

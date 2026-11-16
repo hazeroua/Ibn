@@ -34,6 +34,18 @@
       "sway_height_m": 0.9,
       "sway_amount_m": 0.08
     },
+    "roseau": {
+      "model": "res://assets/desert/roseau_a.glb",
+      "tint": "grass",
+      "sway_height_m": 1.8,
+      "sway_amount_m": 0.45
+    },
+    "jonc": {
+      "model": "res://assets/desert/jonc_a.glb",
+      "tint": "grass",
+      "sway_height_m": 1.0,
+      "sway_amount_m": 0.3
+    },
     "herbe_seche": {
       "model": "res://assets/desert/herbe_seche_a.glb",
       "tint": "grass",

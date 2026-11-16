@@ -88,6 +88,13 @@ var one_shot_blend_time: float = 0.0
 var speed_scale_min: float = 0.0
 var speed_scale_max: float = 0.0
 
+# Marche dans l'eau peu profonde
+var wading_max_depth: float = 0.0
+var wading_enter_depth: float = 0.0
+var wading_speed_multiplier: float = 1.0
+var wading_smoothing: float = 0.0
+var splash: Dictionary = {}
+
 # Budgets du test de charge
 var budget_step_average_ms: float = 0.0
 var budget_step_p95_ms: float = 0.0
@@ -111,6 +118,7 @@ static func from_dictionary(data: Dictionary) -> LocomotionSettings:
 	settings._read_stops(JsonData.get_dictionary(data, "stops", CONTEXT))
 	settings._read_footsteps(JsonData.get_dictionary(data, "footsteps", CONTEXT))
 	settings._read_animation(JsonData.get_dictionary(data, "animation", CONTEXT))
+	settings._read_wading(JsonData.get_dictionary(data, "wading", CONTEXT))
 	settings._read_budgets(JsonData.get_dictionary(data, "budgets", CONTEXT))
 	settings._check_consistency()
 	return settings
@@ -228,6 +236,15 @@ func _read_animation(section: Dictionary) -> void:
 	speed_scale_min = _positive(section, "speed_scale_min", context)
 	speed_scale_max = _positive(section, "speed_scale_max", context)
 	_check(speed_scale_min <= speed_scale_max, "speed_scale_min doit être inférieure ou égale à speed_scale_max", context)
+
+
+func _read_wading(section: Dictionary) -> void:
+	var context: String = CONTEXT + " > wading"
+	wading_max_depth = _positive(section, "max_depth_m", context)
+	wading_enter_depth = _ranged(section, "enter_depth_m", 0.0, wading_max_depth, context)
+	wading_speed_multiplier = _ranged(section, "speed_multiplier_at_max_depth", 0.05, 1.0, context)
+	wading_smoothing = _positive(section, "smoothing_per_second", context)
+	splash = JsonData.get_dictionary(section, "splash", context)
 
 
 func _read_budgets(section: Dictionary) -> void:

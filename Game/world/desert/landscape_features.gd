@@ -12,6 +12,10 @@ const CONTEXT: String = "desert.json"
 const KINDS: Array[StringName] = [&"oasis", &"lac", &"guelta", &"chott"]
 const MAX_WATER_BODIES: int = 32
 const GRID_SIDE: int = 32
+## Types de plans d'eau où l'on peut marcher quand la profondeur le permet (le chott n'a qu'une pellicule d'eau).
+const WADEABLE_KINDS: Array[StringName] = [&"oasis", &"lac", &"guelta"]
+## Valeur de standing_water_height() hors de tout plan d'eau praticable à gué.
+const NO_WATER: float = -1.0e9
 
 var water_count: int = 0
 var wadi_count: int = 0
@@ -31,6 +35,17 @@ var _floor: PackedFloat64Array = PackedFloat64Array()
 var _surface: PackedFloat64Array = PackedFloat64Array()
 var _blend: PackedFloat64Array = PackedFloat64Array()
 var _reach: PackedFloat64Array = PackedFloat64Array()
+## Largeur (m) de la rive en pente douce à l'intérieur du rayon : 0 = fond plat jusqu'à la rive (oasis).
+var _shore: PackedFloat64Array = PackedFloat64Array()
+var _wadeable: PackedByteArray = PackedByteArray()
+## Falaise facultative derrière le plan d'eau : direction (vecteur unitaire), cosinus du demi-angle, hauteur,
+## montée (wall) et descente (back) en mètres au-delà du rayon. Hauteur nulle = pas de falaise.
+var _cliff_x: PackedFloat64Array = PackedFloat64Array()
+var _cliff_z: PackedFloat64Array = PackedFloat64Array()
+var _cliff_cos: PackedFloat64Array = PackedFloat64Array()
+var _cliff_height: PackedFloat64Array = PackedFloat64Array()
+var _cliff_wall: PackedFloat64Array = PackedFloat64Array()
+var _cliff_back: PackedFloat64Array = PackedFloat64Array()
 ## Une liste d'indices par case de la grille.
 var _water_cells: Array[PackedInt32Array] = []
 
@@ -74,6 +89,12 @@ func _load_water(bodies: Array, extra_reach_m: float) -> bool:
 		if radius <= 0.0 or blend <= 0.0 or depth < 0.0:
 			push_error("LandscapeFeatures : rayon, fondu et profondeur incohérents (%s)." % context)
 			return false
+		var shore: float = JsonData.get_float_or(body, "shore_width_m", 0.0, context)
+		if shore < 0.0 or shore > radius:
+			push_error("LandscapeFeatures : shore_width_m doit être compris entre 0 et le rayon (%s)." % context)
+			return false
+		if not _append_cliff(body, blend, context):
+			return false
 		var reach: float = radius + maxf(blend, extra_reach_m)
 		if absf(center.x) + radius > _half_extent or absf(center.y) + radius > _half_extent:
 			push_error("LandscapeFeatures : le plan d'eau sort du désert (%s)." % context)
@@ -87,8 +108,42 @@ func _load_water(bodies: Array, extra_reach_m: float) -> bool:
 		_floor.append(surface - depth)
 		_blend.append(blend)
 		_reach.append(reach)
+		_shore.append(shore)
+		_wadeable.append(1 if WADEABLE_KINDS.has(kind) else 0)
 		_register_water(water_count, center.x - reach, center.y - reach, center.x + reach, center.y + reach)
 		water_count += 1
+	return true
+
+
+## Lit la falaise facultative d'un plan d'eau (clé « cliff ») et l'ajoute aux tableaux parallèles ; sans falaise,
+## ajoute une hauteur nulle.
+func _append_cliff(body: Dictionary, blend: float, context: String) -> bool:
+	var direction := Vector2.RIGHT
+	var cos_half: float = 1.0
+	var height: float = 0.0
+	var wall: float = 1.0
+	var back: float = 1.0
+	if body.has("cliff"):
+		var cliff: Dictionary = JsonData.get_dictionary(body, "cliff", context)
+		var cliff_context: String = context + " > cliff"
+		var angle: float = deg_to_rad(JsonData.get_float(cliff, "direction_deg", cliff_context))
+		var half_angle: float = JsonData.get_float(cliff, "half_angle_deg", cliff_context)
+		height = JsonData.get_float(cliff, "height_m", cliff_context)
+		wall = JsonData.get_float(cliff, "wall_m", cliff_context)
+		back = JsonData.get_float(cliff, "back_m", cliff_context)
+		if half_angle <= 0.0 or half_angle >= 180.0 or height < 0.0 or wall <= 0.0 or back <= 0.0 or wall + back > blend:
+			push_error(
+				"LandscapeFeatures : falaise incohérente (demi-angle, hauteur, montée + descente <= fondu des berges) (%s)." % context
+			)
+			return false
+		direction = Vector2(cos(angle), sin(angle))
+		cos_half = cos(deg_to_rad(half_angle))
+	_cliff_x.append(direction.x)
+	_cliff_z.append(direction.y)
+	_cliff_cos.append(cos_half)
+	_cliff_height.append(height)
+	_cliff_wall.append(wall)
+	_cliff_back.append(back)
 	return true
 
 
@@ -127,15 +182,41 @@ func _cell_index(x: float, z: float) -> int:
 
 ## Applique le relief des plans d'eau à la hauteur naturelle du sol : le fond du plan d'eau au centre, remonté
 ## en douceur (smoothstep) jusqu'au sol naturel sur bank_blend_m au-delà du rayon. O(éléments de la case).
+## Avec shore_width_m > 0, le fond remonte d'abord jusqu'à la surface de l'eau sur la largeur de la rive (à
+## l'intérieur du rayon : la profondeur lisible va de depth_m à 0 à la rive), puis le sol naturel est relevé au
+## moins au niveau de l'eau : aucun creux ne reste entre la rive et l'eau. Une falaise facultative s'ajoute derrière.
 func carve(x: float, z: float, natural_height: float) -> float:
 	var height: float = natural_height + wadis.rise_at(x, z)
 	for index: int in _water_cells[_cell_index(x, z)]:
 		var dx: float = x - _x[index]
 		var dz: float = z - _z[index]
+		var distance: float = sqrt(dx * dx + dz * dz)
 		var radius: float = _radius[index]
-		var away: float = smoothstep(radius, radius + _blend[index], sqrt(dx * dx + dz * dz))
-		height = lerpf(_floor[index], height, away)
+		var away: float = smoothstep(radius, radius + _blend[index], distance)
+		var shore: float = _shore[index]
+		if shore > 0.0:
+			var ramp: float = smoothstep(radius - shore, radius, distance)
+			var base: float = _floor[index] + (_surface[index] - _floor[index]) * ramp
+			height = lerpf(base, maxf(height, _surface[index]), away)
+		else:
+			height = lerpf(_floor[index], height, away)
+		if _cliff_height[index] > 0.0 and distance > radius:
+			height += _cliff_bump(index, dx, dz, distance)
 	return wadis.carve(x, z, height)
+
+
+## Relief de la falaise du plan d'eau : fenêtre angulaire (autour de la direction de la falaise) multipliée par un
+## profil radial qui monte sur wall m au-delà du rayon puis redescend sur back m.
+func _cliff_bump(index: int, dx: float, dz: float, distance: float) -> float:
+	var along: float = (dx * _cliff_x[index] + dz * _cliff_z[index]) / distance
+	var angular: float = smoothstep(_cliff_cos[index], 1.0, along)
+	if angular <= 0.0:
+		return 0.0
+	var radius: float = _radius[index]
+	var wall: float = _cliff_wall[index]
+	var rise: float = smoothstep(radius, radius + wall, distance)
+	var fall: float = 1.0 - smoothstep(radius + wall, radius + wall + _cliff_back[index], distance)
+	return _cliff_height[index] * angular * rise * fall
 
 
 ## 0 loin de l'eau, 1 dans l'eau (rayon du plan d'eau), décroissance douce sur margin_m au-delà. O(éléments de la case).
@@ -201,6 +282,42 @@ func distance_to_water(x: float, z: float) -> float:
 	return best
 
 
+## Hauteur de la surface de l'eau si (x, z) est à l'intérieur du rayon d'un plan d'eau où l'on peut marcher
+## (oasis, lac, guelta), NO_WATER sinon. O(éléments de la case), sans allocation.
+func standing_water_height(x: float, z: float) -> float:
+	for index: int in _water_cells[_cell_index(x, z)]:
+		if _wadeable[index] == 0:
+			continue
+		var dx: float = x - _x[index]
+		var dz: float = z - _z[index]
+		var radius: float = _radius[index]
+		if dx * dx + dz * dz <= radius * radius:
+			return _surface[index]
+	return NO_WATER
+
+
+## Rayon (m) du cercle où la profondeur de l'eau vaut max_depth_m, pour un plan d'eau praticable à gué plus profond
+## que cela ; -1 si l'on peut marcher partout dans ce plan d'eau (ou s'il n'est pas praticable). La profondeur
+## vaut depth_m * (1 - smoothstep(rayon - rive, rayon, d)) : on inverse le smoothstep par dichotomie.
+func wading_ring_radius(index: int, max_depth_m: float) -> float:
+	var depth: float = _surface[index] - _floor[index]
+	if _wadeable[index] == 0 or depth <= max_depth_m:
+		return -1.0
+	var shore: float = _shore[index]
+	if shore <= 0.0:
+		return _radius[index]
+	var target: float = 1.0 - max_depth_m / depth
+	var low: float = 0.0
+	var high: float = 1.0
+	for _step: int in 32:
+		var middle: float = (low + high) * 0.5
+		if middle * middle * (3.0 - 2.0 * middle) < target:
+			low = middle
+		else:
+			high = middle
+	return _radius[index] - shore + shore * (low + high) * 0.5
+
+
 ## Type du plan d'eau le plus proche à portée (&"" si aucun).
 func nearest_water_kind(x: float, z: float) -> StringName:
 	var best: StringName = &""
@@ -235,3 +352,18 @@ func water_center(index: int) -> Vector2:
 
 func water_radius(index: int) -> float:
 	return _radius[index]
+
+
+## Hauteur de la surface de l'eau du plan d'eau d'indice index.
+func water_surface(index: int) -> float:
+	return _surface[index]
+
+
+## Profondeur (m) au centre du plan d'eau d'indice index.
+func water_depth(index: int) -> float:
+	return _surface[index] - _floor[index]
+
+
+## Largeur (m) de la rive en pente douce du plan d'eau d'indice index (0 = fond plat jusqu'à la rive).
+func water_shore_width(index: int) -> float:
+	return _shore[index]

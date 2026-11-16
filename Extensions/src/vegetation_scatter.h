@@ -33,7 +33,7 @@ public:
 	// Charge les règles (vegetation.json). Renvoie false et renseigne get_last_error() si invalide.
 	bool load_rules(const godot::String &p_path);
 
-	// Éléments de paysage : liste de plans d'eau ({center: [x, z], radius_m}) et d'oueds ({points: [[x, z], ...]}),
+	// Éléments de paysage : liste de plans d'eau ({center: [x, z], radius_m, kind facultatif}) et d'oueds ({points: [[x, z], ...]}),
 	// au format de desert.json. Au plus 32 plans d'eau et 16 oueds de 64 points.
 	bool set_features(const godot::Array &p_water_bodies, const godot::Array &p_wadis);
 
@@ -73,6 +73,8 @@ private:
 		float altitude_max = 0.0f;
 		float water_min = 0.0f;
 		float water_max = 0.0f;
+		// Types de plans d'eau pris en compte pour la distance (tous par défaut).
+		uint8_t water_kinds = 15;
 		// Courbe selon la distance normalisée au plan d'eau le plus proche.
 		std::vector<CurvePoint> curve;
 		float water_max_multiplier = 0.0f;
@@ -102,6 +104,8 @@ private:
 		float x = 0.0f;
 		float z = 0.0f;
 		float radius = 1.0f;
+		// Type du plan d'eau (bit de kind_bit) ; tous les bits si le plan d'eau n'a pas de type.
+		uint8_t kinds = 15;
 	};
 
 	struct Segment {

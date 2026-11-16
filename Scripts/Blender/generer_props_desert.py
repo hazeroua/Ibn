@@ -810,6 +810,11 @@ def main() -> None:
         spec = manifest["models"][shrub]
         for i, variant in enumerate(spec["variants"]):
             jobs.append((f"{shrub}_{variant}", spec["max_triangles"], lambda i=i, spec=spec, builder=builder: builder(spec, i, 0)))
+    # Roseau et jonc (rives des plans d'eau) : mêmes brins effilés que l'herbe sèche, plus hauts, 40 triangles au plus.
+    for reed_name in ("roseau", "jonc"):
+        reed = manifest["models"][reed_name]
+        for i, variant in enumerate(reed["variants"]):
+            jobs.append((f"{reed_name}_{variant}", reed["max_triangles"], lambda i=i, reed=reed: build_grass(reed, i)))
     for name, budget, builder in jobs:
         reset_scene()
         material = make_material()

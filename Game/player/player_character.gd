@@ -30,6 +30,8 @@ var input := PlayerInput.new()
 var motor: LocomotionMotor
 ## Vitesse horizontale réelle de la dernière image (m/s).
 var real_speed: float = 0.0
+## Multiplicateur de la vitesse de déplacement (1 = normal) : posé par les systèmes de terrain, par exemple l'eau.
+var speed_multiplier: float = 1.0
 ## Durée de calcul de la dernière image physique (microsecondes), pour les mesures.
 var last_step_usec: int = 0
 
@@ -137,7 +139,7 @@ func step(delta: float) -> void:
 	var was_grounded: bool = _grounded
 	motor.update(input.move, input.sprint, input.walk_slow, forward, right, was_grounded, delta)
 	rotation.y = motor.yaw
-	var heading: Vector2 = motor.forward_xz() * motor.speed
+	var heading: Vector2 = motor.forward_xz() * motor.speed * speed_multiplier
 	velocity.x = heading.x
 	velocity.z = heading.y
 	if was_grounded:
