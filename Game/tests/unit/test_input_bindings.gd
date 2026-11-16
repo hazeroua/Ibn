@@ -162,9 +162,9 @@ func test_conflicts_are_detected_within_shared_contexts() -> void:
 	assert_eq(conflicts[0], &"move_forward")
 	assert_eq(_bindings.rebind(&"sprint", _key(KEY_W)), InputBindings.RebindResult.CONFLICT)
 	assert_false(_bindings.is_customized(&"sprint"), "un refus ne change rien")
-	# E sert à move_up, qui n'existe que pour la caméra libre : pas de conflit avec walk_slow (jeu).
-	assert_eq(_bindings.find_conflicts(&"walk_slow", _key(KEY_E)).size(), 0)
-	assert_eq(_bindings.rebind(&"walk_slow", _key(KEY_E)), InputBindings.RebindResult.OK)
+	# Q sert à move_down, qui n'existe que pour la caméra libre : pas de conflit avec walk_slow (jeu).
+	assert_eq(_bindings.find_conflicts(&"walk_slow", _key(KEY_Q)).size(), 0)
+	assert_eq(_bindings.rebind(&"walk_slow", _key(KEY_Q)), InputBindings.RebindResult.OK)
 	assert_eq(_bindings.get_all_conflicts().size(), 0)
 
 

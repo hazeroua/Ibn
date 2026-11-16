@@ -33,7 +33,8 @@ func test_other_seed_changes_heights() -> void:
 
 
 func test_dunes_are_elongated_across_the_wind() -> void:
-	# Dans le sens du vent le relief varie plus vite qu'en travers : écart moyen de hauteur sur 60 m.
+	# Dans le sens du vent le relief varie plus vite qu'en travers : écart moyen de hauteur sur 60 m, mesuré sur les
+	# dunes seules (hors des terrasses, plans d'eau, oueds et falaises, que le relief aplanit ou creuse).
 	var wind: float = deg_to_rad((_data["terrain"] as Dictionary)["wind_direction_deg"] as float)
 	var along := Vector2(cos(wind), sin(wind))
 	var across := Vector2(-along.y, along.x)
@@ -41,10 +42,16 @@ func test_dunes_are_elongated_across_the_wind() -> void:
 	var variation_across: float = 0.0
 	for i: int in 300:
 		var p := Vector2(-1200.0 + float(i) * 7.0, -800.0 + float(i % 17) * 90.0)
+		if not (_is_dune(p) and _is_dune(p + along * 60.0) and _is_dune(p + across * 60.0)):
+			continue
 		var base: float = _field.height_at(p.x, p.y)
 		variation_along += absf(_field.height_at(p.x + along.x * 60.0, p.y + along.y * 60.0) - base)
 		variation_across += absf(_field.height_at(p.x + across.x * 60.0, p.y + across.y * 60.0) - base)
 	assert_gt(variation_along, variation_across * 1.5, "crêtes perpendiculaires au vent")
+
+
+func _is_dune(p: Vector2) -> bool:
+	return absf(_field.features.carve(p.x, p.y, 1000.0) - 1000.0) < 0.0001
 
 
 func test_relief_has_dunes() -> void:
@@ -74,7 +81,9 @@ func test_oasis_is_a_pool_in_earth() -> void:
 		for fraction: float in [0.3, 0.8, 1.0]:
 			var p: Vector2 = center + direction * radius * fraction
 			assert_true(_field.height_at(p.x, p.y) <= surface + 0.001, "le sol reste sous l'eau dans le rayon")
-			assert_eq(_field.surface_at(Vector3(p.x, 0.0, p.y)), &"terre")
+			# Sous l'eau, le sol sonne comme de l'eau ; sur la rive à fleur d'eau, c'est de la terre.
+			var under_water: bool = _field.water_depth_at(p.x, p.y) > 0.03
+			assert_eq(_field.surface_at(Vector3(p.x, 0.0, p.y)), &"eau" if under_water else &"terre")
 
 
 func test_garden_terrace_around_the_oasis_is_gentle() -> void:

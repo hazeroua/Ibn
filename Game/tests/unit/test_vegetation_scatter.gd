@@ -65,7 +65,10 @@ func test_class_is_registered_and_rules_are_valid() -> void:
 	assert_true(ClassDB.class_exists(&"VegetationScatter"))
 	var scatter: VegetationScatter = _new_scatter()
 	var ids: PackedStringArray = scatter.get_species_ids()
-	assert_eq(ids, PackedStringArray(["palmier", "buisson", "herbe_seche", "acacia", "tamaris", "jujubier", "laurier_rose", "retam"]))
+	var expected := PackedStringArray()
+	for entry: Variant in JsonData.load_dictionary(RULES_PATH)["species"] as Array:
+		expected.append(str((entry as Dictionary)["id"]))
+	assert_eq(ids, expected, "espèces dans l'ordre de vegetation.json")
 	var settings: Dictionary = scatter.get_species_settings()
 	assert_true(float((settings[&"herbe_seche"] as Dictionary)["visibility_range_end"]) > 0.0)
 
@@ -223,10 +226,12 @@ func test_rules_are_respected() -> void:
 				var node := Vector3(node_x, field.height_at(node_x, node_z), node_z)
 				var allowed: Array = rule["surfaces"]
 				assert_true(allowed.has(String(field.surface_at(node))), "surface de %s" % species)
-	# Sur la falaise (x > 760 m, pente ~39°), aucune plante : cellule (11, 8).
+	# Sur la falaise (x > 760 m, pente de 35 à 42°), rien de ce qui exige une pente plus douce : cellule (11, 8).
+	# Cailloux et éboulis (pente maximale 35° ou plus) peuvent s'y trouver là où le relief le permet.
 	var cliff: Dictionary = scatter.scatter(Vector2i(11, 8), field, SEED)
 	for species: StringName in cliff:
-		assert_eq(_instances(cliff[species]), 0, "falaise : %s" % species)
+		if float((by_id[String(species)] as Dictionary)["max_slope_deg"]) < 34.0:
+			assert_eq(_instances(cliff[species]), 0, "falaise : %s" % species)
 
 
 func test_density_follows_the_oasis_curve() -> void:

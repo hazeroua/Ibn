@@ -63,7 +63,11 @@ func test_vertices_match_the_heightfield_and_surface_at() -> void:
 		assert_almost_eq(vertices[index].y, field.height_at(world.x, world.z), 0.0001)
 		assert_almost_eq(normals[index].dot(field.normal_at(world.x, world.z)), 1.0, 0.0001)
 		var weights := Vector2(colors[index].r, colors[index].g)
-		assert_eq(DesertHeightfield.surface_from_weights(weights), field.surface_at(world))
+		# Sous l'eau, le son du sol est celui de l'eau quelle que soit la matière peinte du fond.
+		var expected: StringName = DesertHeightfield.surface_from_weights(weights)
+		if field.water_depth_at(world.x, world.z) > 0.03:
+			expected = &"eau"
+		assert_eq(expected, field.surface_at(world))
 
 
 func test_skirt_hangs_below_the_border() -> void:

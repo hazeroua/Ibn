@@ -2,7 +2,7 @@ extends GutTest
 ## Catalogue des actions d'entrée (res://data/input/actions.json) et déclaration dans l'InputMap.
 
 const ACTIONS_PATH: String = "res://data/input/actions.json"
-## Actions du contrat du MVP 1 (Docs/contrats-mvp-1.md) et de la caméra libre du bac à sable.
+## Actions du contrat du MVP 1 (Docs/contrats-mvp-1.md), de la caméra libre du bac à sable, du saut et de Barq (MVP 3).
 const REQUIRED_ACTIONS: Array[StringName] = [
 	&"move_forward",
 	&"move_back",
@@ -20,6 +20,9 @@ const REQUIRED_ACTIONS: Array[StringName] = [
 	&"camera_zoom_out",
 	&"look_hold",
 	&"quit_game",
+	&"jump",
+	&"mount_horse",
+	&"horse_whistle",
 ]
 ## Actions jouables à la manette comme au clavier et à la souris.
 const BOTH_FAMILIES: Array[StringName] = [
@@ -32,6 +35,9 @@ const BOTH_FAMILIES: Array[StringName] = [
 	&"camera_zoom_in",
 	&"camera_zoom_out",
 	&"quit_game",
+	&"jump",
+	&"mount_horse",
+	&"horse_whistle",
 ]
 
 
