@@ -203,7 +203,14 @@ bool VegetationScatter::load_rules(const String &p_path) {
 			}
 			wadi_range_max_ = std::max(wadi_range_max_, s.wadi_curve.back().distance);
 		}
-		s.max_multiplier = s.water_max_multiplier * s.wadi_max_multiplier;
+		if (d.has("water_or_wadi")) {
+			if (d["water_or_wadi"].get_type() != Variant::BOOL || s.wadi_curve.empty()) {
+				return fail("water_or_wadi : booléen, avec wadi_density_curve," + ctx);
+			}
+			s.water_or_wadi = static_cast<bool>(d["water_or_wadi"]);
+		}
+		s.max_multiplier = s.water_or_wadi ? std::max(s.water_max_multiplier, s.wadi_max_multiplier)
+										   : s.water_max_multiplier * s.wadi_max_multiplier;
 		s.radius = static_cast<float>(radius);
 		s.density_per_hectare = static_cast<float>(density);
 		s.max_instances = static_cast<int32_t>(max_inst);
@@ -470,7 +477,11 @@ void VegetationScatter::scatter_species(size_t p_index, float p_x0, float p_z0, 
 		nearest = std::min(nearest, std::sqrt(near_dx * near_dx + near_dz * near_dz) / w.radius);
 		farthest = std::min(farthest, std::sqrt(far_dx * far_dx + far_dz * far_dz) / w.radius);
 	}
-	if (nearest > s.water_max || farthest < s.water_min) {
+	// Mode « eau ou oued » : l'absence de plan d'eau (distance infinie) ne doit pas écarter l'espèce, seuls les oueds comptent.
+	if (!s.water_or_wadi && nearest > s.water_max) {
+		return;
+	}
+	if (farthest < s.water_min) {
 		return;
 	}
 
@@ -494,7 +505,7 @@ void VegetationScatter::scatter_species(size_t p_index, float p_x0, float p_z0, 
 			const float odz = z - w.z;
 			normalized = std::min(normalized, std::sqrt(odx * odx + odz * odz) / w.radius);
 		}
-		if (normalized < s.water_min || normalized > s.water_max) {
+		if (normalized < s.water_min || (!s.water_or_wadi && normalized > s.water_max)) {
 			continue;
 		}
 		float multiplier = curve_multiplier(s.curve, normalized);
@@ -512,7 +523,8 @@ void VegetationScatter::scatter_species(size_t p_index, float p_x0, float p_z0, 
 				const float qz = z - (seg.az + sz * t);
 				wadi_distance = std::min(wadi_distance, std::sqrt(qx * qx + qz * qz));
 			}
-			multiplier *= curve_multiplier(s.wadi_curve, wadi_distance);
+			const float wadi_multiplier = curve_multiplier(s.wadi_curve, wadi_distance);
+			multiplier = s.water_or_wadi ? std::max(multiplier, wadi_multiplier) : multiplier * wadi_multiplier;
 		}
 		if (accept_roll * s.max_multiplier >= multiplier) {
 			continue;
