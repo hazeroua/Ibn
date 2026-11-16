@@ -33,11 +33,12 @@ public:
 	// Charge les règles (vegetation.json). Renvoie false et renseigne get_last_error() si invalide.
 	bool load_rules(const godot::String &p_path);
 
-	// Zone de l'oasis (centre en mètres sur le plan x/z, rayon en mètres).
-	bool set_oasis(const godot::Vector2 &p_center, double p_radius);
+	// Éléments de paysage : liste de plans d'eau ({center: [x, z], radius_m}) et d'oueds ({points: [[x, z], ...]}),
+	// au format de desert.json. Au plus 32 plans d'eau et 16 oueds de 64 points.
+	bool set_features(const godot::Array &p_water_bodies, const godot::Array &p_wadis);
 
-	// Lit oasis_center et oasis_radius dans un fichier de données (desert.json).
-	bool load_oasis(const godot::String &p_path);
+	// Lit water_bodies et wadis dans un fichier de données (desert.json).
+	bool load_features(const godot::String &p_path);
 
 	// Placement d'une cellule. Le champ de hauteurs expose height_at(x, z) -> float et
 	// surface_at(Vector3) -> StringName. Renvoie, par espèce, les transformées au format d'un
@@ -70,9 +71,15 @@ private:
 		float min_normal_y = 0.0f;
 		float altitude_min = 0.0f;
 		float altitude_max = 0.0f;
-		float oasis_min = 0.0f;
-		float oasis_max = 0.0f;
+		float water_min = 0.0f;
+		float water_max = 0.0f;
+		// Courbe selon la distance normalisée au plan d'eau le plus proche.
 		std::vector<CurvePoint> curve;
+		float water_max_multiplier = 0.0f;
+		// Courbe facultative selon la distance (mètres) à l'oued le plus proche ; vide = multiplicateur 1.
+		std::vector<CurvePoint> wadi_curve;
+		float wadi_max_multiplier = 1.0f;
+		// Produit des deux maxima : borne de l'acceptation et du nombre d'essais.
 		float max_multiplier = 0.0f;
 		uint8_t surface_mask = 0;
 		float scale_min = 1.0f;
@@ -89,6 +96,19 @@ private:
 		std::vector<int32_t> grid;
 	};
 
+	struct WaterBody {
+		float x = 0.0f;
+		float z = 0.0f;
+		float radius = 1.0f;
+	};
+
+	struct Segment {
+		float ax = 0.0f;
+		float az = 0.0f;
+		float bx = 0.0f;
+		float bz = 0.0f;
+	};
+
 	struct Point {
 		float x = 0.0f;
 		float z = 0.0f;
@@ -96,7 +116,8 @@ private:
 	};
 
 	bool fail(const godot::String &p_message);
-	float oasis_multiplier(const Species &p_species, float p_normalized_distance) const;
+	static float curve_multiplier(const std::vector<CurvePoint> &p_curve, float p_distance);
+	static bool parse_curve(const godot::Variant &p_value, std::vector<CurvePoint> &r_curve, float &r_max, godot::String &r_error);
 	bool conflicts(float p_x, float p_z, float p_radius, float p_cell_x0, float p_cell_z0) const;
 	void scatter_species(size_t p_index, float p_x0, float p_z0, uint64_t p_hash);
 
@@ -113,11 +134,13 @@ private:
 	std::vector<Species> species_;
 	bool rules_loaded_ = false;
 
-	// Oasis
-	float oasis_x_ = 0.0f;
-	float oasis_z_ = 0.0f;
-	float oasis_radius_ = 0.0f;
-	bool oasis_set_ = false;
+	// Éléments de paysage (réservés dans set_features) et leur sélection pour la cellule en cours.
+	std::vector<WaterBody> water_bodies_;
+	std::vector<Segment> segments_;
+	std::vector<Segment> cell_segments_;
+	// Plus grande distance (mètres) d'une courbe d'oued parmi les espèces : au-delà, un oued est sans effet.
+	float wadi_range_max_ = 0.0f;
+	bool features_set_ = false;
 
 	// Tampons de travail (réservés dans load_rules).
 	std::vector<float> heights_;

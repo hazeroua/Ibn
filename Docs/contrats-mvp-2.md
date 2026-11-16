@@ -13,7 +13,7 @@ Terrain3D fait planter Godot 4.7.2 (voir `Docs/05-technologies.md`). Le désert 
 ## Terrain du désert (ticket #1)
 - Classe `DesertHeightfield` (`res://world/desert/desert_heightfield.gd`) : `height_at(x: float, z: float) -> float`, `normal_at(x, z) -> Vector3`, `surface_at(Vector3) -> StringName` (`sable`, `pierre`, `terre`), déterministe (graine dans `res://data/desert/desert.json`).
 - `DesertTerrainCell` : construit une cellule (maillage à 4 niveaux de détail, collision couche 1) : `build_cell(cell: Vector2i) -> Node3D`.
-- Oasis : zone connue `oasis_center: Vector2`, `oasis_radius: float` dans `desert.json` (aplanie, `surface_at` = terre).
+- Paysage : plans d'eau (`water_bodies`) et oueds (`wadis`) dans `desert.json`, lus par `LandscapeFeatures` (`DesertHeightfield.features`) ; le fond des plans d'eau est aplani, `surface_at` = terre autour.
 
 ## Streaming (ticket #2, C++)
 - Classe C++ `WorldStreamer` : `register_provider(provider: Object)` avec un fournisseur qui expose `build_cell(cell: Vector2i) -> Node3D`; `set_focus(position: Vector3, velocity: Vector3)` ; charge de façon asynchrone, décharge hors rayon, **budget par image** (ms) dans `res://data/streaming/streaming.json`, anticipe selon la vitesse (galop 15 m/s).

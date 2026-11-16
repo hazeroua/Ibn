@@ -34,10 +34,14 @@ class FakeHeightfield:
 		return &"sable"
 
 
+func _oasis_bodies() -> Array:
+	return [{"center": [OASIS_CENTER.x, OASIS_CENTER.y], "radius_m": OASIS_RADIUS}]
+
+
 func _new_scatter() -> VegetationScatter:
 	var scatter := VegetationScatter.new()
 	assert_true(scatter.load_rules(RULES_PATH), scatter.get_last_error())
-	assert_true(scatter.set_oasis(OASIS_CENTER, OASIS_RADIUS))
+	assert_true(scatter.set_features(_oasis_bodies(), []))
 	return scatter
 
 
@@ -75,7 +79,7 @@ func test_invalid_rules_are_refused_without_crashing() -> void:
 	assert_false(scatter.load_rules(_write_json("veg_bad_surface", data)))
 	assert_true(scatter.get_last_error().contains("glace"))
 	data = JsonData.load_dictionary(RULES_PATH)
-	((data["species"] as Array)[0] as Dictionary)["oasis_density_curve"] = [[2.0, 1.0], [1.0, 1.0]]
+	((data["species"] as Array)[0] as Dictionary)["water_density_curve"] = [[2.0, 1.0], [1.0, 1.0]]
 	assert_false(scatter.load_rules(_write_json("veg_bad_curve", data)))
 
 
@@ -85,7 +89,7 @@ func test_scatter_refuses_missing_context() -> void:
 	assert_true(scatter.scatter(OASIS_CELL, field, SEED).is_empty())
 	assert_true(scatter.load_rules(RULES_PATH))
 	assert_true(scatter.scatter(OASIS_CELL, field, SEED).is_empty(), "sans oasis")
-	assert_true(scatter.set_oasis(OASIS_CENTER, OASIS_RADIUS))
+	assert_true(scatter.set_features(_oasis_bodies(), []))
 	assert_true(scatter.scatter(Vector2i(16, 0), field, SEED).is_empty(), "cellule hors du monde")
 	assert_true(scatter.scatter(OASIS_CELL, null, SEED).is_empty(), "sans champ de hauteurs")
 	assert_false(scatter.scatter(OASIS_CELL, field, SEED).is_empty())
@@ -207,7 +211,7 @@ func test_rules_are_respected() -> void:
 			for i: int in _instances(transforms):
 				var p: Vector3 = _origin_of(transforms, i)
 				var norm: float = Vector2(p.x, p.z).distance_to(OASIS_CENTER) / OASIS_RADIUS
-				assert_between(norm, float(rule["oasis_distance_min"]) - 0.0001, float(rule["oasis_distance_max"]) + 0.0001)
+				assert_between(norm, float(rule["water_distance_min"]) - 0.0001, float(rule["water_distance_max"]) + 0.0001)
 				assert_between(p.y, float(rule["altitude_min"]) - 1.0, float(rule["altitude_max"]) + 1.0)
 				# Pente vraie du terrain (différences finies), tolérance pour la grille de 5 m.
 				var gx: float = (field.height_at(p.x + 1.0, p.z) - field.height_at(p.x - 1.0, p.z)) / 2.0

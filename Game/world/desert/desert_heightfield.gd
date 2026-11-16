@@ -1,6 +1,6 @@
 class_name DesertHeightfield
 extends RefCounted
-## Champ de hauteurs du désert : dunes transversales au vent, grandes ondulations, oasis aplanie.
+## Champ de hauteurs du désert : dunes transversales au vent, grandes ondulations, plans d'eau et oueds (LandscapeFeatures).
 ##
 ## Pur calcul, sans nœud ni allocation : la même graine et les mêmes réglages donnent toujours les mêmes valeurs,
 ## quel que soit l'ordre ou le fil d'exécution des appels (les bruits ne sont que lus). Chaque requête est en O(1) :
@@ -17,9 +17,8 @@ const SURFACE_PIERRE: StringName = &"pierre"
 const SURFACE_TERRE: StringName = &"terre"
 const NO_CELL: Vector2i = Vector2i(-1, -1)
 
-## Centre et rayon de l'oasis (mètres du monde, axes X et Z), lus dans desert.json.
-var oasis_center: Vector2 = Vector2.ZERO
-var oasis_radius: float = 0.0
+## Plans d'eau et oueds (index spatial lu dans desert.json), en lecture seule pour les autres systèmes.
+var features: LandscapeFeatures = null
 ## Moitié du côté du désert, taille d'une cellule de streaming et nombre de cellules par côté.
 var half_extent: float = 2000.0
 var cell_size: float = 250.0
@@ -41,8 +40,6 @@ var _ridge_exponent: float = 1.0
 var _modulation: float = 0.0
 var _macro_amplitude: float = 0.0
 var _macro_range: float = 1.0
-var _oasis_height: float = 0.0
-var _oasis_blend: float = 1.0
 var _slope_start: float = 0.0
 var _slope_full: float = 1.0
 var _terre_margin: float = 1.0
@@ -62,26 +59,17 @@ static func from_data(data: Dictionary) -> DesertHeightfield:
 	var field := DesertHeightfield.new()
 	var terrain: Dictionary = JsonData.get_dictionary(data, "terrain", CONTEXT)
 	var context: String = CONTEXT + " > terrain"
-	field.oasis_center = JsonData.get_vector2(data, "oasis_center", CONTEXT)
-	field.oasis_radius = JsonData.get_float(data, "oasis_radius", CONTEXT)
 	field.half_extent = JsonData.get_float(terrain, "half_extent_m", context)
 	field.cell_size = JsonData.get_float(terrain, "cell_size_m", context)
 	field.cells_per_side = JsonData.get_int(terrain, "cells_per_side", context)
 	field.normal_epsilon = JsonData.get_float(JsonData.get_dictionary(terrain, "cell", context), "vertex_spacing_m", context + " > cell")
 	if (
-		field.oasis_radius <= 0.0
-		or field.cell_size <= 0.0
+		field.cell_size <= 0.0
 		or field.normal_epsilon <= 0.0
 		or field.cells_per_side <= 0
 		or not is_equal_approx(field.cell_size * float(field.cells_per_side), field.half_extent * 2.0)
 	):
-		push_error("DesertHeightfield : taille du désert, cellules ou rayon de l'oasis incohérents (%s)." % context)
-		return null
-	if (
-		absf(field.oasis_center.x) + field.oasis_radius > field.half_extent
-		or absf(field.oasis_center.y) + field.oasis_radius > field.half_extent
-	):
-		push_error("DesertHeightfield : l'oasis sort du désert (%s)." % CONTEXT)
+		push_error("DesertHeightfield : taille du désert, cellules incohérents (%s)." % context)
 		return null
 	var seed_value: int = JsonData.get_int(terrain, "seed", context)
 	field._base_height = JsonData.get_float(terrain, "base_height_m", context)
@@ -91,9 +79,10 @@ static func from_data(data: Dictionary) -> DesertHeightfield:
 		return null
 	if not field._setup_macro(JsonData.get_dictionary(terrain, "macro", context), seed_value):
 		return null
-	if not field._setup_oasis(JsonData.get_dictionary(terrain, "oasis", context)):
-		return null
 	if not field._setup_surfaces(JsonData.get_dictionary(terrain, "surfaces", context), seed_value):
+		return null
+	field.features = LandscapeFeatures.from_data(data, field.half_extent, field._terre_margin)
+	if field.features == null:
 		return null
 	return field
 
@@ -155,16 +144,6 @@ func _setup_macro(config: Dictionary, seed_value: int) -> bool:
 	return true
 
 
-func _setup_oasis(config: Dictionary) -> bool:
-	var context: String = CONTEXT + " > terrain > oasis"
-	_oasis_height = JsonData.get_float(config, "height_m", context)
-	_oasis_blend = JsonData.get_float(config, "blend_m", context)
-	if _oasis_blend <= 0.0:
-		push_error("DesertHeightfield : blend_m doit être strictement positif (%s)." % context)
-		return false
-	return true
-
-
 func _setup_surfaces(config: Dictionary, seed_value: int) -> bool:
 	var context: String = CONTEXT + " > terrain > surfaces"
 	_slope_start = tan(deg_to_rad(JsonData.get_float(config, "slope_start_deg", context)))
@@ -192,8 +171,7 @@ func height_at(x: float, z: float) -> float:
 	var ridge: float = pow(1.0 - clampf(absf(_dunes.get_noise_2d(along, across)) / _dune_range, 0.0, 1.0), _ridge_exponent)
 	var macro: float = clampf(_macro.get_noise_2d(x, z) / _macro_range * 0.5 + 0.5, 0.0, 1.0)
 	var height: float = _base_height + _macro_amplitude * macro + _dune_amplitude * ridge * (1.0 - _modulation + _modulation * macro)
-	var away: float = smoothstep(oasis_radius, oasis_radius + _oasis_blend, Vector2(x - oasis_center.x, z - oasis_center.y).length())
-	return lerpf(_oasis_height, height, away)
+	return features.carve(x, z, height)
 
 
 ## Normale unitaire du sol à (x, z), par différences centrées sur normal_epsilon mètres. O(1).
@@ -206,8 +184,7 @@ func normal_at(x: float, z: float) -> Vector3:
 ## Poids des surfaces à (x, z) : x = pierre (0 à 1), y = terre (0 à 1) ; le reste est du sable.
 ## slope_tangent : tangente de la pente au point, mesurée sur normal_epsilon mètres. O(1).
 func surface_weights(x: float, z: float, slope_tangent: float) -> Vector2:
-	var distance: float = Vector2(x - oasis_center.x, z - oasis_center.y).length()
-	var terre: float = 1.0 - smoothstep(oasis_radius, oasis_radius + _terre_margin, distance)
+	var terre: float = features.shore_weight(x, z, _terre_margin)
 	var rock_noise: float = _rock.get_noise_2d(x, z)
 	var pierre: float = maxf(
 		smoothstep(_slope_start, _slope_full, slope_tangent), smoothstep(_rock_threshold, _rock_threshold + _rock_band, rock_noise)

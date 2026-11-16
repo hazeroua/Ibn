@@ -59,12 +59,13 @@ func test_relief_has_dunes() -> void:
 
 
 func test_oasis_is_flat_earth() -> void:
-	var center: Vector2 = _field.oasis_center
+	var center: Vector2 = _field.features.water_center(0)
+	var radius: float = _field.features.water_radius(0)
 	var reference: float = _field.height_at(center.x, center.y)
 	for i: int in 36:
 		var angle: float = float(i) * TAU / 36.0
 		for fraction: float in [0.3, 0.8, 1.0]:
-			var p: Vector2 = center + Vector2(cos(angle), sin(angle)) * _field.oasis_radius * fraction
+			var p: Vector2 = center + Vector2(cos(angle), sin(angle)) * radius * fraction
 			assert_almost_eq(_field.height_at(p.x, p.y), reference, 0.001, "aplani dans le rayon")
 			assert_eq(_field.surface_at(Vector3(p.x, 0.0, p.y)), &"terre")
 
@@ -74,7 +75,7 @@ func test_normals_are_unit_and_point_up() -> void:
 		var normal: Vector3 = _field.normal_at(-1800.0 + float(i) * 33.0, 700.0 - float(i) * 11.0)
 		assert_almost_eq(normal.length(), 1.0, 0.0001)
 		assert_gt(normal.y, 0.0)
-	var flat: Vector3 = _field.normal_at(_field.oasis_center.x, _field.oasis_center.y)
+	var flat: Vector3 = _field.normal_at(_field.features.water_center(0).x, _field.features.water_center(0).y)
 	assert_almost_eq(flat.y, 1.0, 0.0001)
 
 
@@ -84,7 +85,7 @@ func test_all_surfaces_occur_across_the_desert() -> void:
 		for i: int in 60:
 			var surface: StringName = _field.surface_at(Vector3(-1900.0 + float(i) * 63.0, 0.0, -1900.0 + float(j) * 63.0))
 			seen[surface] = seen.get(surface, 0) + 1
-	seen[_field.surface_at(Vector3(_field.oasis_center.x, 0.0, _field.oasis_center.y))] = 1
+	seen[_field.surface_at(Vector3(_field.features.water_center(0).x, 0.0, _field.features.water_center(0).y))] = 1
 	assert_true(seen.has(&"sable"))
 	assert_true(seen.has(&"pierre"))
 	assert_true(seen.has(&"terre"))

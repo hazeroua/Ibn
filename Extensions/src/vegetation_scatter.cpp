@@ -10,6 +10,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstring>
+#include <limits>
 
 using godot::Array;
 using godot::Dictionary;
@@ -76,6 +77,7 @@ bool VegetationScatter::fail(const String &p_message) {
 bool VegetationScatter::load_rules(const String &p_path) {
 	rules_loaded_ = false;
 	species_.clear();
+	wadi_range_max_ = 0.0f;
 	if (!godot::FileAccess::file_exists(p_path)) {
 		return fail("Fichier de règles introuvable : " + p_path);
 	}
@@ -146,8 +148,8 @@ bool VegetationScatter::load_rules(const String &p_path) {
 		double slope = 0.0;
 		double alt_min = 0.0;
 		double alt_max = 0.0;
-		double oasis_min = 0.0;
-		double oasis_max = 0.0;
+		double water_min = 0.0;
+		double water_max = 0.0;
 		double scale_min = 0.0;
 		double scale_max = 0.0;
 		double hvar = 0.0;
@@ -158,7 +160,7 @@ bool VegetationScatter::load_rules(const String &p_path) {
 		if (!read_number(d, "radius", radius) || !read_number(d, "density_per_hectare", density) ||
 				!read_number(d, "max_instances", max_inst) || !read_number(d, "max_slope_deg", slope) ||
 				!read_number(d, "altitude_min", alt_min) || !read_number(d, "altitude_max", alt_max) ||
-				!read_number(d, "oasis_distance_min", oasis_min) || !read_number(d, "oasis_distance_max", oasis_max) ||
+				!read_number(d, "water_distance_min", water_min) || !read_number(d, "water_distance_max", water_max) ||
 				!read_number(d, "scale_min", scale_min) || !read_number(d, "scale_max", scale_max) ||
 				!read_number(d, "height_scale_variation", hvar) || !read_number(d, "align_to_normal", align) ||
 				!read_number(d, "ground_offset", offset) || !read_number(d, "visibility_range_end", vis_end) ||
@@ -166,7 +168,7 @@ bool VegetationScatter::load_rules(const String &p_path) {
 			return fail("Champ numérique manquant ou invalide," + ctx);
 		}
 		if (radius < 0.05 || radius > 50.0 || density <= 0.0 || max_inst < 1.0 || static_cast<int64_t>(max_inst) > kMaxInstancesLimit ||
-				slope <= 0.0 || slope > 90.0 || alt_min > alt_max || oasis_min > oasis_max || scale_min <= 0.0 ||
+				slope <= 0.0 || slope > 90.0 || alt_min > alt_max || water_min > water_max || scale_min <= 0.0 ||
 				scale_max < scale_min || hvar < 0.0 || hvar >= 1.0 || align < 0.0 || align > 1.0 || vis_end <= 0.0 || vis_fade < 0.0 ||
 				vis_fade >= vis_end) {
 			return fail("Valeur hors limites," + ctx);
@@ -191,40 +193,25 @@ bool VegetationScatter::load_rules(const String &p_path) {
 				return fail("Surface inconnue « " + name + " »," + ctx);
 			}
 		}
-		if (!d.has("oasis_density_curve") || d["oasis_density_curve"].get_type() != Variant::ARRAY) {
-			return fail("oasis_density_curve obligatoire," + ctx);
+		String curve_error;
+		if (!d.has("water_density_curve") || !parse_curve(d["water_density_curve"], s.curve, s.water_max_multiplier, curve_error)) {
+			return fail("water_density_curve : " + curve_error + "," + ctx);
 		}
-		const Array curve = d["oasis_density_curve"];
-		if (curve.is_empty() || curve.size() > 32) {
-			return fail("oasis_density_curve : entre 1 et 32 points," + ctx);
-		}
-		for (int64_t k = 0; k < curve.size(); k++) {
-			const Variant pv = curve[k];
-			if (pv.get_type() != Variant::ARRAY || Array(pv).size() != 2) {
-				return fail("oasis_density_curve : points [distance, multiplicateur]," + ctx);
+		if (d.has("wadi_density_curve")) {
+			if (!parse_curve(d["wadi_density_curve"], s.wadi_curve, s.wadi_max_multiplier, curve_error)) {
+				return fail("wadi_density_curve : " + curve_error + "," + ctx);
 			}
-			const Array pa = pv;
-			CurvePoint cp;
-			cp.distance = static_cast<float>(static_cast<double>(pa[0]));
-			cp.multiplier = static_cast<float>(static_cast<double>(pa[1]));
-			if (!std::isfinite(cp.distance) || !std::isfinite(cp.multiplier) || cp.multiplier < 0.0f ||
-					(!s.curve.empty() && cp.distance <= s.curve.back().distance)) {
-				return fail("oasis_density_curve : distances croissantes, multiplicateurs positifs," + ctx);
-			}
-			s.max_multiplier = std::max(s.max_multiplier, cp.multiplier);
-			s.curve.push_back(cp);
+			wadi_range_max_ = std::max(wadi_range_max_, s.wadi_curve.back().distance);
 		}
-		if (s.max_multiplier <= 0.0f) {
-			return fail("oasis_density_curve : au moins un multiplicateur non nul," + ctx);
-		}
+		s.max_multiplier = s.water_max_multiplier * s.wadi_max_multiplier;
 		s.radius = static_cast<float>(radius);
 		s.density_per_hectare = static_cast<float>(density);
 		s.max_instances = static_cast<int32_t>(max_inst);
 		s.min_normal_y = static_cast<float>(std::cos(slope * static_cast<double>(kPi) / 180.0));
 		s.altitude_min = static_cast<float>(alt_min);
 		s.altitude_max = static_cast<float>(alt_max);
-		s.oasis_min = static_cast<float>(oasis_min);
-		s.oasis_max = static_cast<float>(oasis_max);
+		s.water_min = static_cast<float>(water_min);
+		s.water_max = static_cast<float>(water_max);
 		s.scale_min = static_cast<float>(scale_min);
 		s.scale_max = static_cast<float>(scale_max);
 		s.height_scale_variation = static_cast<float>(hvar);
@@ -276,20 +263,119 @@ bool VegetationScatter::load_rules(const String &p_path) {
 	return true;
 }
 
-bool VegetationScatter::set_oasis(const godot::Vector2 &p_center, double p_radius) {
-	if (!std::isfinite(p_radius) || p_radius <= 0.0 || !std::isfinite(p_center.x) || !std::isfinite(p_center.y)) {
-		return fail("Oasis invalide : rayon positif et centre fini attendus");
+bool VegetationScatter::parse_curve(const Variant &p_value, std::vector<CurvePoint> &r_curve, float &r_max, String &r_error) {
+	r_curve.clear();
+	r_max = 0.0f;
+	if (p_value.get_type() != Variant::ARRAY) {
+		r_error = "tableau de points attendu";
+		return false;
 	}
-	oasis_x_ = p_center.x;
-	oasis_z_ = p_center.y;
-	oasis_radius_ = static_cast<float>(p_radius);
-	oasis_set_ = true;
+	const Array curve = p_value;
+	if (curve.is_empty() || curve.size() > 32) {
+		r_error = "entre 1 et 32 points";
+		return false;
+	}
+	for (int64_t k = 0; k < curve.size(); k++) {
+		const Variant pv = curve[k];
+		if (pv.get_type() != Variant::ARRAY || Array(pv).size() != 2) {
+			r_error = "points [distance, multiplicateur]";
+			return false;
+		}
+		const Array pa = pv;
+		CurvePoint cp;
+		cp.distance = static_cast<float>(static_cast<double>(pa[0]));
+		cp.multiplier = static_cast<float>(static_cast<double>(pa[1]));
+		if (!std::isfinite(cp.distance) || !std::isfinite(cp.multiplier) || cp.multiplier < 0.0f ||
+				(!r_curve.empty() && cp.distance <= r_curve.back().distance)) {
+			r_error = "distances croissantes, multiplicateurs positifs";
+			return false;
+		}
+		r_max = std::max(r_max, cp.multiplier);
+		r_curve.push_back(cp);
+	}
+	if (r_max <= 0.0f) {
+		r_error = "au moins un multiplicateur non nul";
+		return false;
+	}
 	return true;
 }
 
-bool VegetationScatter::load_oasis(const String &p_path) {
+bool VegetationScatter::set_features(const Array &p_water_bodies, const Array &p_wadis) {
+	if (p_water_bodies.size() > 32 || p_wadis.size() > 16) {
+		return fail("Trop d'éléments de paysage : 32 plans d'eau et 16 oueds au plus");
+	}
+	std::vector<WaterBody> bodies;
+	std::vector<Segment> segments;
+	bodies.reserve(32);
+	segments.reserve(16 * 63);
+	for (int64_t i = 0; i < p_water_bodies.size(); i++) {
+		if (p_water_bodies[i].get_type() != Variant::DICTIONARY) {
+			return fail("Plan d'eau : objet attendu");
+		}
+		const Dictionary body = p_water_bodies[i];
+		double radius = 0.0;
+		if (!body.has("center") || body["center"].get_type() != Variant::ARRAY || Array(body["center"]).size() != 2 ||
+				!read_number(body, "radius_m", radius)) {
+			return fail("Plan d'eau : center [x, z] et radius_m obligatoires");
+		}
+		const Array center = body["center"];
+		WaterBody w;
+		w.x = static_cast<float>(static_cast<double>(center[0]));
+		w.z = static_cast<float>(static_cast<double>(center[1]));
+		w.radius = static_cast<float>(radius);
+		if (!std::isfinite(w.x) || !std::isfinite(w.z) || !std::isfinite(radius) || radius <= 0.0) {
+			return fail("Plan d'eau invalide : rayon positif et centre fini attendus");
+		}
+		bodies.push_back(w);
+	}
+	for (int64_t i = 0; i < p_wadis.size(); i++) {
+		if (p_wadis[i].get_type() != Variant::DICTIONARY) {
+			return fail("Oued : objet attendu");
+		}
+		const Dictionary wadi = p_wadis[i];
+		if (!wadi.has("points") || wadi["points"].get_type() != Variant::ARRAY) {
+			return fail("Oued : points obligatoires");
+		}
+		const Array points = wadi["points"];
+		if (points.size() < 2 || points.size() > 64) {
+			return fail("Oued : de 2 à 64 points");
+		}
+		float px = 0.0f;
+		float pz = 0.0f;
+		for (int64_t k = 0; k < points.size(); k++) {
+			if (points[k].get_type() != Variant::ARRAY || Array(points[k]).size() != 2) {
+				return fail("Oued : un point est [x, z]");
+			}
+			const Array pair = points[k];
+			const float x = static_cast<float>(static_cast<double>(pair[0]));
+			const float z = static_cast<float>(static_cast<double>(pair[1]));
+			if (!std::isfinite(x) || !std::isfinite(z)) {
+				return fail("Oued : point non fini");
+			}
+			if (k > 0) {
+				Segment seg;
+				seg.ax = px;
+				seg.az = pz;
+				seg.bx = x;
+				seg.bz = z;
+				segments.push_back(seg);
+			}
+			px = x;
+			pz = z;
+		}
+	}
+	water_bodies_ = std::move(bodies);
+	segments_ = std::move(segments);
+	cell_segments_.clear();
+	cell_segments_.reserve(segments_.size());
+	features_set_ = true;
+	last_error_ = String();
+	return true;
+}
+
+bool VegetationScatter::load_features(const String &p_path) {
 	if (!godot::FileAccess::file_exists(p_path)) {
-		return fail("Fichier de l'oasis introuvable : " + p_path);
+		return fail("Fichier des éléments de paysage introuvable : " + p_path);
 	}
 	godot::Ref<godot::JSON> json;
 	json.instantiate();
@@ -297,41 +383,28 @@ bool VegetationScatter::load_oasis(const String &p_path) {
 		return fail("JSON invalide : " + p_path);
 	}
 	const Dictionary root = json->get_data();
-	double radius = 0.0;
-	if (!root.has("oasis_center") || !read_number(root, "oasis_radius", radius)) {
-		return fail("oasis_center et oasis_radius obligatoires : " + p_path);
+	if (!root.has("water_bodies") || root["water_bodies"].get_type() != Variant::ARRAY || !root.has("wadis") ||
+			root["wadis"].get_type() != Variant::ARRAY) {
+		return fail("water_bodies et wadis obligatoires : " + p_path);
 	}
-	const Variant center = root["oasis_center"];
-	if (center.get_type() == Variant::ARRAY && Array(center).size() == 2) {
-		const Array a = center;
-		return set_oasis(godot::Vector2(static_cast<float>(static_cast<double>(a[0])), static_cast<float>(static_cast<double>(a[1]))), radius);
-	}
-	if (center.get_type() == Variant::DICTIONARY) {
-		const Dictionary c = center;
-		double x = 0.0;
-		double z = 0.0;
-		if (read_number(c, "x", x) && read_number(c, "y", z)) {
-			return set_oasis(godot::Vector2(static_cast<float>(x), static_cast<float>(z)), radius);
-		}
-	}
-	return fail("oasis_center : tableau [x, z] attendu : " + p_path);
+	return set_features(root["water_bodies"], root["wadis"]);
 }
 
-float VegetationScatter::oasis_multiplier(const Species &p_species, float p_normalized_distance) const {
-	const std::vector<CurvePoint> &c = p_species.curve;
-	if (p_normalized_distance <= c.front().distance) {
+float VegetationScatter::curve_multiplier(const std::vector<CurvePoint> &p_curve, float p_distance) {
+	const std::vector<CurvePoint> &c = p_curve;
+	if (p_distance <= c.front().distance) {
 		return c.front().multiplier;
 	}
-	if (p_normalized_distance >= c.back().distance) {
+	if (p_distance >= c.back().distance) {
 		return c.back().multiplier;
 	}
 	size_t hi = 1;
-	while (c[hi].distance < p_normalized_distance) {
+	while (c[hi].distance < p_distance) {
 		hi++;
 	}
 	const CurvePoint &a = c[hi - 1];
 	const CurvePoint &b = c[hi];
-	const float t = (p_normalized_distance - a.distance) / (b.distance - a.distance);
+	const float t = (p_distance - a.distance) / (b.distance - a.distance);
 	return a.multiplier + (b.multiplier - a.multiplier) * t;
 }
 
@@ -381,17 +454,23 @@ void VegetationScatter::scatter_species(size_t p_index, float p_x0, float p_z0, 
 	const float x_min = p_x0 + inset;
 	const float z_min = p_z0 + inset;
 
-	// Distance normalisée à l'oasis : bornes sur toute la cellule pour écarter les espèces hors zone.
+	// Distance normalisée au plan d'eau le plus proche : bornes sur toute la cellule pour écarter les espèces hors zone.
+	// Un point est à la distance min des plans d'eau : elle est donc au moins la plus petite distance minimale
+	// et au plus la plus petite distance maximale.
 	const float cell_cx = p_x0 + cell_size_ * 0.5f;
 	const float cell_cz = p_z0 + cell_size_ * 0.5f;
 	const float half = cell_size_ * 0.5f;
-	const float near_dx = std::max(std::fabs(oasis_x_ - cell_cx) - half, 0.0f);
-	const float near_dz = std::max(std::fabs(oasis_z_ - cell_cz) - half, 0.0f);
-	const float far_dx = std::fabs(oasis_x_ - cell_cx) + half;
-	const float far_dz = std::fabs(oasis_z_ - cell_cz) + half;
-	const float nearest = std::sqrt(near_dx * near_dx + near_dz * near_dz) / oasis_radius_;
-	const float farthest = std::sqrt(far_dx * far_dx + far_dz * far_dz) / oasis_radius_;
-	if (nearest > s.oasis_max || farthest < s.oasis_min) {
+	float nearest = std::numeric_limits<float>::infinity();
+	float farthest = std::numeric_limits<float>::infinity();
+	for (const WaterBody &w : water_bodies_) {
+		const float near_dx = std::max(std::fabs(w.x - cell_cx) - half, 0.0f);
+		const float near_dz = std::max(std::fabs(w.z - cell_cz) - half, 0.0f);
+		const float far_dx = std::fabs(w.x - cell_cx) + half;
+		const float far_dz = std::fabs(w.z - cell_cz) + half;
+		nearest = std::min(nearest, std::sqrt(near_dx * near_dx + near_dz * near_dz) / w.radius);
+		farthest = std::min(farthest, std::sqrt(far_dx * far_dx + far_dz * far_dz) / w.radius);
+	}
+	if (nearest > s.water_max || farthest < s.water_min) {
 		return;
 	}
 
@@ -409,13 +488,33 @@ void VegetationScatter::scatter_species(size_t p_index, float p_x0, float p_z0, 
 		const float z = z_min + rng.unit() * span;
 		const float accept_roll = rng.unit();
 
-		const float odx = x - oasis_x_;
-		const float odz = z - oasis_z_;
-		const float normalized = std::sqrt(odx * odx + odz * odz) / oasis_radius_;
-		if (normalized < s.oasis_min || normalized > s.oasis_max) {
+		float normalized = std::numeric_limits<float>::infinity();
+		for (const WaterBody &w : water_bodies_) {
+			const float odx = x - w.x;
+			const float odz = z - w.z;
+			normalized = std::min(normalized, std::sqrt(odx * odx + odz * odz) / w.radius);
+		}
+		if (normalized < s.water_min || normalized > s.water_max) {
 			continue;
 		}
-		if (accept_roll * s.max_multiplier >= oasis_multiplier(s, normalized)) {
+		float multiplier = curve_multiplier(s.curve, normalized);
+		if (!s.wadi_curve.empty()) {
+			float wadi_distance = std::numeric_limits<float>::infinity();
+			for (const Segment &seg : cell_segments_) {
+				const float sx = seg.bx - seg.ax;
+				const float sz = seg.bz - seg.az;
+				const float length_squared = sx * sx + sz * sz;
+				float t = 0.0f;
+				if (length_squared > 0.0f) {
+					t = std::min(std::max(((x - seg.ax) * sx + (z - seg.az) * sz) / length_squared, 0.0f), 1.0f);
+				}
+				const float qx = x - (seg.ax + sx * t);
+				const float qz = z - (seg.az + sz * t);
+				wadi_distance = std::min(wadi_distance, std::sqrt(qx * qx + qz * qz));
+			}
+			multiplier *= curve_multiplier(s.wadi_curve, wadi_distance);
+		}
+		if (accept_roll * s.max_multiplier >= multiplier) {
 			continue;
 		}
 		if (conflicts(x, z, s.radius, p_x0, p_z0)) {
@@ -517,8 +616,8 @@ Dictionary VegetationScatter::scatter(const godot::Vector2i &p_cell, godot::Obje
 		fail("Règles non chargées : appeler load_rules() d'abord");
 		return Dictionary();
 	}
-	if (!oasis_set_) {
-		fail("Oasis non définie : appeler set_oasis() ou load_oasis() d'abord");
+	if (!features_set_) {
+		fail("Éléments de paysage non définis : appeler set_features() ou load_features() d'abord");
 		return Dictionary();
 	}
 	if (p_heightfield == nullptr || !p_heightfield->has_method("height_at") || (need_surface_ && !p_heightfield->has_method("surface_at"))) {
@@ -533,6 +632,18 @@ Dictionary VegetationScatter::scatter(const godot::Vector2i &p_cell, godot::Obje
 
 	const float x0 = world_origin_x_ + static_cast<float>(p_cell.x) * cell_size_;
 	const float z0 = world_origin_z_ + static_cast<float>(p_cell.y) * cell_size_;
+
+	// Oueds utiles à cette cellule : ceux dont la boîte, élargie de la portée des courbes, touche la cellule
+	// (la capacité est réservée dans set_features : aucune allocation ici).
+	cell_segments_.clear();
+	if (wadi_range_max_ > 0.0f) {
+		for (const Segment &seg : segments_) {
+			if (std::max(seg.ax, seg.bx) + wadi_range_max_ >= x0 && std::min(seg.ax, seg.bx) - wadi_range_max_ <= x0 + cell_size_ &&
+					std::max(seg.az, seg.bz) + wadi_range_max_ >= z0 && std::min(seg.az, seg.bz) - wadi_range_max_ <= z0 + cell_size_) {
+				cell_segments_.push_back(seg);
+			}
+		}
+	}
 
 	// Échantillonnage du champ de hauteurs : nombre fixe d'appels par cellule, quelle que soit la densité.
 	static const StringName height_method("height_at");
@@ -636,8 +747,8 @@ Dictionary VegetationScatter::get_last_stats() const {
 
 void VegetationScatter::_bind_methods() {
 	godot::ClassDB::bind_method(godot::D_METHOD("load_rules", "path"), &VegetationScatter::load_rules);
-	godot::ClassDB::bind_method(godot::D_METHOD("set_oasis", "center", "radius"), &VegetationScatter::set_oasis);
-	godot::ClassDB::bind_method(godot::D_METHOD("load_oasis", "path"), &VegetationScatter::load_oasis);
+	godot::ClassDB::bind_method(godot::D_METHOD("set_features", "water_bodies", "wadis"), &VegetationScatter::set_features);
+	godot::ClassDB::bind_method(godot::D_METHOD("load_features", "path"), &VegetationScatter::load_features);
 	godot::ClassDB::bind_method(godot::D_METHOD("scatter", "cell", "heightfield", "seed"), &VegetationScatter::scatter);
 	godot::ClassDB::bind_method(godot::D_METHOD("get_species_settings"), &VegetationScatter::get_species_settings);
 	godot::ClassDB::bind_method(godot::D_METHOD("get_species_ids"), &VegetationScatter::get_species_ids);
