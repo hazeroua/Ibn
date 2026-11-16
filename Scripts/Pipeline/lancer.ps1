@@ -32,16 +32,18 @@ if ($Export) {
     return
 }
 
-$extension = if ($EstWindows) { 'libibn.windows.template_debug.x86_64.dll' } else { 'libibn.linux.template_debug.x86_64.so' }
-if (-not (Test-Path (Join-Path $Jeu "bin/$extension"))) { & (Join-Path $PSScriptRoot 'compiler.ps1') -Cible debug }
+# Avant chaque lancement : tout ce qui a pu changer depuis le dernier « git pull » est remis à jour
+# (compilation C++ incrémentale, import, scènes générées). Aucun test : ils se lancent avec valider.ps1.
 if (-not (Test-Path (Join-Path $Jeu 'assets/textures/polyhaven'))) { & (Join-Path $PSScriptRoot 'importer-ressources.ps1') }
-if (-not (Test-Path (Join-Path $Jeu '.godot'))) { & (Join-Path $PSScriptRoot 'importer.ps1') }
-$scenesManquantes = @(Get-ChildItem -Path (Join-Path $Jeu 'tools/builders') -Filter 'build_*.gd' | Where-Object {
-        $nom = $_.BaseName.Substring('build_'.Length)
-        -not (Test-Path (Join-Path $Jeu "world/$nom/$nom.tscn"))
-    })
-if ($scenesManquantes.Count -gt 0) { & (Join-Path $PSScriptRoot 'construire.ps1') }
+& (Join-Path $PSScriptRoot 'compiler.ps1') -Cible debug
+& (Join-Path $PSScriptRoot 'importer.ps1')
+& (Join-Path $PSScriptRoot 'construire.ps1')
 
-$arguments = @('--path', $Jeu)
+# Journal du jeu : en cas de plantage, c'est ce fichier qu'il faut transmettre.
+$dossierJournal = Join-Path $Racine 'Mesures/journaux'
+New-Item -ItemType Directory -Force -Path $dossierJournal | Out-Null
+$journalJeu = Join-Path $dossierJournal 'jeu.log'
+$arguments = @('--path', $Jeu, '--log-file', $journalJeu)
 if ($Scene) { $arguments += @('--', "--scene=$Scene") }
+Write-Host "  Journal du jeu : $journalJeu"
 Start-Jeu $GodotEditeur $arguments

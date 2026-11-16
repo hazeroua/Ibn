@@ -19,6 +19,8 @@
 param(
     [switch]$SansRendu,
     [switch]$SansBudgets,
+    # Sans tests GUT ni mesures ni captures (lint, compilation, import, scènes seulement : ~1 min).
+    [switch]$Rapide,
     [string[]]$Cartes = @('sandbox', 'collines', 'vitrine_personnage', 'desert')
 )
 . "$PSScriptRoot/commun.ps1"
@@ -40,9 +42,9 @@ Write-Ok "$($scripts.Count) scripts conformes"
 & (Join-Path $PSScriptRoot 'compiler.ps1') -Cible toutes
 & (Join-Path $PSScriptRoot 'importer.ps1')
 & (Join-Path $PSScriptRoot 'construire.ps1')
-& (Join-Path $PSScriptRoot 'tester.ps1')
+if (-not $Rapide) { & (Join-Path $PSScriptRoot 'tester.ps1') }
 
-if (-not $SansRendu) {
+if (-not $SansRendu -and -not $Rapide) {
     foreach ($carte in $Cartes) {
         & (Join-Path $PSScriptRoot 'mesurer.ps1') -Carte $carte -SansBudgets:$SansBudgets
         & (Join-Path $PSScriptRoot 'capturer.ps1') -Carte $carte
