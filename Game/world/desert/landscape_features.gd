@@ -11,13 +11,13 @@ extends RefCounted
 const CONTEXT: String = "desert.json"
 const KINDS: Array[StringName] = [&"oasis", &"lac", &"guelta", &"chott"]
 const MAX_WATER_BODIES: int = 32
-const MAX_WADIS: int = 16
-const MAX_WADI_POINTS: int = 64
 const GRID_SIDE: int = 32
 
 var water_count: int = 0
 var wadi_count: int = 0
 var segment_count: int = 0
+## Oueds (tracés lissés, creusement, surfaces, gorge).
+var wadis: WadiNetwork = null
 
 var _half_extent: float = 2000.0
 var _inverse_cell: float = 0.0
@@ -31,31 +31,22 @@ var _floor: PackedFloat64Array = PackedFloat64Array()
 var _surface: PackedFloat64Array = PackedFloat64Array()
 var _blend: PackedFloat64Array = PackedFloat64Array()
 var _reach: PackedFloat64Array = PackedFloat64Array()
-## Segments d'oued : extrémités (ax, az, bx, bz), indice de l'oued, demi-largeur, portée.
-var _segment: PackedFloat64Array = PackedFloat64Array()
-var _segment_wadi: PackedInt32Array = PackedInt32Array()
-var _wadi_ids: Array[StringName] = []
-var _wadi_half_width: PackedFloat64Array = PackedFloat64Array()
-var _wadi_depth: PackedFloat64Array = PackedFloat64Array()
-var _wadi_blend: PackedFloat64Array = PackedFloat64Array()
-var _wadi_reach: PackedFloat64Array = PackedFloat64Array()
 ## Une liste d'indices par case de la grille.
 var _water_cells: Array[PackedInt32Array] = []
-var _segment_cells: Array[PackedInt32Array] = []
 
 
 ## Construit l'index depuis le contenu de desert.json. extra_reach_m élargit la portée des plans d'eau (marge de la
-## terre autour de l'eau, lue par surface_weights). Renvoie null si les données sont invalides.
-static func from_data(data: Dictionary, half_extent: float, extra_reach_m: float) -> LandscapeFeatures:
+## terre autour de l'eau, lue par surface_weights).
+## relief(x, z) : hauteur du sol sans dunes (fond des oueds). Renvoie null si les données sont invalides.
+static func from_data(data: Dictionary, half_extent: float, extra_reach_m: float, relief: Callable = Callable()) -> LandscapeFeatures:
 	var features := LandscapeFeatures.new()
 	features._half_extent = half_extent
 	features._inverse_cell = float(GRID_SIDE) / (2.0 * half_extent)
 	for i: int in GRID_SIDE * GRID_SIDE:
 		features._water_cells.append(PackedInt32Array())
-		features._segment_cells.append(PackedInt32Array())
 	if not features._load_water(JsonData.get_array(data, "water_bodies", CONTEXT), extra_reach_m):
 		return null
-	if not features._load_wadis(JsonData.get_array(data, "wadis", CONTEXT)):
+	if not features._load_wadis(data, relief):
 		return null
 	return features
 
@@ -101,56 +92,16 @@ func _load_water(bodies: Array, extra_reach_m: float) -> bool:
 	return true
 
 
-func _load_wadis(wadis: Array) -> bool:
-	if wadis.size() > MAX_WADIS:
-		push_error("LandscapeFeatures : %d oueds (maximum %d)." % [wadis.size(), MAX_WADIS])
+func _load_wadis(data: Dictionary, relief: Callable) -> bool:
+	var list: Array = JsonData.get_array(data, "wadis", CONTEXT)
+	var settings: Dictionary = {}
+	if not list.is_empty():
+		settings = JsonData.get_dictionary(data, "wadi_settings", CONTEXT)
+	wadis = WadiNetwork.from_data(list, settings, _half_extent, relief)
+	if wadis == null:
 		return false
-	for entry: Variant in wadis:
-		if not entry is Dictionary:
-			push_error("LandscapeFeatures : chaque oued doit être un objet (%s)." % CONTEXT)
-			return false
-		var wadi: Dictionary = entry
-		var id: String = JsonData.get_string(wadi, "id", CONTEXT + " > wadis")
-		var context: String = "%s > wadis > %s" % [CONTEXT, id]
-		var points: Array = JsonData.get_array(wadi, "points", context)
-		var width: float = JsonData.get_float(wadi, "width_m", context)
-		var depth: float = JsonData.get_float(wadi, "depth_m", context)
-		var blend: float = JsonData.get_float(wadi, "bank_blend_m", context)
-		var influence: float = JsonData.get_float(wadi, "influence_m", context)
-		if points.size() < 2 or points.size() > MAX_WADI_POINTS or width <= 0.0 or depth < 0.0 or blend <= 0.0 or influence < 0.0:
-			push_error("LandscapeFeatures : points (2 à %d), largeur, profondeur ou fondu incohérents (%s)." % [MAX_WADI_POINTS, context])
-			return false
-		var reach: float = width * 0.5 + blend + influence
-		var wadi_index: int = wadi_count
-		_wadi_ids.append(StringName(id))
-		_wadi_half_width.append(width * 0.5)
-		_wadi_depth.append(depth)
-		_wadi_blend.append(blend)
-		_wadi_reach.append(reach)
-		var previous := Vector2.ZERO
-		for k: int in points.size():
-			var pair: Variant = points[k]
-			if not pair is Array or (pair as Array).size() != 2:
-				push_error("LandscapeFeatures : un point d'oued est [x, z] (%s)." % context)
-				return false
-			var point := Vector2(float((pair as Array)[0]), float((pair as Array)[1]))
-			if k > 0:
-				var index: int = segment_count
-				_segment.append(previous.x)
-				_segment.append(previous.y)
-				_segment.append(point.x)
-				_segment.append(point.y)
-				_segment_wadi.append(wadi_index)
-				_register_segment(
-					index,
-					minf(previous.x, point.x) - reach,
-					minf(previous.y, point.y) - reach,
-					maxf(previous.x, point.x) + reach,
-					maxf(previous.y, point.y) + reach
-				)
-				segment_count += 1
-			previous = point
-		wadi_count += 1
+	wadi_count = wadis.wadi_count
+	segment_count = wadis.segment_count
 	return true
 
 
@@ -168,14 +119,6 @@ func _register_water(index: int, x0: float, z0: float, x1: float, z1: float) -> 
 			_water_cells[row * GRID_SIDE + column].append(index)
 
 
-func _register_segment(index: int, x0: float, z0: float, x1: float, z1: float) -> void:
-	var columns: Vector2i = _cell_range(x0, x1)
-	var rows: Vector2i = _cell_range(z0, z1)
-	for row: int in range(rows.x, rows.y + 1):
-		for column: int in range(columns.x, columns.y + 1):
-			_segment_cells[row * GRID_SIDE + column].append(index)
-
-
 func _cell_index(x: float, z: float) -> int:
 	var column: int = clampi(floori((x + _half_extent) * _inverse_cell), 0, GRID_SIDE - 1)
 	var row: int = clampi(floori((z + _half_extent) * _inverse_cell), 0, GRID_SIDE - 1)
@@ -185,14 +128,14 @@ func _cell_index(x: float, z: float) -> int:
 ## Applique le relief des plans d'eau à la hauteur naturelle du sol : le fond du plan d'eau au centre, remonté
 ## en douceur (smoothstep) jusqu'au sol naturel sur bank_blend_m au-delà du rayon. O(éléments de la case).
 func carve(x: float, z: float, natural_height: float) -> float:
-	var height: float = natural_height
+	var height: float = natural_height + wadis.rise_at(x, z)
 	for index: int in _water_cells[_cell_index(x, z)]:
 		var dx: float = x - _x[index]
 		var dz: float = z - _z[index]
 		var radius: float = _radius[index]
 		var away: float = smoothstep(radius, radius + _blend[index], sqrt(dx * dx + dz * dz))
 		height = lerpf(_floor[index], height, away)
-	return height
+	return wadis.carve(x, z, height)
 
 
 ## 0 loin de l'eau, 1 dans l'eau (rayon du plan d'eau), décroissance douce sur margin_m au-delà. O(éléments de la case).
@@ -272,27 +215,9 @@ func nearest_water_kind(x: float, z: float) -> StringName:
 	return best
 
 
-## Distance (mètres) à l'axe du tracé d'oued le plus proche, INF au-delà de la portée de cet oued.
+## Distance (mètres) à l'axe de l'oued le plus proche, INF au-delà de la portée de cet oued.
 func distance_to_wadi(x: float, z: float) -> float:
-	var best: float = INF
-	for index: int in _segment_cells[_cell_index(x, z)]:
-		var base: int = index * 4
-		var ax: float = _segment[base]
-		var az: float = _segment[base + 1]
-		var bx: float = _segment[base + 2]
-		var bz: float = _segment[base + 3]
-		var sx: float = bx - ax
-		var sz: float = bz - az
-		var length_squared: float = sx * sx + sz * sz
-		var t: float = 0.0
-		if length_squared > 0.0:
-			t = clampf(((x - ax) * sx + (z - az) * sz) / length_squared, 0.0, 1.0)
-		var px: float = x - (ax + sx * t)
-		var pz: float = z - (az + sz * t)
-		var distance: float = sqrt(px * px + pz * pz)
-		if distance <= _wadi_reach[_segment_wadi[index]]:
-			best = minf(best, distance)
-	return best
+	return wadis.distance_to_axis(x, z)
 
 
 ## Identifiants des plans d'eau (lecture seule, pour les systèmes qui les rendent).

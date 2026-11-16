@@ -10,6 +10,8 @@ var _terrain: DesertTerrainCell
 var _field: DesertHeightfield
 var _scatter: VegetationScatter
 var _seed: int
+## Falaises des gorges d'oued (facultatif) : lues seulement après le chargement.
+var _cliffs: DesertCliffs
 var _meshes: Dictionary = {}  # id d'espèce -> Mesh
 var _settings: Dictionary = {}  # id d'espèce -> réglages d'affichage
 ## Cylindre partagé et dimensions par espèce qui bloque le joueur (palmier) ; échelle appliquée par instance.
@@ -23,13 +25,15 @@ func _init(
 	scatter: VegetationScatter,
 	meshes: Dictionary,
 	foliage: Dictionary,
-	world_seed: int
+	world_seed: int,
+	cliffs: DesertCliffs = null
 ) -> void:
 	_terrain = terrain
 	_field = field
 	_scatter = scatter
 	_meshes = meshes
 	_seed = world_seed
+	_cliffs = cliffs
 	for id: StringName in foliage.keys():
 		var spec: Dictionary = foliage[id]
 		if spec.has("collision"):
@@ -54,6 +58,8 @@ func build_cell(cell: Vector2i) -> Node3D:
 		body.add_child(_build_multimesh(id, transforms, body.position))
 		if _collision_radius.has(id):
 			_add_trunk_collisions(body as CollisionObject3D, id, transforms)
+	if _cliffs != null:
+		_cliffs.add_to_body(body as CollisionObject3D, cell)
 	return body
 
 

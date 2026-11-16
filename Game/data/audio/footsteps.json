@@ -51,6 +51,12 @@
         "footstep_dirt_10"
       ]
     },
+    "galets": {
+      "volume_db": -1.0,
+      "volume_variation_db": 2.0,
+      "pitch_variation_semitones": 1.8,
+      "variants": ["footstep_stone_01", "footstep_stone_03", "footstep_stone_05", "footstep_dirt_02", "footstep_dirt_05", "footstep_dirt_08"]
+    },
     "bois": {
       "volume_db": -1.0,
       "volume_variation_db": 1.5,

@@ -4,7 +4,8 @@ extends RefCounted
 ##
 ## Chaque cellule est un DesertCellBody (couche de collision 1) avec une carte de hauteurs de collision et un
 ## maillage par niveau de détail (4 niveaux, plages de visibilité contiguës : un seul est dessiné à la fois).
-## Les sommets portent la normale et le poids des surfaces (couleur : R = pierre, V = terre), calculés une seule
+## Les sommets portent la normale et le poids des surfaces (couleur : R = pierre, V = terre,
+## B = galets, A = proximité du lit d'oued), calculés une seule
 ## fois sur la grille fine puis sous-échantillonnés : tous les niveaux de détail ont le même éclairage. Une jupe
 ## verticale cache les fissures entre cellules de niveaux différents. Les gabarits d'indices sont partagés.
 ## build_cell n'utilise ni l'arbre de scène ni d'état modifié : il s'exécute sans risque dans un fil de chargement.
@@ -106,8 +107,8 @@ func build_cell(cell: Vector2i) -> Node3D:
 			var dz: float = (samples[centre + padded] - samples[centre - padded]) * inverse_double
 			heights[out] = samples[centre]
 			normals[out] = Vector3(-dx, 1.0, -dz).normalized()
-			var weights: Vector2 = heightfield.surface_weights(origin.x + float(i) * _spacing, z, sqrt(dx * dx + dz * dz))
-			colors[out] = Color(weights.x, weights.y, 0.0, 1.0)
+			var weights: Vector4 = heightfield.surface_mix(origin.x + float(i) * _spacing, z, sqrt(dx * dx + dz * dz))
+			colors[out] = Color(weights.x, weights.y, weights.z, weights.w)
 			out += 1
 
 	var body := DesertCellBody.new()
@@ -260,18 +261,31 @@ static func _build_material(shading: Dictionary) -> ShaderMaterial:
 	material.shader = load(SHADER_PATH)
 	var sand: String = JsonData.get_string(shading, "sand_texture", context)
 	var rock: String = JsonData.get_string(shading, "rock_texture", context)
+	var pebbles: String = JsonData.get_string(shading, "galets_texture", context)
 	for map_name: Array in [["albedo", "diff"], ["normal", "nor_gl"], ["roughness", "rough"]]:
 		var sand_texture: Texture2D = _load_texture(sand, map_name[1])
 		var rock_texture: Texture2D = _load_texture(rock, map_name[1])
-		if sand_texture == null or rock_texture == null:
+		var pebble_texture: Texture2D = _load_texture(pebbles, map_name[1])
+		if sand_texture == null or rock_texture == null or pebble_texture == null:
 			return null
 		material.set_shader_parameter("sand_" + map_name[0], sand_texture)
 		material.set_shader_parameter("rock_" + map_name[0], rock_texture)
+		material.set_shader_parameter("galets_" + map_name[0], pebble_texture)
 	for key: String in [
-		"sand_uv_scale", "rock_uv_scale", "earth_uv_scale", "detail_normal_strength", "macro_scale", "macro_strength", "tiling_scale"
+		"sand_uv_scale",
+		"rock_uv_scale",
+		"earth_uv_scale",
+		"detail_normal_strength",
+		"macro_scale",
+		"macro_strength",
+		"tiling_scale",
+		"galets_uv_scale",
+		"bed_far_start_m",
+		"bed_far_end_m",
+		"bed_far_strength"
 	]:
 		material.set_shader_parameter(key, JsonData.get_float(shading, key, context))
-	for key: String in ["sand_tint", "rock_tint", "earth_tint"]:
+	for key: String in ["sand_tint", "rock_tint", "earth_tint", "galets_tint", "bed_far_tint"]:
 		material.set_shader_parameter(key, JsonData.get_color(shading, key, context))
 	return material
 

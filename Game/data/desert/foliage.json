@@ -19,6 +19,34 @@
       "tint": "grass",
       "sway_height_m": 0.55,
       "sway_amount_m": 0.1
+    },
+    "falaise_a_lod0": { "model": "res://assets/desert/falaise_a_lod0.glb", "tint": "none", "sway_height_m": 1.0, "sway_amount_m": 0.0 },
+    "falaise_a_lod1": { "model": "res://assets/desert/falaise_a_lod1.glb", "tint": "none", "sway_height_m": 1.0, "sway_amount_m": 0.0 },
+    "falaise_a_lod2": { "model": "res://assets/desert/falaise_a_lod2.glb", "tint": "none", "sway_height_m": 1.0, "sway_amount_m": 0.0 },
+    "falaise_b_lod0": { "model": "res://assets/desert/falaise_b_lod0.glb", "tint": "none", "sway_height_m": 1.0, "sway_amount_m": 0.0 },
+    "falaise_b_lod1": { "model": "res://assets/desert/falaise_b_lod1.glb", "tint": "none", "sway_height_m": 1.0, "sway_amount_m": 0.0 },
+    "falaise_b_lod2": { "model": "res://assets/desert/falaise_b_lod2.glb", "tint": "none", "sway_height_m": 1.0, "sway_amount_m": 0.0 },
+    "falaise_c_lod0": { "model": "res://assets/desert/falaise_c_lod0.glb", "tint": "none", "sway_height_m": 1.0, "sway_amount_m": 0.0 },
+    "falaise_c_lod1": { "model": "res://assets/desert/falaise_c_lod1.glb", "tint": "none", "sway_height_m": 1.0, "sway_amount_m": 0.0 },
+    "falaise_c_lod2": { "model": "res://assets/desert/falaise_c_lod2.glb", "tint": "none", "sway_height_m": 1.0, "sway_amount_m": 0.0 },
+    "eboulis": {
+      "model": "res://assets/desert/rocher_a_lod1.glb",
+      "tint": "none",
+      "sway_height_m": 1.0,
+      "sway_amount_m": 0.0,
+      "collision": { "radius_m": 0.9, "height_m": 0.8 }
+    },
+    "buisson_oued": {
+      "model": "res://assets/desert/buisson_a.glb",
+      "tint": "grass",
+      "sway_height_m": 0.9,
+      "sway_amount_m": 0.08
+    },
+    "herbe_oued": {
+      "model": "res://assets/desert/herbe_seche_a.glb",
+      "tint": "grass",
+      "sway_height_m": 0.55,
+      "sway_amount_m": 0.1
     }
   }
 }

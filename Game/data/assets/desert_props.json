@@ -158,6 +158,21 @@
         ]
       }
     },
+    "falaise": {
+      "variants": ["a", "b", "c"],
+      "seeds": [61, 73, 89],
+      "radius_m": [3.2, 2.6, 3.8],
+      "height_m": [9.0, 8.0, 10.0],
+      "embed_m": 2.5,
+      "sides": [10, 8, 6],
+      "segments": [6, 3, 1],
+      "max_triangles": [150, 70, 24],
+      "colors": {
+        "base": [0.45, 0.35, 0.26],
+        "top": [0.7, 0.58, 0.42]
+      },
+      "surface": "pierre"
+    },
     "imposteur_palmier": {
       "height_m": 8.5,
       "width_m": 6.0,
