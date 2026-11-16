@@ -64,6 +64,9 @@ var _vault_rise := Vector3.ZERO
 var _vault_fall := Vector3.ZERO
 var _vault_to := Vector3.ZERO
 var _horizontal_before := Vector3.ZERO
+## Dernier pied entendu (pas calés sur l'animation) et temps écoulé depuis.
+var _last_contact_foot: int = -1
+var _since_contact: float = 0.0
 
 
 func _init(settings: LocomotionSettings = null) -> void:
@@ -432,9 +435,15 @@ func _update_outputs(delta: float, was_grounded: bool) -> void:
 		# personnage a réellement avancé depuis l'appui précédent (poussé contre un mur, l'animation tourne : silence).
 		if grounded and was_grounded and distance < _settings.teleport_distance:
 			_contact_travel += distance
+		_since_contact += delta
 		for i: int in _animator.crossed_count():
-			if grounded and _contact_travel >= _settings.contact_min_travel:
-				_emit_footstep(real_speed, _animator.foot_of(i))
+			var foot: int = _animator.foot_of(i)
+			# Le pied déjà posé, reposé par l'animation suivante (arrêt après la marche), ne sonne pas une 2e fois.
+			var repeated: bool = foot == _last_contact_foot and _since_contact < _settings.contact_same_foot_gap
+			if grounded and _contact_travel >= _settings.contact_min_travel and not repeated:
+				_emit_footstep(real_speed, foot)
+				_last_contact_foot = foot
+				_since_contact = 0.0
 			_contact_travel = 0.0
 	elif grounded and was_grounded and distance > 0.0:
 		var stride: float = _settings.stride_for(motor.motion_gait)

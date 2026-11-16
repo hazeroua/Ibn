@@ -38,7 +38,7 @@ var _sand: WindSand = null
 var _audio: WindAudio = null
 var _root_3d: Node3D = null
 ## Sol sous la caméra (relu à chaque mise à jour du sable, un rayon) : le sable vole au ras du sol, pas autour de la caméra.
-var _ground_ray: PhysicsRayQueryParameters3D = null
+var _ground_ray: RayCast3D = null
 var _sand_ground_y: float = NAN
 
 
@@ -156,16 +156,22 @@ func _probe_ground() -> void:
 	var camera: Camera3D = get_viewport().get_camera_3d()
 	if camera == null or not camera.is_inside_tree():
 		return
+	# Rayon par nœud RayCast3D : aucune allocation (intersect_ray créerait un dictionnaire à chaque sonde).
 	if _ground_ray == null:
-		_ground_ray = PhysicsRayQueryParameters3D.new()
+		_ground_ray = RayCast3D.new()
+		_ground_ray.name = "SondeSol"
+		_ground_ray.enabled = false
+		_ground_ray.top_level = true
 		_ground_ray.collision_mask = _settings.sand_ground_mask
 		_ground_ray.collide_with_areas = false
-	var origin: Vector3 = camera.global_position
-	_ground_ray.from = origin
-	_ground_ray.to = origin + Vector3.DOWN * _settings.sand_ground_probe
-	var hit: Dictionary = camera.get_world_3d().direct_space_state.intersect_ray(_ground_ray)
-	if not hit.is_empty():
-		_sand_ground_y = (hit["position"] as Vector3).y
+		_ground_ray.target_position = Vector3.DOWN * _settings.sand_ground_probe
+		add_child(_ground_ray)
+	if _ground_ray.get_world_3d() != camera.get_world_3d():
+		return
+	_ground_ray.global_position = camera.global_position
+	_ground_ray.force_raycast_update()
+	if _ground_ray.is_colliding():
+		_sand_ground_y = _ground_ray.get_collision_point().y
 
 
 static func _declare_globals() -> void:

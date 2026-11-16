@@ -27,16 +27,15 @@ Les corrections de l'eau, de la palmeraie et des pas (commits `883b8f1`, `249095
 - **Horizon** : au-delà du monde chargé, c'est une plaine unie.
 - **Imposteurs lointains des palmiers** (au-delà de 320 m) : silhouette un peu « champignon ».
 - **Roseaux et joncs** entre 30 et 60 m : ils se lisent comme des masses verticales.
-- **Pas** : le même pied sonne deux fois de suite entre la marche et l'arrêt.
-- `Wind._probe_ground` crée un dictionnaire 10 fois par seconde (rayon vers le sol). Ce n'est pas à chaque image, mais c'est évitable.
+- ~~**Pas** : le même pied sonne deux fois de suite entre la marche et l'arrêt.~~ Corrigé (same_foot_min_gap_s).
+- ~~`Wind._probe_ground` crée un dictionnaire 10 fois par seconde.~~ Corrigé : nœud RayCast3D, aucune allocation.
 - Le générateur de modèles écrit maintenant lui-même les réglages d'import ; `lancer.bat` régénère les modèles et l'atlas au premier lancement.
 
 ## 4. Tests à écrire ou à réparer
 - **Test de charge de la palmeraie** (décor, collisions, shader de terre).
 - **Pas calés sur l'animation** : test avec un squelette (appuis, silence contre un mur, arrêts).
 - **Géométrie des séguias** : crête au-dessus du sol, bouts fermés, collision du lit et des berges.
-- **Échecs GUT déjà présents sur `main`** avant ces corrections : sons `footstep_water`, dunes, liste d'espèces de la dispersion, cailloux dans les falaises.
-- Les tests GUT restent suspendus à la demande du porteur du projet.
+- ~~**Échecs GUT déjà présents sur `main`**~~ : corrigés, toute la suite GUT passe (352 tests, commit `816e56b`).
 
 ## 5. Ce qui a été fait (rappel)
 - **Eau** visible (oasis, lac, guelta) ; oasis creusée de 2,2 m.

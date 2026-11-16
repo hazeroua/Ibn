@@ -89,7 +89,7 @@
     "max_duration": 0.8
   },
   "footsteps": {
-    "description": "Pas. Avec un modèle animé : un pas à chaque appui d'un pied dans l'animation jouée (animation_contacts : os des pieds ; appui = pied revenu à moins de height_m de son point le plus bas après s'être levé de lift_m ; deux appuis à moins de min_gap_s n'en font qu'un ; un appui ne sonne que si le personnage a parcouru au moins min_travel_m au sol depuis le précédent (contre un mur : aucun pas) ; échantillonnage des pistes, une fois au chargement). Sans modèle : un pas à chaque longueur de foulée parcourue au sol (stride_length des allures = distance parcourue par l'animation entre deux appuis). Rayon vers le bas sous le pied pour trouver le collisionneur.",
+    "description": "Pas. Avec un modèle animé : un pas à chaque appui d'un pied dans l'animation jouée (animation_contacts : os des pieds ; appui = pied revenu à moins de height_m de son point le plus bas après s'être levé de lift_m ; deux appuis à moins de min_gap_s n'en font qu'un ; le même pied ne sonne pas deux fois de suite à moins de same_foot_min_gap_s (passage de la marche à l'arrêt, où l'animation d'arrêt repose le pied déjà posé) ; un appui ne sonne que si le personnage a parcouru au moins min_travel_m au sol depuis le précédent (contre un mur : aucun pas) ; échantillonnage des pistes, une fois au chargement). Sans modèle : un pas à chaque longueur de foulée parcourue au sol (stride_length des allures = distance parcourue par l'animation entre deux appuis). Rayon vers le bas sous le pied pour trouver le collisionneur.",
     "first_step_fraction": 0.5,
     "foot_lateral_offset": 0.11,
     "ray_start_height": 0.3,
@@ -108,7 +108,8 @@
       "lift_m": 0.04,
       "samples_per_second": 120.0,
       "min_gap_s": 0.12,
-      "min_travel_m": 0.2
+      "min_travel_m": 0.2,
+      "same_foot_min_gap_s": 0.5
     }
   },
   "animation": {
