@@ -77,3 +77,6 @@ __pycache__/
 /Game/ui/time_panel/time_panel.tscn
 /Game/world/desert_jeu/desert_jeu.tscn
 /Extensions/**/*.os
+
+# Espace de travail local Codex (rapports, scripts et worktrees temporaires)
+/.codex/
