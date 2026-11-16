@@ -9,6 +9,7 @@ signal gait_changed(gait: StringName)
 signal called
 
 const SETTINGS_PATH: String = "res://data/horse/horse.json"
+const MODEL_PATH: String = "res://assets/horse/barq.glb"
 const GROUND_LAYER: int = 1
 
 var locomotion: HorseLocomotion
@@ -18,9 +19,10 @@ var mounted: bool = false
 var called_target: Vector3 = Vector3.ZERO
 var is_called: bool = false
 var last_step_usec: int = 0
+var _call_target_node: Node3D = null
 
 var _visual_root: Node3D
-var _legs: Array[MeshInstance3D] = []
+var _animation_player: AnimationPlayer
 var _input_move: Vector2 = Vector2.ZERO
 var _input_sprint: bool = false
 var _last_position: Vector3 = Vector3.ZERO
@@ -77,13 +79,23 @@ func set_input(move: Vector2, sprint: bool) -> void:
 
 
 func call_to(position: Vector3) -> void:
+	_call_target_node = null
 	called_target = position
 	is_called = true
 	called.emit()
 
 
+## Suit la position actuelle du joueur durant tout l'appel, plutôt que son ancienne position au moment du sifflet.
+func call_to_node(target: Node3D) -> void:
+	_call_target_node = target
+	is_called = target != null
+	if is_called:
+		called.emit()
+
+
 func cancel_call() -> void:
 	is_called = false
+	_call_target_node = null
 
 
 func _physics_process(delta: float) -> void:
@@ -91,6 +103,8 @@ func _physics_process(delta: float) -> void:
 	var move: Vector2 = _input_move
 	var sprint: bool = _input_sprint
 	if is_called:
+		if is_instance_valid(_call_target_node):
+			called_target = _call_target_node.global_position
 		var to_target: Vector3 = called_target - global_position
 		to_target.y = 0.0
 		var call_data: Dictionary = settings.get("call", {}) as Dictionary
@@ -98,10 +112,10 @@ func _physics_process(delta: float) -> void:
 			is_called = false
 			move = Vector2.ZERO
 		else:
-			var local: Vector3 = global_basis.inverse() * to_target.normalized()
-			move = Vector2(local.x, -local.z).limit_length(1.0)
+			move = Vector2(to_target.x, to_target.z).normalized()
 			sprint = false
 	locomotion.update(move, sprint, delta)
+	rotation.y = locomotion.yaw
 	var next_gait: StringName = locomotion.get_gait_name()
 	if next_gait != _last_gait:
 		_last_gait = next_gait
@@ -178,52 +192,25 @@ func _build_visual() -> void:
 	_visual_root = Node3D.new()
 	_visual_root.name = "BarqVisuel"
 	add_child(_visual_root)
-	var visual: Dictionary = settings.get("visual", {}) as Dictionary
-	var body_length: float = float(visual.get("body_length_m", 2.15))
-	var body_height: float = float(visual.get("body_height_m", 1.25))
-	var body_size := Vector3(body_length, 0.85, body_height)
-	_add_box("Corps", body_size, Vector3(0.0, 1.25, 0.0), Color(0.28, 0.13, 0.06))
-	var neck_size := Vector3(0.55, 1.2, 0.55)
-	var neck_position := Vector3(0.0, 1.75, -0.78)
-	_add_box("Encolure", neck_size, neck_position, Color(0.32, 0.16, 0.08))
-	var head_size := Vector3(0.48, 0.7, 0.65)
-	var head_position := Vector3(0.0, 2.25, -1.05)
-	_add_box("Tête", head_size, head_position, Color(0.34, 0.18, 0.09))
-	var saddle_size := Vector3(0.85, 0.16, 0.72)
-	var saddle_position := Vector3(0.0, 1.75, 0.12)
-	_add_box("Selle", saddle_size, saddle_position, Color(0.12, 0.06, 0.03))
-	var leg_radius: float = float(visual.get("leg_radius_m", 0.09))
-	var leg_length: float = float(visual.get("leg_length_m", 1.05))
-	var leg_size := Vector3(leg_radius, leg_length, leg_radius)
-	for index: int in 4:
-		var side: float = -0.42 if index % 2 == 0 else 0.42
-		var front: float = -0.62 if index < 2 else 0.62
-		var leg_name: String = "Jambe%d" % index
-		var leg_position := Vector3(side, 0.65, front)
-		var leg := _add_box(leg_name, leg_size, leg_position, Color(0.22, 0.1, 0.05))
-		_legs.append(leg)
+	var scene: PackedScene = load(MODEL_PATH) as PackedScene
+	if scene == null:
+		push_error("Barq : modèle CC0 absent (%s). Lancez Scripts/Pipeline/importer-cheval.ps1." % MODEL_PATH)
+		return
+	var model: Node3D = scene.instantiate() as Node3D
+	model.name = "Modele"
+	_visual_root.add_child(model)
+	_animation_player = model.find_child("AnimationPlayer", true, false) as AnimationPlayer
 
 
-func _add_box(node_name: String, size: Vector3, position: Vector3, color: Color) -> MeshInstance3D:
-	var mesh := BoxMesh.new()
-	mesh.size = size
-	var material := StandardMaterial3D.new()
-	material.albedo_color = color
-	mesh.material = material
-	var instance := MeshInstance3D.new()
-	instance.name = node_name
-	instance.mesh = mesh
-	instance.position = position
-	_visual_root.add_child(instance)
-	return instance
-
-
-func _update_visual(delta: float, distance: float) -> void:
-	_phase += delta * (1.0 + locomotion.speed * 0.18)
-	_visual_root.position.y = sin(_phase * 2.0) * minf(distance * 0.08, 0.035)
-	for index: int in _legs.size():
-		var leg_phase: float = _phase * 2.0 + float(index % 2) * PI
-		_legs[index].rotation.x = sin(leg_phase) * minf(0.34, locomotion.speed * 0.035)
+func _update_visual(_delta: float, distance: float) -> void:
+	if _animation_player == null:
+		return
+	var clip: StringName = &"Idle" if distance <= 0.001 else &"Walk"
+	if locomotion.gait == HorseLocomotion.Gait.CANTER or locomotion.gait == HorseLocomotion.Gait.SPRINT:
+		clip = &"Run"
+	if _animation_player.current_animation != clip:
+		_animation_player.play(clip, 0.15)
+	_animation_player.speed_scale = maxf(0.65, locomotion.speed / 2.0)
 
 
 func _layers_to_mask(layers: Array) -> int:
