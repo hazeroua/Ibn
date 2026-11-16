@@ -140,3 +140,50 @@ func _run_into_wall(wall_height: float) -> Dictionary:
 		await get_tree().physics_frame
 	var travelled: float = -(horse.global_position.z - start.z)
 	return {"travelled": travelled, "height": horse.global_position.y}
+
+
+## Pire cas (#27) : 10 minutes de course (sprint jusqu'à épuisement, puis galop) dans un champ de 1 000
+## obstacles, avec des virages permanents. Barq ne pénètre jamais un obstacle, ne tombe pas, reste fini, et
+## chaque image physique reste sous le budget. Simulation pas à pas (60 i/s) sans attendre le temps réel.
+func test_ten_minute_sprint_through_thousand_obstacles() -> void:
+	var world := Node3D.new()
+	add_child_autofree(world)
+	PlayerTestWorld.ground(world, "sable", 400.0)
+	PlayerTestWorld.scatter(world, 1000, 380.0, 6.0, 1382)
+	var horse := HorseController.new(null)
+	world.add_child(horse)
+	await get_tree().physics_frame
+	var query := PhysicsShapeQueryParameters3D.new()
+	var probe := CapsuleShape3D.new()
+	probe.radius = 0.3
+	probe.height = 1.0
+	query.shape = probe
+	query.collision_mask = 1
+	var space: PhysicsDirectSpaceState3D = world.get_world_3d().direct_space_state
+	var frames: int = 36000
+	var dt: float = 1.0 / 60.0
+	var worst_us: int = 0
+	var penetrations: int = 0
+	var lowest: float = 0.0
+	for frame: int in frames:
+		var t: float = float(frame) * dt
+		horse.set_input(Vector2(sin(t * 0.37), -cos(t * 0.23)).normalized(), true)
+		horse._physics_process(dt)
+		worst_us = maxi(worst_us, horse.last_step_usec)
+		lowest = minf(lowest, horse.global_position.y)
+		if frame % 30 == 0:
+			# Cœur du corps (sous le dos, au-dessus des marches) : jamais dans un obstacle.
+			query.transform = Transform3D(Basis(Vector3.RIGHT, PI * 0.5), horse.global_position + Vector3.UP * 1.0)
+			if not space.intersect_shape(query, 1).is_empty():
+				penetrations += 1
+	var p: Vector3 = horse.global_position
+	gut.p(
+		(
+			"Pire cas #27 : 10 min de course, 1 000 obstacles, image la plus longue %.3f ms, endurance %.2f"
+			% [float(worst_us) / 1000.0, horse.locomotion.endurance]
+		)
+	)
+	assert_false(is_nan(p.x) or is_nan(p.y) or is_nan(p.z))
+	assert_eq(penetrations, 0, "jamais dans un obstacle")
+	assert_gt(lowest, -0.3, "ne passe pas sous le sol")
+	assert_lt(worst_us, 4000)
