@@ -7,12 +7,15 @@ extends Node3D
 const DATA_PATH: String = "res://data/desert/desert.json"
 const STREAMING_PATH: String = "res://data/streaming/streaming.json"
 const VEGETATION_PATH: String = "res://data/desert/vegetation.json"
+const GROUND_COVER_PATH: String = "res://data/desert/ground_cover.json"
 const TIME_PANEL_SCENE: String = "res://ui/time_panel/time_panel.tscn"
 const SPAWN_WAIT_FRAMES_MAX: int = 1800
 
 var _streamer: WorldStreamer
 ## Gardé ici : le streaming l'appelle depuis des fils de fond pendant toute la partie.
 var _provider: DesertCellProvider
+## Interrogation du couvert du sol branchée sur les pas : gardée ici (Footsteps ne retient que la méthode).
+var _ground_cover: GroundCoverQuery
 var _player: PlayerCharacter
 var _rig: ThirdPersonCamera
 
@@ -35,7 +38,8 @@ func _ready() -> void:
 		scatter,
 		meshes,
 		foliage,
-		JsonData.get_int(JsonData.get_dictionary(data, "terrain", "desert.json"), "seed", "desert.json > terrain")
+		JsonData.get_int(JsonData.get_dictionary(data, "terrain", "desert.json"), "seed", "desert.json > terrain"),
+		JsonData.load_dictionary(GROUND_COVER_PATH)
 	)
 	_streamer = WorldStreamer.new()
 	_streamer.name = "Streaming"
@@ -43,6 +47,8 @@ func _ready() -> void:
 		return
 	_streamer.register_provider(_provider)
 	add_child(_streamer)
+	_ground_cover = GroundCoverQuery.new(_streamer)
+	(get_node("/root/Footsteps") as FootstepSystem).set_ground_cover(_ground_cover.nearest_cover_distance_squared)
 	var day_night: DayNightSystem = get_node("/root/DayNight") as DayNightSystem
 	add_child(day_night.build_environment())
 	_add_oasis(data, field)

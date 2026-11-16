@@ -6,7 +6,7 @@ extends RefCounted
 
 const SHADER_PATH: String = "res://world/desert_jeu/desert_foliage.gdshader"
 const SETTINGS_PATH: String = "res://data/desert/foliage.json"
-const TINTS: Dictionary[String, int] = {"none": 0, "grass": 1, "palm": 2}
+const TINTS: Dictionary[String, int] = {"none": 0, "grass": 1, "palm": 2, "bloom": 3}
 
 
 ## Réglages par espèce (StringName -> Dictionary), tels que dans foliage.json.

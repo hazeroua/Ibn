@@ -8,14 +8,19 @@ global uniform float wind_strength;
 global uniform float wind_time;
 global uniform vec3 season_grass_color;
 global uniform vec3 season_palm_color;
+global uniform float season_bloom; // 1 au printemps, 0 hors saison : les fleurs poussent et disparaissent
 
-uniform int tint_kind = 0; // 0 : aucune, 1 : herbe et buissons, 2 : palmes
+uniform int tint_kind = 0; // 0 : aucune, 1 : herbe et buissons, 2 : palmes, 3 : fleurs (sommets réduits à zéro hors saison)
 uniform float sway_height_m = 1.0;
 uniform float sway_amount_m = 0.25;
 
 varying vec3 v_color;
 
 void vertex() {
+	if (tint_kind == 3) {
+		// Hors saison tous les sommets se confondent au pied : triangles dégénérés, aucun pixel dessiné.
+		VERTEX *= season_bloom;
+	}
 	vec3 world = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	float weight = clamp(VERTEX.y / max(sway_height_m, 0.001), 0.0, 1.0);
 	weight *= weight;
