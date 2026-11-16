@@ -29,8 +29,16 @@ func _ready() -> void:
 	if data.is_empty() or field == null or terrain == null or meshes.is_empty():
 		return
 	var scatter := VegetationScatter.new()
-	if not scatter.load_rules(VEGETATION_PATH) or not scatter.load_features(DATA_PATH):
+	var water_bodies: Array = JsonData.get_array(data, "water_bodies", "desert.json")
+	var wadi_step: float = JsonData.get_float(
+		JsonData.get_dictionary(data, "wadi_settings", "desert.json"), "scatter_step_m", "desert.json"
+	)
+	# La végétation suit le tracé lissé des oueds (et non les points de contrôle).
+	if not scatter.load_rules(VEGETATION_PATH) or not scatter.set_features(water_bodies, field.features.wadis.scatter_polylines(wadi_step)):
 		push_error("DesertSession : règles de végétation invalides : %s" % scatter.get_last_error())
+		return
+	var cliffs: DesertCliffs = DesertCliffs.build(field, meshes)
+	if cliffs == null:
 		return
 	_provider = DesertCellProvider.new(
 		terrain,
@@ -39,7 +47,8 @@ func _ready() -> void:
 		meshes,
 		foliage,
 		JsonData.get_int(JsonData.get_dictionary(data, "terrain", "desert.json"), "seed", "desert.json > terrain"),
-		JsonData.load_dictionary(GROUND_COVER_PATH)
+		JsonData.load_dictionary(GROUND_COVER_PATH),
+		cliffs
 	)
 	_streamer = WorldStreamer.new()
 	_streamer.name = "Streaming"

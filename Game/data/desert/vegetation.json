@@ -22,8 +22,28 @@
       "altitude_max": 400.0,
       "water_distance_min": 0.55,
       "water_distance_max": 2.6,
-      "water_density_curve": [[0.55, 4.0], [1.0, 3.0], [1.6, 1.0], [2.6, 0.05]],
-      "surfaces": ["terre", "sable"],
+      "water_density_curve": [
+        [
+          0.55,
+          4.0
+        ],
+        [
+          1.0,
+          3.0
+        ],
+        [
+          1.6,
+          1.0
+        ],
+        [
+          2.6,
+          0.05
+        ]
+      ],
+      "surfaces": [
+        "terre",
+        "sable"
+      ],
       "scale_min": 0.85,
       "scale_max": 1.25,
       "height_scale_variation": 0.12,
@@ -43,8 +63,29 @@
       "altitude_max": 400.0,
       "water_distance_min": 0.0,
       "water_distance_max": 6.0,
-      "water_density_curve": [[0.0, 3.0], [1.4, 2.0], [3.0, 0.6], [6.0, 0.25]],
-      "surfaces": ["terre", "sable", "pierre"],
+      "water_density_curve": [
+        [
+          0.0,
+          3.0
+        ],
+        [
+          1.4,
+          2.0
+        ],
+        [
+          3.0,
+          0.6
+        ],
+        [
+          6.0,
+          0.25
+        ]
+      ],
+      "surfaces": [
+        "terre",
+        "sable",
+        "pierre"
+      ],
       "scale_min": 0.7,
       "scale_max": 1.3,
       "height_scale_variation": 0.2,
@@ -64,8 +105,28 @@
       "altitude_max": 400.0,
       "water_distance_min": 0.0,
       "water_distance_max": 5.0,
-      "water_density_curve": [[0.0, 3.0], [1.2, 2.0], [2.5, 0.8], [5.0, 0.2]],
-      "surfaces": ["terre", "sable"],
+      "water_density_curve": [
+        [
+          0.0,
+          3.0
+        ],
+        [
+          1.2,
+          2.0
+        ],
+        [
+          2.5,
+          0.8
+        ],
+        [
+          5.0,
+          0.2
+        ]
+      ],
+      "surfaces": [
+        "terre",
+        "sable"
+      ],
       "scale_min": 0.6,
       "scale_max": 1.2,
       "height_scale_variation": 0.3,
@@ -85,8 +146,20 @@
       "altitude_max": 400.0,
       "water_distance_min": 0.0,
       "water_distance_max": 60.0,
-      "water_density_curve": [[0.0, 1.0], [60.0, 1.0]],
-      "surfaces": ["terre", "pierre"],
+      "water_density_curve": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          60.0,
+          1.0
+        ]
+      ],
+      "surfaces": [
+        "terre",
+        "pierre"
+      ],
       "scale_min": 0.8,
       "scale_max": 1.25,
       "height_scale_variation": 0.25,
@@ -106,8 +179,20 @@
       "altitude_max": 400.0,
       "water_distance_min": 0.0,
       "water_distance_max": 60.0,
-      "water_density_curve": [[0.0, 1.0], [60.0, 1.0]],
-      "surfaces": ["terre", "pierre"],
+      "water_density_curve": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          60.0,
+          1.0
+        ]
+      ],
+      "surfaces": [
+        "terre",
+        "pierre"
+      ],
       "scale_min": 0.85,
       "scale_max": 1.3,
       "height_scale_variation": 0.25,
@@ -127,8 +212,19 @@
       "altitude_max": 400.0,
       "water_distance_min": 0.0,
       "water_distance_max": 60.0,
-      "water_density_curve": [[0.0, 1.0], [60.0, 1.0]],
-      "surfaces": ["sable"],
+      "water_density_curve": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          60.0,
+          1.0
+        ]
+      ],
+      "surfaces": [
+        "sable"
+      ],
       "scale_min": 0.8,
       "scale_max": 1.2,
       "height_scale_variation": 0.2,
@@ -148,8 +244,19 @@
       "altitude_max": 400.0,
       "water_distance_min": 0.0,
       "water_distance_max": 60.0,
-      "water_density_curve": [[0.0, 1.0], [60.0, 1.0]],
-      "surfaces": ["sable"],
+      "water_density_curve": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          60.0,
+          1.0
+        ]
+      ],
+      "surfaces": [
+        "sable"
+      ],
       "scale_min": 0.85,
       "scale_max": 1.3,
       "height_scale_variation": 0.2,
@@ -169,8 +276,20 @@
       "altitude_max": 400.0,
       "water_distance_min": 0.0,
       "water_distance_max": 60.0,
-      "water_density_curve": [[0.0, 1.0], [60.0, 1.0]],
-      "surfaces": ["terre", "sable"],
+      "water_density_curve": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          60.0,
+          1.0
+        ]
+      ],
+      "surfaces": [
+        "terre",
+        "sable"
+      ],
       "scale_min": 0.8,
       "scale_max": 1.3,
       "height_scale_variation": 0.2,
@@ -190,8 +309,19 @@
       "altitude_max": 400.0,
       "water_distance_min": 0.0,
       "water_distance_max": 60.0,
-      "water_density_curve": [[0.0, 1.0], [60.0, 1.0]],
-      "surfaces": ["pierre"],
+      "water_density_curve": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          60.0,
+          1.0
+        ]
+      ],
+      "surfaces": [
+        "pierre"
+      ],
       "scale_min": 0.7,
       "scale_max": 1.5,
       "height_scale_variation": 0.3,
@@ -211,8 +341,19 @@
       "altitude_max": 400.0,
       "water_distance_min": 0.0,
       "water_distance_max": 60.0,
-      "water_density_curve": [[0.0, 1.0], [60.0, 1.0]],
-      "surfaces": ["pierre"],
+      "water_density_curve": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          60.0,
+          1.0
+        ]
+      ],
+      "surfaces": [
+        "pierre"
+      ],
       "scale_min": 0.7,
       "scale_max": 1.5,
       "height_scale_variation": 0.3,
@@ -232,8 +373,19 @@
       "altitude_max": 400.0,
       "water_distance_min": 0.0,
       "water_distance_max": 60.0,
-      "water_density_curve": [[0.0, 1.0], [60.0, 1.0]],
-      "surfaces": ["pierre"],
+      "water_density_curve": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          60.0,
+          1.0
+        ]
+      ],
+      "surfaces": [
+        "pierre"
+      ],
       "scale_min": 0.7,
       "scale_max": 1.4,
       "height_scale_variation": 0.3,
@@ -253,8 +405,19 @@
       "altitude_max": 400.0,
       "water_distance_min": 0.0,
       "water_distance_max": 60.0,
-      "water_density_curve": [[0.0, 1.0], [60.0, 1.0]],
-      "surfaces": ["pierre"],
+      "water_density_curve": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          60.0,
+          1.0
+        ]
+      ],
+      "surfaces": [
+        "pierre"
+      ],
       "scale_min": 0.8,
       "scale_max": 1.3,
       "height_scale_variation": 0.1,
@@ -274,8 +437,19 @@
       "altitude_max": 400.0,
       "water_distance_min": 0.0,
       "water_distance_max": 60.0,
-      "water_density_curve": [[0.0, 1.0], [60.0, 1.0]],
-      "surfaces": ["pierre"],
+      "water_density_curve": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          60.0,
+          1.0
+        ]
+      ],
+      "surfaces": [
+        "pierre"
+      ],
       "scale_min": 0.8,
       "scale_max": 1.3,
       "height_scale_variation": 0.1,
@@ -295,9 +469,34 @@
       "altitude_max": 400.0,
       "water_distance_min": 0.0,
       "water_distance_max": 60.0,
-      "water_density_curve": [[0.0, 1.0], [60.0, 1.0]],
-      "wadi_density_curve": [[0.0, 6.0], [40.0, 3.0], [120.0, 0.4]],
-      "surfaces": ["terre", "sable"],
+      "water_density_curve": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          60.0,
+          1.0
+        ]
+      ],
+      "wadi_density_curve": [
+        [
+          0.0,
+          6.0
+        ],
+        [
+          40.0,
+          3.0
+        ],
+        [
+          120.0,
+          0.4
+        ]
+      ],
+      "surfaces": [
+        "terre",
+        "sable"
+      ],
       "scale_min": 0.8,
       "scale_max": 1.2,
       "height_scale_variation": 0.1,
@@ -308,25 +507,6 @@
       "cast_shadows": false
     },
     {
-      "id": "bois_mort_b",
-      "radius": 0.6,
-      "density_per_hectare": 20.0,
-      "max_instances": 250,
-      "max_slope_deg": 22.0,
-      "altitude_min": -20.0,
-      "altitude_max": 400.0,
-      "water_distance_min": 0.0,
-      "water_distance_max": 60.0,
-      "water_density_curve": [[0.0, 1.0], [60.0, 1.0]],
-      "wadi_density_curve": [[0.0, 6.0], [40.0, 3.0], [120.0, 0.4]],
-      "surfaces": ["terre", "sable"],
-      "scale_min": 0.8,
-      "scale_max": 1.2,
-      "height_scale_variation": 0.1,
-      "align_to_normal": 0.3,
-      "ground_offset": -0.01,
-      "visibility_range_end": 70.0,
-      "visibility_fade_margin": 14.0,
       "id": "acacia",
       "radius": 20.0,
       "density_per_hectare": 0.2,
@@ -336,9 +516,35 @@
       "altitude_max": 400.0,
       "water_distance_min": 1.0,
       "water_distance_max": 1000.0,
-      "water_density_curve": [[1.0, 1.0], [1000.0, 1.0]],
-      "wadi_density_curve": [[0.0, 3.0], [40.0, 2.0], [160.0, 1.0]],
-      "surfaces": ["sable", "terre", "pierre"],
+      "water_density_curve": [
+        [
+          1.0,
+          1.0
+        ],
+        [
+          1000.0,
+          1.0
+        ]
+      ],
+      "wadi_density_curve": [
+        [
+          0.0,
+          3.0
+        ],
+        [
+          40.0,
+          2.0
+        ],
+        [
+          160.0,
+          1.0
+        ]
+      ],
+      "surfaces": [
+        "sable",
+        "terre",
+        "pierre"
+      ],
       "scale_min": 0.85,
       "scale_max": 1.3,
       "height_scale_variation": 0.1,
@@ -358,10 +564,47 @@
       "altitude_max": 400.0,
       "water_distance_min": 0.95,
       "water_distance_max": 1000.0,
-      "water_density_curve": [[0.95, 1.0], [1.2, 1.0], [1.5, 0.2], [1.54, 0.0]],
-      "wadi_density_curve": [[0.0, 1.0], [12.0, 1.0], [28.0, 0.2], [29.5, 0.0]],
+      "water_density_curve": [
+        [
+          0.95,
+          1.0
+        ],
+        [
+          1.2,
+          1.0
+        ],
+        [
+          1.5,
+          0.2
+        ],
+        [
+          1.54,
+          0.0
+        ]
+      ],
+      "wadi_density_curve": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          12.0,
+          1.0
+        ],
+        [
+          28.0,
+          0.2
+        ],
+        [
+          29.5,
+          0.0
+        ]
+      ],
       "water_or_wadi": true,
-      "surfaces": ["terre", "sable"],
+      "surfaces": [
+        "terre",
+        "sable"
+      ],
       "scale_min": 0.85,
       "scale_max": 1.25,
       "height_scale_variation": 0.12,
@@ -381,8 +624,24 @@
       "altitude_max": 400.0,
       "water_distance_min": 1.0,
       "water_distance_max": 1000.0,
-      "water_density_curve": [[1.0, 0.4], [1.5, 1.0], [1000.0, 1.0]],
-      "surfaces": ["terre", "pierre"],
+      "water_density_curve": [
+        [
+          1.0,
+          0.4
+        ],
+        [
+          1.5,
+          1.0
+        ],
+        [
+          1000.0,
+          1.0
+        ]
+      ],
+      "surfaces": [
+        "terre",
+        "pierre"
+      ],
       "scale_min": 0.7,
       "scale_max": 1.3,
       "height_scale_variation": 0.2,
@@ -402,10 +661,48 @@
       "altitude_max": 400.0,
       "water_distance_min": 0.95,
       "water_distance_max": 1000.0,
-      "water_density_curve": [[0.95, 1.0], [1.1, 1.0], [1.35, 0.1], [1.45, 0.0]],
-      "wadi_density_curve": [[0.0, 1.0], [8.0, 0.8], [20.0, 0.05], [28.0, 0.0]],
+      "water_density_curve": [
+        [
+          0.95,
+          1.0
+        ],
+        [
+          1.1,
+          1.0
+        ],
+        [
+          1.35,
+          0.1
+        ],
+        [
+          1.45,
+          0.0
+        ]
+      ],
+      "wadi_density_curve": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          8.0,
+          0.8
+        ],
+        [
+          20.0,
+          0.05
+        ],
+        [
+          28.0,
+          0.0
+        ]
+      ],
       "water_or_wadi": true,
-      "surfaces": ["terre", "sable", "pierre"],
+      "surfaces": [
+        "terre",
+        "sable",
+        "pierre"
+      ],
       "scale_min": 0.85,
       "scale_max": 1.25,
       "height_scale_variation": 0.15,
@@ -425,9 +722,33 @@
       "altitude_max": 400.0,
       "water_distance_min": 1.0,
       "water_distance_max": 1000.0,
-      "water_density_curve": [[1.0, 0.3], [1.5, 1.0], [1000.0, 1.0]],
-      "wadi_density_curve": [[0.0, 2.0], [60.0, 1.0]],
-      "surfaces": ["sable"],
+      "water_density_curve": [
+        [
+          1.0,
+          0.3
+        ],
+        [
+          1.5,
+          1.0
+        ],
+        [
+          1000.0,
+          1.0
+        ]
+      ],
+      "wadi_density_curve": [
+        [
+          0.0,
+          2.0
+        ],
+        [
+          60.0,
+          1.0
+        ]
+      ],
+      "surfaces": [
+        "sable"
+      ],
       "scale_min": 0.7,
       "scale_max": 1.3,
       "height_scale_variation": 0.2,
@@ -435,6 +756,171 @@
       "ground_offset": -0.03,
       "visibility_range_end": 220.0,
       "visibility_fade_margin": 25.0,
+      "cast_shadows": false
+    },
+    {
+      "id": "eboulis",
+      "radius": 1.3,
+      "density_per_hectare": 70.0,
+      "max_instances": 900,
+      "max_slope_deg": 60.0,
+      "altitude_min": -20.0,
+      "altitude_max": 400.0,
+      "water_distance_min": 0.0,
+      "water_distance_max": 1000.0,
+      "water_density_curve": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          1000.0,
+          1.0
+        ]
+      ],
+      "wadi_density_curve": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          18.0,
+          0.0
+        ],
+        [
+          22.0,
+          1.0
+        ],
+        [
+          48.0,
+          0.8
+        ],
+        [
+          75.0,
+          0.0
+        ]
+      ],
+      "surfaces": [
+        "pierre",
+        "terre"
+      ],
+      "scale_min": 0.5,
+      "scale_max": 1.3,
+      "height_scale_variation": 0.25,
+      "align_to_normal": 0.3,
+      "ground_offset": -0.15,
+      "visibility_range_end": 260.0,
+      "visibility_fade_margin": 30.0,
+      "cast_shadows": false
+    },
+    {
+      "id": "buisson_oued",
+      "radius": 0.9,
+      "density_per_hectare": 60.0,
+      "max_instances": 2000,
+      "max_slope_deg": 28.0,
+      "altitude_min": -20.0,
+      "altitude_max": 400.0,
+      "water_distance_min": 0.0,
+      "water_distance_max": 1000.0,
+      "water_density_curve": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          1000.0,
+          1.0
+        ]
+      ],
+      "wadi_density_curve": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          20.0,
+          0.0
+        ],
+        [
+          26.0,
+          1.0
+        ],
+        [
+          45.0,
+          0.6
+        ],
+        [
+          90.0,
+          0.0
+        ]
+      ],
+      "surfaces": [
+        "terre",
+        "sable"
+      ],
+      "scale_min": 0.8,
+      "scale_max": 1.5,
+      "height_scale_variation": 0.2,
+      "align_to_normal": 0.4,
+      "ground_offset": -0.03,
+      "visibility_range_end": 240.0,
+      "visibility_fade_margin": 25.0,
+      "cast_shadows": false
+    },
+    {
+      "id": "herbe_oued",
+      "radius": 0.45,
+      "density_per_hectare": 500.0,
+      "max_instances": 5000,
+      "max_slope_deg": 35.0,
+      "altitude_min": -20.0,
+      "altitude_max": 400.0,
+      "water_distance_min": 0.0,
+      "water_distance_max": 1000.0,
+      "water_density_curve": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          1000.0,
+          1.0
+        ]
+      ],
+      "wadi_density_curve": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          18.0,
+          0.0
+        ],
+        [
+          24.0,
+          1.0
+        ],
+        [
+          40.0,
+          0.7
+        ],
+        [
+          80.0,
+          0.0
+        ]
+      ],
+      "surfaces": [
+        "terre",
+        "sable"
+      ],
+      "scale_min": 0.7,
+      "scale_max": 1.3,
+      "height_scale_variation": 0.3,
+      "align_to_normal": 0.7,
+      "ground_offset": -0.02,
+      "visibility_range_end": 70.0,
+      "visibility_fade_margin": 12.0,
       "cast_shadows": false
     }
   ]

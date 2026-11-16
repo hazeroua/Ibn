@@ -15,6 +15,7 @@ const DEFAULT_PATH: String = "res://data/desert/desert.json"
 const SURFACE_SABLE: StringName = &"sable"
 const SURFACE_PIERRE: StringName = &"pierre"
 const SURFACE_TERRE: StringName = &"terre"
+const SURFACE_GALETS: StringName = &"galets"
 const NO_CELL: Vector2i = Vector2i(-1, -1)
 
 ## Plans d'eau et oueds (index spatial lu dans desert.json), en lecture seule pour les autres systèmes.
@@ -81,7 +82,7 @@ static func from_data(data: Dictionary) -> DesertHeightfield:
 		return null
 	if not field._setup_surfaces(JsonData.get_dictionary(terrain, "surfaces", context), seed_value):
 		return null
-	field.features = LandscapeFeatures.from_data(data, field.half_extent, field._terre_margin)
+	field.features = LandscapeFeatures.from_data(data, field.half_extent, field._terre_margin, field.base_relief_at)
 	if field.features == null:
 		return null
 	return field
@@ -174,6 +175,12 @@ func height_at(x: float, z: float) -> float:
 	return features.carve(x, z, height)
 
 
+## Hauteur du sol sans dunes (base et grandes ondulations) : sert à calculer le fond des oueds. O(1).
+func base_relief_at(x: float, z: float) -> float:
+	var macro: float = clampf(_macro.get_noise_2d(x, z) / _macro_range * 0.5 + 0.5, 0.0, 1.0)
+	return _base_height + _macro_amplitude * macro
+
+
 ## Normale unitaire du sol à (x, z), par différences centrées sur normal_epsilon mètres. O(1).
 func normal_at(x: float, z: float) -> Vector3:
 	var dx: float = (height_at(x + normal_epsilon, z) - height_at(x - normal_epsilon, z)) / (2.0 * normal_epsilon)
@@ -184,12 +191,19 @@ func normal_at(x: float, z: float) -> Vector3:
 ## Poids des surfaces à (x, z) : x = pierre (0 à 1), y = terre (0 à 1) ; le reste est du sable.
 ## slope_tangent : tangente de la pente au point, mesurée sur normal_epsilon mètres. O(1).
 func surface_weights(x: float, z: float, slope_tangent: float) -> Vector2:
-	var terre: float = features.shore_weight(x, z, _terre_margin)
+	var mix: Vector4 = surface_mix(x, z, slope_tangent)
+	return Vector2(mix.x, mix.y)
+
+
+## Poids complets des surfaces : x = pierre, y = terre, z = galets (lit des oueds), w = proximité du lit (0 loin, 1 au centre ;
+## teinte du lit vu de loin). Les berges des oueds sont de terre, puis de pierre quand la pente est forte. O(1).
+func surface_mix(x: float, z: float, slope_tangent: float) -> Vector4:
+	var wadi: Vector3 = features.wadis.surface_mix(x, z)
 	var rock_noise: float = _rock.get_noise_2d(x, z)
-	var pierre: float = maxf(
-		smoothstep(_slope_start, _slope_full, slope_tangent), smoothstep(_rock_threshold, _rock_threshold + _rock_band, rock_noise)
-	)
-	return Vector2(pierre * (1.0 - terre), terre)
+	var slope_term: float = smoothstep(_slope_start, _slope_full, slope_tangent)
+	var terre: float = maxf(features.shore_weight(x, z, _terre_margin), wadi.y * (1.0 - slope_term))
+	var pierre: float = maxf(slope_term, smoothstep(_rock_threshold, _rock_threshold + _rock_band, rock_noise))
+	return Vector4(pierre * (1.0 - terre), terre, wadi.x, wadi.z)
 
 
 ## Tangente de la pente à (x, z) (mêmes différences centrées que normal_at).
@@ -199,10 +213,12 @@ func slope_tangent_at(x: float, z: float) -> float:
 	return sqrt(dx * dx + dz * dz)
 
 
-## Surface du sol sous la position : « sable », « pierre » ou « terre ». O(1).
+## Surface du sol sous la position : « sable », « pierre », « terre » ou « galets » (lit d'oued). O(1).
 func surface_at(world_position: Vector3) -> StringName:
-	var weights: Vector2 = surface_weights(world_position.x, world_position.z, slope_tangent_at(world_position.x, world_position.z))
-	return surface_from_weights(weights)
+	var mix: Vector4 = surface_mix(world_position.x, world_position.z, slope_tangent_at(world_position.x, world_position.z))
+	if mix.z >= 0.5:
+		return SURFACE_GALETS
+	return surface_from_weights(Vector2(mix.x, mix.y))
 
 
 ## Surface dominante pour des poids (pierre, terre) : la terre et la pierre l'emportent à partir de 0,5.

@@ -1,5 +1,5 @@
 // Terrain du désert : sable, pierre et terre mélangés par le poids porté par les sommets (couleur : R = pierre,
-// V = terre). Textures lues en coordonnées du monde (le maillage n'en porte aucune). Répétition cachée par deux
+// V = terre, B = galets du lit d'oued, A = proximité du lit). Textures lues en coordonnées du monde (le maillage n'en porte aucune). Répétition cachée par deux
 // lectures à échelles et orientations différentes, fondues par un bruit lent, et par une variation de teinte à
 // grande échelle. Les normales viennent des sommets : identiques pour tous les niveaux de détail.
 shader_type spatial;
@@ -11,6 +11,15 @@ uniform sampler2D sand_roughness : filter_linear_mipmap_anisotropic, repeat_enab
 uniform sampler2D rock_albedo : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D rock_normal : filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D rock_roughness : filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D galets_albedo : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D galets_normal : filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D galets_roughness : filter_linear_mipmap_anisotropic, repeat_enable;
+uniform float galets_uv_scale = 0.22;
+uniform float bed_far_start_m = 150.0;
+uniform float bed_far_end_m = 500.0;
+uniform float bed_far_strength = 0.6;
+uniform vec3 galets_tint : source_color = vec3(1.0);
+uniform vec3 bed_far_tint : source_color = vec3(1.0);
 uniform float sand_uv_scale = 0.08;
 uniform float rock_uv_scale = 0.12;
 uniform float earth_uv_scale = 0.19;
@@ -74,6 +83,16 @@ void fragment() {
 		roughness = mix(roughness, texture(rock_roughness, rock_uv).g, pierre);
 		detail = mix(detail, texture(rock_normal, rock_uv).xy, pierre);
 	}
+	float galets = clamp(COLOR.b, 0.0, 1.0);
+	if (galets > 0.001) {
+		vec2 pebble_uv = xz * galets_uv_scale;
+		color = mix(color, texture(galets_albedo, pebble_uv).rgb * galets_tint, galets);
+		roughness = mix(roughness, texture(galets_roughness, pebble_uv).g, galets);
+		detail = mix(detail, texture(galets_normal, pebble_uv).xy, galets);
+	}
+	// Vu de loin, le lit d'oued est teinté par le poids de proximité (alpha) : il reste visible aux niveaux de détail grossiers.
+	float far_bed = clamp(COLOR.a, 0.0, 1.0) * smoothstep(bed_far_start_m, bed_far_end_m, length(VERTEX));
+	color = mix(color, bed_far_tint, far_bed * bed_far_strength);
 	ALBEDO = color;
 	ROUGHNESS = roughness;
 	detail = detail * 2.0 - 1.0;
