@@ -36,6 +36,14 @@ if ($Export) {
 # (compilation C++ incrémentale, import, scènes générées). Aucun test : ils se lancent avec valider.ps1.
 if (-not (Test-Path (Join-Path $Jeu 'assets/textures/polyhaven'))) { & (Join-Path $PSScriptRoot 'importer-ressources.ps1') }
 & (Join-Path $PSScriptRoot 'compiler.ps1') -Cible debug
+# Modèles du désert : régénérés si le générateur ou son manifeste est plus récent que le plus ancien modèle.
+$sourcesProps = @((Join-Path $Racine 'Scripts/Blender/generer_props_desert.py'), (Join-Path $Racine 'Game/data/assets/desert_props.json'))
+$modeles = @(Get-ChildItem -Path (Join-Path $Jeu 'assets/desert') -Filter '*.glb' -ErrorAction SilentlyContinue)
+$attendus = @('buisson_a.glb', 'herbe_seche_a.glb', 'palmier_a_lod1.glb')
+$manquant = @($attendus | Where-Object { -not (Test-Path (Join-Path $Jeu "assets/desert/$_")) }).Count -gt 0
+$plusRecent = ($sourcesProps | ForEach-Object { (Get-Item $_).LastWriteTimeUtc } | Measure-Object -Maximum).Maximum
+$plusAncien = if ($modeles.Count -gt 0) { ($modeles | Measure-Object -Property LastWriteTimeUtc -Minimum).Minimum } else { [datetime]::MinValue }
+if ($manquant -or $plusRecent -gt $plusAncien) { & (Join-Path $PSScriptRoot 'generer-props-desert.ps1') }
 & (Join-Path $PSScriptRoot 'importer.ps1')
 & (Join-Path $PSScriptRoot 'construire.ps1')
 

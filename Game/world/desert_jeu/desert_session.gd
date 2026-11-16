@@ -21,7 +21,8 @@ func _ready() -> void:
 	var data: Dictionary = JsonData.load_dictionary(DATA_PATH)
 	var field: DesertHeightfield = DesertHeightfield.from_data(data)
 	var terrain: DesertTerrainCell = DesertTerrainCell.from_data(data)
-	var meshes: Dictionary = DesertFoliageMeshes.build()
+	var foliage: Dictionary = DesertFoliageMeshes.load_settings()
+	var meshes: Dictionary = DesertFoliageMeshes.build(foliage)
 	if data.is_empty() or field == null or terrain == null or meshes.is_empty():
 		return
 	var scatter := VegetationScatter.new()
@@ -33,6 +34,7 @@ func _ready() -> void:
 		field,
 		scatter,
 		meshes,
+		foliage,
 		JsonData.get_int(JsonData.get_dictionary(data, "terrain", "desert.json"), "seed", "desert.json > terrain")
 	)
 	_streamer = WorldStreamer.new()

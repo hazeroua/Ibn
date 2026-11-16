@@ -85,3 +85,23 @@ func test_worst_case_instances_around_the_player_fit_budget() -> void:
 		total += LOD_COUNTS[lod] * (rock_counts[lod] + palm_counts[lod])
 	gut.p("Pire cas (30 + 100 + 400 rochers et palmiers, %d imposteurs) : %d triangles" % [IMPOSTER_COUNT, total])
 	assert_lte(total, WORST_CASE_TRIANGLES_MAX)
+
+
+func test_bush_and_grass_respect_triangle_budget() -> void:
+	var models: Dictionary = JsonData.get_dictionary(_manifest(), "models", MANIFEST_PATH)
+	for id: String in ["buisson", "herbe_seche"]:
+		var spec: Dictionary = JsonData.get_dictionary(models, id, MANIFEST_PATH)
+		for variant: Variant in JsonData.get_array(spec, "variants", MANIFEST_PATH):
+			var count: int = _triangles_of("%s_%s" % [id, variant])
+			assert_gt(count, 0, "%s %s" % [id, variant])
+			assert_lte(count, int(JsonData.get_float(spec, "max_triangles", MANIFEST_PATH)), "%s %s" % [id, variant])
+
+
+func test_vegetation_models_carry_vertex_colors() -> void:
+	# Sans couleurs de sommets, la végétation apparaît blanche (le shader du désert les utilise comme couleur).
+	var meshes: Dictionary = DesertFoliageMeshes.build(DesertFoliageMeshes.load_settings())
+	for id: StringName in [&"palmier", &"buisson", &"herbe_seche"]:
+		assert_true(meshes.has(id), String(id))
+		if meshes.has(id):
+			var mesh: Mesh = meshes[id]
+			assert_ne(mesh.surface_get_format(0) & Mesh.ARRAY_FORMAT_COLOR, 0, String(id))

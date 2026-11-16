@@ -1,0 +1,24 @@
+{
+  "description": "Affichage et collisions de la végétation du désert (jeu). Modèles générés par Scripts/Blender/generer_props_desert.py (desert_props.json). sway_* : balancement au vent (hauteur où il est maximal, amplitude en mètres). tint : teinte de saison (none, grass, palm). collision : cylindre au pied de chaque instance (rayon et hauteur multipliés par l'échelle de l'instance) (même couche que le terrain de la cellule) ; absente = traversable.",
+  "species": {
+    "palmier": {
+      "model": "res://assets/desert/palmier_a_lod1.glb",
+      "tint": "palm",
+      "sway_height_m": 9.0,
+      "sway_amount_m": 1.2,
+      "collision": { "radius_m": 0.3, "height_m": 3.0 }
+    },
+    "buisson": {
+      "model": "res://assets/desert/buisson_a.glb",
+      "tint": "grass",
+      "sway_height_m": 0.9,
+      "sway_amount_m": 0.08
+    },
+    "herbe_seche": {
+      "model": "res://assets/desert/herbe_seche_a.glb",
+      "tint": "grass",
+      "sway_height_m": 0.55,
+      "sway_amount_m": 0.1
+    }
+  }
+}
