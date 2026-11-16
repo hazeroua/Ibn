@@ -236,11 +236,12 @@ func _spawn_horse() -> void:
 	horse.hoofstep.connect(_on_hoofstep)
 
 
-func _on_hoofstep(world_position: Vector3, speed: float, surface: StringName) -> void:
+func _on_hoofstep(world_position: Vector3, speed: float, surface: StringName, collider: Object) -> void:
 	if traces != null:
-		traces.place(world_position, horse.rotation.y, surface)
+		var normal: Vector3 = Vector3.UP if heightfield == null else heightfield.normal_at(world_position.x, world_position.z)
+		traces.place(world_position, horse.rotation.y, surface, normal)
 	if audio != null:
-		audio.hoof(world_position, speed, horse)
+		audio.hoof(world_position, speed, collider)
 
 
 ## Même convention que le déplacement à pied : la poussée avant suit la direction regardée par la caméra.

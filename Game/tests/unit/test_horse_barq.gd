@@ -62,8 +62,34 @@ func test_trace_pool_is_bounded_and_sand_only() -> void:
 	traces.configure(_settings())
 	for index: int in 512:
 		traces.place(Vector3(float(index), 0.0, 0.0), 0.0, &"sable")
-	assert_eq(traces.active_count(), 128)
+	assert_eq(traces.active_count(), traces.multimesh.instance_count)
 	assert_false(traces.place(Vector3.ZERO, 0.0, &"pierre"))
+	# Toutes les traces expirent après leur durée de vie (les plus anciennes d'abord).
+	traces._process(1000.0)
+	assert_eq(traces.active_count(), 0)
+	traces.free()
+
+
+## Pire cas : dix minutes de galop dense, la surface change à chaque battue (sable, pierre, terre, eau).
+## Le nombre de traces reste borné, une seule instance de dessin, et le coût reste négligeable.
+func test_ten_minutes_of_gallop_with_surface_changes() -> void:
+	var traces := HorseTraces.new()
+	traces.configure(_settings())
+	var surfaces: Array[StringName] = [&"sable", &"pierre", &"terre", &"eau"]
+	var frames: int = 36000
+	var placed: int = 0
+	var started: int = Time.get_ticks_usec()
+	for frame: int in frames:
+		# Galop : environ 7 battues par seconde, soit une battue toutes les 8 à 9 images.
+		if frame % 8 == 0:
+			if traces.place(Vector3(float(frame) * 0.2, 0.0, 0.0), 0.3, surfaces[(frame / 8) % 4], Vector3(0.1, 1.0, 0.0)):
+				placed += 1
+		traces._process(1.0 / 60.0)
+	var elapsed_ms: float = float(Time.get_ticks_usec() - started) / 1000.0
+	gut.p("Pire cas traces : %d images, %d traces posées, %.3f ms" % [frames, placed, elapsed_ms])
+	assert_eq(placed, frames / 8 / 4 + (1 if (frames / 8) % 4 > 0 else 0))
+	assert_lte(traces.active_count(), traces.multimesh.instance_count)
+	assert_lt(elapsed_ms, 250.0)
 	traces.free()
 
 

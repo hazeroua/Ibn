@@ -3,7 +3,8 @@ extends CharacterBody3D
 ## Barq : déplacement physique (pesanteur, saut), relief, évitement, animations du modèle calées sur la vitesse au sol
 ## et point de selle qui suit le dos du cheval (horse.json > rider). Le modèle est préparé par HorseVisual.
 
-signal hoofstep(world_position: Vector3, speed: float, surface: StringName)
+## collider : collisionneur sous le sabot (muret, terre de palmeraie, sol), ou Barq lui-même (surface_at du relief).
+signal hoofstep(world_position: Vector3, speed: float, surface: StringName, collider: Object)
 signal gait_changed(gait: StringName)
 signal called
 
@@ -55,6 +56,7 @@ var _probe: PhysicsShapeQueryParameters3D
 var _probe_shape: SphereShape3D
 var _exclude: Array[RID] = []
 var _step_collision := KinematicCollision3D.new()
+var _hoof_ray := PhysicsRayQueryParameters3D.new()
 var _step_retry: float = 0.0
 var _max_slope_cos: float = 0.0
 var _cliff_drop: float = 0.0
@@ -144,6 +146,8 @@ func _ready() -> void:
 	safe_margin = float(body.get("safe_margin_m", 0.01))
 	_exclude = [get_rid()]
 	_probe.exclude = _exclude
+	_hoof_ray.collision_mask = GROUND_LAYER
+	_hoof_ray.exclude = _exclude
 	_build_visual()
 	_last_position = global_position
 	locomotion.reset(rotation.y)
@@ -342,7 +346,22 @@ func _emit_hoofsteps(distance: float) -> void:
 	_stride_distance = fmod(_stride_distance, beat)
 	_hoof_side = -_hoof_side
 	var hoof_position: Vector3 = global_position + global_basis.x * (0.25 * _hoof_side)
-	hoofstep.emit(hoof_position, locomotion.speed, surface_at(global_position))
+	# Un rayon par battue (au plus ~8 par seconde au galop), jamais par image : le collisionneur sous le sabot
+	# donne sa surface aux sons et aux traces ; sans collisionneur, le relief (surface_at de Barq).
+	var collider: Object = self
+	var surface: StringName = surface_at(hoof_position)
+	if get_world_3d() != null:
+		_hoof_ray.from = hoof_position + Vector3.UP * 0.4
+		_hoof_ray.to = hoof_position + Vector3.DOWN * 0.4
+		var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(_hoof_ray)
+		if not hit.is_empty():
+			var body: Object = hit["collider"]
+			if body != null:
+				# Le son se résout comme pour les pas du personnage (métadonnée, terrain propriétaire, couvert du sol).
+				collider = body
+				if body.has_meta(&"surface"):
+					surface = StringName(str(body.get_meta(&"surface")))
+	hoofstep.emit(hoof_position, locomotion.speed, surface, collider)
 
 
 func _build_visual() -> void:

@@ -88,10 +88,14 @@
     "saddle_height_m": 1.72
   },
   "traces": {
-    "pool_size": 128,
+    "description": "Empreintes de sabots sur le sable : un seul MultiMesh en anneau (pool_size), opaques, couchées sur le relief, effacées par tramage pendant les fade_s dernières secondes de leur vie.",
+    "pool_size": 256,
     "lifetime_s": 45.0,
-    "width_m": 0.18,
-    "length_m": 0.38,
+    "fade_s": 8.0,
+    "width_m": 0.16,
+    "length_m": 0.19,
+    "lift_m": 0.012,
+    "color": "#a3835a",
     "sand_surface": "sable"
   },
   "audio": {
