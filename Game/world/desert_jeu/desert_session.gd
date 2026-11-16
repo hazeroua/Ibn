@@ -20,6 +20,9 @@ var _ground_cover: GroundCoverQuery
 var _player: PlayerCharacter
 var _rig: ThirdPersonCamera
 var _fauna: FaunaSystem
+## Barq reste une entité de la session : il est visible dès l'apparition du joueur et conserve ses traces, sons et
+## commande de monte même pendant une partie de très longue durée.
+var _horse_mount: HorseMountSystem
 ## Vrai quand le pipeline (captures, mesures) impose le point de chargement du monde.
 var _pipeline_focused: bool = false
 var _pipeline_settled: bool = true
@@ -92,6 +95,7 @@ func _ready() -> void:
 	wading.name = "WaterWading"
 	wading.setup(_player, field)
 	add_child(wading)
+	_add_horse(field)
 
 
 func _physics_process(_delta: float) -> void:
@@ -101,6 +105,18 @@ func _physics_process(_delta: float) -> void:
 		_streamer.set_focus(_player.global_position, _player.velocity)
 		if _fauna != null:
 			_fauna.set_focus(_player.global_position, _player.velocity)
+
+
+## Barq est créé après le joueur et sa caméra : le système peut ainsi l'afficher près du point d'apparition et
+## basculer immédiatement la caméra lors de la monte. Cette unique création évite toute allocation par image.
+func _add_horse(field: DesertHeightfield) -> void:
+	if _player == null:
+		push_error("DesertSession : le joueur doit exister avant Barq.")
+		return
+	_horse_mount = HorseMountSystem.new()
+	_horse_mount.name = "BarqSystem"
+	add_child(_horse_mount)
+	_horse_mount.setup(_player, _rig, field)
 
 
 ## Captures et mesures du pipeline : le monde se charge autour du point de vue au lieu du personnage.
@@ -113,7 +129,10 @@ func pipeline_focus_at(position: Vector3) -> void:
 		_player.process_mode = Node.PROCESS_MODE_DISABLED
 	if _rig != null:
 		_rig.process_mode = Node.PROCESS_MODE_DISABLED
-	_streamer.set_focus(position, Vector3.ZERO)
+	if _horse_mount != null:
+		_horse_mount.process_mode = Node.PROCESS_MODE_DISABLED
+	if _streamer != null:
+		_streamer.set_focus(position, Vector3.ZERO)
 	if _fauna != null:
 		_fauna.set_focus(position, Vector3.ZERO)
 
