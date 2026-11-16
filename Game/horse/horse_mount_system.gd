@@ -42,6 +42,8 @@ var _current_rider_clip: StringName = &""
 var _dismount_requested: bool = false
 ## Couches de collision du personnage, retirées pendant la monte (il ne doit pas heurter Barq qui le porte).
 var _player_layers: int = 0
+var _body_query := PhysicsShapeQueryParameters3D.new()
+var _body_shape := CapsuleShape3D.new()
 var _camera_walk: CameraSettings
 var _camera_ride: CameraSettings
 
@@ -79,7 +81,7 @@ func _physics_process(delta: float) -> void:
 			if Input.is_action_just_pressed(WHISTLE_ACTION):
 				horse.call_to_node(player)
 			if Input.is_action_just_pressed(MOUNT_ACTION) and player.is_grounded():
-				if player.global_position.distance_to(_mount_point().origin) <= _mount_range:
+				if can_mount():
 					_begin_mount()
 		State.APPROACH:
 			horse.set_input(Vector2.ZERO, false)
@@ -99,6 +101,10 @@ func _physics_process(delta: float) -> void:
 				horse.set_input(Vector2.ZERO, false)
 				if not horse.is_airborne() and horse.locomotion.speed < DISMOUNT_MAX_SPEED:
 					_dismount_requested = false
+					if not _mount_point_clear():
+						# Mur, rocher ou arbre contre le flanc gauche : on reste en selle.
+						_update_rider_pose()
+						return
 					_enter(State.DISMOUNTING)
 					_play_rider(PlayerAnimator.DISMOUNT_CLIP, 0.1)
 					return
@@ -147,6 +153,42 @@ func dismount() -> void:
 	_dismount_requested = false
 	if state != State.ON_FOOT:
 		_finish_dismount()
+
+
+## Monte possible : à portée du point de montée (flanc gauche de Barq), ce point libre de tout obstacle et
+## l'approche (glissement du personnage jusqu'à ce point) sans traverser Barq.
+func can_mount() -> bool:
+	if state != State.ON_FOOT or player == null or horse == null:
+		return false
+	var target: Transform3D = _mount_point()
+	if player.global_position.distance_to(target.origin) > _mount_range or not _mount_point_clear():
+		return false
+	_prepare_body_query(player.global_position)
+	_body_query.collision_mask = horse.collision_layer
+	_body_query.motion = target.origin - player.global_position
+	var result: PackedFloat32Array = player.get_world_3d().direct_space_state.cast_motion(_body_query)
+	return result.is_empty() or result[0] >= 1.0
+
+
+## Le corps du personnage tient au point de montée sans toucher le décor (ni Barq).
+func _mount_point_clear() -> bool:
+	if player == null or horse == null or not player.is_inside_tree():
+		return false
+	_prepare_body_query(_mount_point().origin)
+	_body_query.collision_mask = player.get_settings().collision_mask
+	_body_query.motion = Vector3.ZERO
+	return player.get_world_3d().direct_space_state.intersect_shape(_body_query, 1).is_empty()
+
+
+## Capsule du personnage posée au point « feet », décollée du sol de quelques centimètres (le sol n'est pas un
+## obstacle). Aucune allocation : requête et forme réutilisées.
+func _prepare_body_query(feet: Vector3) -> void:
+	var settings: LocomotionSettings = player.get_settings()
+	_body_shape.radius = settings.body_radius
+	_body_shape.height = settings.body_height - 0.1
+	_body_query.shape = _body_shape
+	_body_query.exclude = [player.get_rid()]
+	_body_query.transform = Transform3D(Basis.IDENTITY, feet + Vector3.UP * (0.1 + _body_shape.height * 0.5))
 
 
 func _begin_mount() -> void:

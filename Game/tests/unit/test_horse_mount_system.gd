@@ -72,3 +72,40 @@ func test_pipeline_focus_suspends_barq() -> void:
 	assert_eq(system.process_mode, Node.PROCESS_MODE_DISABLED)
 	system.free()
 	session.free()
+
+
+## Côté et distance : monte permise sur le flanc gauche dégagé, refusée contre un mur, depuis le flanc droit
+## (l'approche traverserait Barq) ou trop loin ; descente refusée tant que le flanc gauche est bouché.
+func test_mount_requires_clear_left_side_and_reachable_approach() -> void:
+	var world := Node3D.new()
+	add_child_autofree(world)
+	PlayerTestWorld.ground(world)
+	var player := PlayerCharacter.new()
+	world.add_child(player)
+	var system := HorseMountSystem.new()
+	world.add_child(system)
+	system.setup(player, null, null)
+	var horse: HorseController = system.horse
+	horse.global_position = Vector3.ZERO
+	horse.rotation = Vector3.ZERO
+	for index: int in 10:
+		await get_tree().physics_frame
+	var left: Vector3 = system._mount_point().origin
+	player.teleport_to(left + horse.global_basis.x * -0.6)
+	await get_tree().physics_frame
+	assert_true(system.can_mount(), "flanc gauche dégagé, à portée")
+	player.teleport_to(horse.global_position + horse.global_basis.x * 1.4)
+	await get_tree().physics_frame
+	assert_false(system.can_mount(), "depuis le flanc droit, l'approche traverserait Barq")
+	player.teleport_to(left + horse.global_basis.x * -6.0)
+	await get_tree().physics_frame
+	assert_false(system.can_mount(), "trop loin")
+	var wall: StaticBody3D = PlayerTestWorld.box(world, Vector3(0.3, 2.0, 4.0), left + Vector3.UP)
+	await get_tree().physics_frame
+	player.teleport_to(left + horse.global_basis.x * -0.2 + Vector3(0.0, 0.0, 2.5))
+	await get_tree().physics_frame
+	assert_false(system.can_mount(), "mur contre le flanc gauche")
+	assert_false(system._mount_point_clear())
+	wall.free()
+	await get_tree().physics_frame
+	assert_true(system._mount_point_clear())
