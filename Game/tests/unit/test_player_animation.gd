@@ -3,7 +3,24 @@ extends PlayerPhysicsCase
 ## l'allure et la vitesse ; absente quand aucun AnimationPlayer n'est branché.
 
 const CLIPS: Array[StringName] = [
-	&"idle", &"walk_slow", &"walk", &"run", &"stop_walk", &"stop_run", &"turn_left_90", &"turn_right_90", &"turn_180"
+	&"idle",
+	&"walk_slow",
+	&"walk",
+	&"run",
+	&"stop_walk",
+	&"stop_run",
+	&"turn_left_90",
+	&"turn_right_90",
+	&"turn_180",
+	&"jump_start",
+	&"jump_air",
+	&"jump_land",
+	&"bump",
+	&"land_roll",
+	&"ride_idle",
+	&"ride_gallop",
+	&"mount",
+	&"dismount",
 ]
 
 

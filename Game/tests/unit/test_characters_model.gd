@@ -5,7 +5,24 @@ extends GutTest
 const CHARACTER_ID: String = "ibn_khaldoun_jeune"
 const LIBRARY: StringName = &"locomotion"
 const CONTRACT_ANIMATIONS: PackedStringArray = [
-	"idle", "walk_slow", "walk", "run", "stop_walk", "stop_run", "turn_left_90", "turn_right_90", "turn_180"
+	"idle",
+	"walk_slow",
+	"walk",
+	"run",
+	"stop_walk",
+	"stop_run",
+	"turn_left_90",
+	"turn_right_90",
+	"turn_180",
+	"jump_start",
+	"jump_air",
+	"jump_land",
+	"bump",
+	"land_roll",
+	"ride_idle",
+	"ride_gallop",
+	"mount",
+	"dismount",
 ]
 const HEIGHT_M: float = 1.75
 const HEIGHT_TOLERANCE_M: float = 0.005
@@ -23,6 +40,9 @@ const TURN_TOLERANCE_DEG: float = 2.0
 ## Fin d'un arrêt ou d'un virage = début de « idle » (enchaînement sans saut).
 const HANDOFF_MAX_DEG: float = 1.0
 const HANDOFF_MAX_M: float = 0.005
+## Monte : le bassin est posé sur la selle (ancré hors de l'axe) et la montée/descente déplace le corps vers
+## le cheval par construction ; ces animations ne sont pas « sur place ».
+const SEATED_ANIMATIONS: Array[String] = ["ride_idle", "ride_gallop", "mount", "dismount"]
 
 var _manifest: Dictionary = {}
 var _character: Dictionary = {}
@@ -182,6 +202,8 @@ func test_animations_in_place_and_turn_angles() -> void:
 	var hips: int = skeleton.find_bone(_skeleton_bone("hips_bone"))
 	var skeleton_to_model: Transform3D = instance.global_transform.affine_inverse() * skeleton.global_transform
 	for anim_name: String in CONTRACT_ANIMATIONS:
+		if anim_name in SEATED_ANIMATIONS:
+			continue
 		var full_name: String = "%s/%s" % [LIBRARY, anim_name]
 		player.play(full_name)
 		var animation: Animation = player.get_animation(full_name)

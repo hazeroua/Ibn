@@ -88,6 +88,24 @@ var contact_lift: float = 0.0
 var contact_samples_per_second: float = 0.0
 var contact_min_gap: float = 0.0
 var contact_min_travel: float = 0.0
+## Réactions au monde (section « impact ») : choc contre un mur, roulade, franchissement d'obstacles bas.
+var bump_min_speed: float = 0.0
+var bump_min_facing: float = 0.0
+var blocked_speed: float = 0.0
+var roll_min_air: float = 0.0
+var roll_min_speed: float = 0.0
+var vault_min_speed: float = 0.0
+var vault_min_facing: float = 0.0
+var vault_min_height: float = 0.0
+var vault_max_height: float = 0.0
+var vault_max_depth: float = 0.0
+var vault_max_drop: float = 0.0
+var vault_clearance: float = 0.0
+var vault_min_gap: float = 0.0
+var vault_look_ahead: float = 0.0
+var vault_min_duration: float = 0.0
+var vault_max_duration: float = 0.0
+var vault_samples: int = 0
 ## Saut (section « jump »).
 var jump_speed: float = 0.0
 var jump_coyote: float = 0.0
@@ -130,6 +148,7 @@ static func from_dictionary(data: Dictionary) -> LocomotionSettings:
 	settings._read_turns(JsonData.get_dictionary(data, "turns", CONTEXT))
 	settings._read_stops(JsonData.get_dictionary(data, "stops", CONTEXT))
 	settings._read_jump(JsonData.get_dictionary(data, "jump", CONTEXT))
+	settings._read_impact(JsonData.get_dictionary(data, "impact", CONTEXT))
 	settings._read_footsteps(JsonData.get_dictionary(data, "footsteps", CONTEXT))
 	settings._read_animation(JsonData.get_dictionary(data, "animation", CONTEXT))
 	settings._read_wading(JsonData.get_dictionary(data, "wading", CONTEXT))
@@ -279,6 +298,11 @@ func _read_budgets(section: Dictionary) -> void:
 
 
 func _check_consistency() -> void:
+	_check(
+		vault_min_height > step_max_height,
+		"impact > vault_min_height_m doit dépasser steps > max_height (sinon une marche serait sautée)",
+		CONTEXT
+	)
 	# Une marche franchissable reste sous la moitié du corps ; un déplacement normal d'une image
 	# de 100 ms à la course ne doit jamais être pris pour une téléportation.
 	_check(step_max_height < body_height * 0.5, "steps > max_height doit rester sous la moitié de la hauteur du corps", CONTEXT)
@@ -315,6 +339,28 @@ func _check(condition: bool, message: String, context: String) -> void:
 	if not condition:
 		error_count += 1
 		push_error("LocomotionSettings : %s (%s)." % [message, context])
+
+
+func _read_impact(impact: Dictionary) -> void:
+	var context: String = CONTEXT + " > impact"
+	bump_min_speed = _ranged(impact, "bump_min_speed_mps", 0.5, 20.0, context)
+	bump_min_facing = cos(deg_to_rad(_ranged(impact, "bump_max_angle_deg", 0.0, 89.0, context)))
+	blocked_speed = _ranged(impact, "blocked_speed_mps", 0.0, 2.0, context)
+	roll_min_air = _ranged(impact, "roll_min_air_s", 0.1, 10.0, context)
+	roll_min_speed = _ranged(impact, "roll_min_speed_mps", 0.0, 20.0, context)
+	vault_min_speed = _ranged(impact, "vault_min_speed_mps", 0.0, 20.0, context)
+	vault_min_facing = cos(deg_to_rad(_ranged(impact, "vault_max_angle_deg", 0.0, 89.0, context)))
+	vault_min_height = _ranged(impact, "vault_min_height_m", 0.05, 3.0, context)
+	vault_max_height = _ranged(impact, "vault_max_height_m", 0.05, 3.0, context)
+	vault_max_depth = _ranged(impact, "vault_max_depth_m", 0.05, 5.0, context)
+	vault_max_drop = _ranged(impact, "vault_max_drop_m", 0.0, 5.0, context)
+	vault_clearance = _ranged(impact, "vault_clearance_m", 0.0, 1.0, context)
+	vault_min_gap = _ranged(impact, "vault_min_gap_m", 0.0, 3.0, context)
+	vault_look_ahead = _ranged(impact, "vault_look_ahead_s", 0.05, 2.0, context)
+	vault_min_duration = _ranged(impact, "vault_min_duration_s", 0.1, 3.0, context)
+	vault_max_duration = _ranged(impact, "vault_max_duration_s", 0.1, 3.0, context)
+	vault_samples = int(_ranged(impact, "vault_samples", 2.0, 64.0, context))
+	_check(vault_min_height < vault_max_height, "vault_min_height_m doit être inférieure à vault_max_height_m", context)
 
 
 func _read_jump(jump: Dictionary) -> void:

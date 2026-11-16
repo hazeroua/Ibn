@@ -53,6 +53,17 @@ var _contact_travel: float = 0.0
 var _jump_buffer: float = 0.0
 var _air_time: float = 0.0
 var _jumping: bool = false
+## Réaction en cours (choc contre un mur) : commandes ignorées jusqu'à sa fin.
+var _reaction_timer: float = 0.0
+## Franchissement en cours : courbe de Bézier quadratique de _vault_from à _vault_to (contrôle _vault_control).
+var _vaulting: bool = false
+var _vault_time: float = 0.0
+var _vault_length: float = 0.0
+var _vault_from := Vector3.ZERO
+var _vault_rise := Vector3.ZERO
+var _vault_fall := Vector3.ZERO
+var _vault_to := Vector3.ZERO
+var _horizontal_before := Vector3.ZERO
 
 
 func _init(settings: LocomotionSettings = null) -> void:
@@ -140,6 +151,8 @@ func teleport_to(world_position: Vector3, yaw: float = 0.0) -> void:
 	_jumping = false
 	_air_time = 0.0
 	_jump_buffer = 0.0
+	_reaction_timer = 0.0
+	_vaulting = false
 
 
 ## Une image de déplacement (appelée par la physique ; publique pour les tests).
@@ -148,13 +161,19 @@ func step(delta: float) -> void:
 		return
 	var started: int = Time.get_ticks_usec()
 	input.poll()
+	if _vaulting:
+		_step_vault(delta)
+		last_step_usec = Time.get_ticks_usec() - started
+		return
+	_reaction_timer = maxf(_reaction_timer - delta, 0.0)
+	var reacting: bool = _reaction_timer > 0.0
 	var right: Vector2 = _view_right()
 	var forward := Vector2(right.y, -right.x)
 	var was_grounded: bool = _grounded
 	# Saut : appui gardé buffer_s, accepté jusqu'à coyote_s après avoir quitté le sol (bord de dune, marche).
 	_jump_buffer = _settings.jump_buffer if input.jump else maxf(_jump_buffer - delta, 0.0)
 	var jumped: bool = false
-	if _jump_buffer > 0.0 and not _jumping and (was_grounded or _air_time < _settings.jump_coyote):
+	if _jump_buffer > 0.0 and not reacting and not _jumping and (was_grounded or _air_time < _settings.jump_coyote):
 		_jump_buffer = 0.0
 		_jumping = true
 		jumped = true
@@ -162,7 +181,7 @@ func step(delta: float) -> void:
 		_grounded = false
 		velocity.y = _settings.jump_speed
 		_animator.begin_air(true)
-	motor.update(input.move, input.sprint, input.walk_slow, forward, right, was_grounded, delta)
+	motor.update(Vector2.ZERO if reacting else input.move, input.sprint, input.walk_slow, forward, right, was_grounded, delta)
 	rotation.y = motor.yaw
 	var heading: Vector2 = motor.forward_xz() * motor.speed * speed_multiplier
 	velocity.x = heading.x
@@ -180,11 +199,19 @@ func step(delta: float) -> void:
 		velocity.z = 0.0
 	# L'accrochage au sol couvre une marche descendante et la descente d'une pente à l'angle maximal.
 	floor_snap_length = maxf(_settings.step_max_height, _settings.floor_snap_base_length + motor.speed * delta * tan(floor_max_angle))
+	_horizontal_before = Vector3(velocity.x, 0.0, velocity.z)
+	if was_grounded and not reacting and not stepped and _horizontal_before.length() >= _settings.vault_min_speed:
+		if _try_vault(_horizontal_before.normalized(), _horizontal_before.length()):
+			last_step_usec = Time.get_ticks_usec() - started
+			return
 	move_and_slide()
 	_grounded = is_on_floor() or (was_grounded and _regain_ground())
+	if _grounded and not reacting:
+		_react_to_wall()
 	if _grounded:
 		if _air_time > 0.0:
-			_animator.end_air(_air_time >= _settings.jump_landing_min_air)
+			var roll: bool = _air_time >= _settings.roll_min_air and _horizontal_before.length() >= _settings.roll_min_speed
+			_animator.end_air(_air_time >= _settings.jump_landing_min_air, roll)
 		_air_time = 0.0
 		_jumping = false
 	else:
@@ -194,6 +221,131 @@ func step(delta: float) -> void:
 			_animator.begin_air(false)
 	_update_outputs(delta, was_grounded)
 	last_step_usec = Time.get_ticks_usec() - started
+
+
+## Mur devant le personnage (après le déplacement de l'image, sans allocation : normale du mur de la physique).
+## En courant de face : arrêt net et recul du buste ; poussée lente : il cesse de marcher sur place.
+func _react_to_wall() -> void:
+	_animator.blocked = false
+	if not is_on_wall() or _horizontal_before.length_squared() < 0.0001:
+		return
+	var normal: Vector3 = get_wall_normal()
+	var flat := Vector3(normal.x, 0.0, normal.z)
+	if flat.length_squared() < 0.0001:
+		return
+	var facing: float = _horizontal_before.normalized().dot(-flat.normalized())
+	if _horizontal_before.length() >= _settings.bump_min_speed and facing >= _settings.bump_min_facing:
+		motor.speed = 0.0
+		velocity = Vector3.ZERO
+		_reaction_timer = _animator.play_reaction(PlayerAnimator.BUMP_CLIP)
+		return
+	_animator.blocked = facing >= 0.5 and real_speed < _settings.blocked_speed
+
+
+## Franchissement anticipé : un obstacle bas repéré devant soi (entre vault_min_gap_m et vault_look_ahead_s ×
+## vitesse), presque de face, haut de vault_min_height_m à vault_max_height_m, épais d'au plus
+## vault_max_depth_m, avec un sol de réception au-delà. La courbe (montée, passage, descente) est vérifiée
+## sans contact segment par segment avant de commencer. Une requête par image en course ; les suivantes
+## seulement devant un obstacle.
+func _try_vault(direction: Vector3, speed_value: float) -> bool:
+	var origin: Transform3D = global_transform
+	var gap: float = _vault_gap(origin, direction, maxf(speed_value * _settings.vault_look_ahead, _settings.vault_min_gap))
+	if gap < 0.0:
+		return false
+	var top: float = _vault_top(origin, direction, gap)
+	if is_inf(top):
+		return false
+	var apex: float = top + _settings.vault_clearance
+	if not _vault_landing(origin, direction, gap, top, apex):
+		return false
+	# Bézier cubique : tangentes de départ et d'arrivée verticales, sommet (t = 0,5) à apex.
+	var from: Vector3 = origin.origin
+	var landing: Vector3 = _vault_to
+	var control_height: float = (apex - 0.125 * (from.y + landing.y)) / 0.75
+	var rise := Vector3(from.x, control_height, from.z)
+	var fall := Vector3(landing.x, control_height, landing.z)
+	var previous: Vector3 = from
+	for index: int in range(1, _settings.vault_samples + 1):
+		var point: Vector3 = _bezier(from, rise, fall, landing, float(index) / float(_settings.vault_samples))
+		if test_move(Transform3D(origin.basis, previous), point - previous, null, safe_margin, false, 1):
+			return false
+		previous = point
+	_vault_from = from
+	_vault_rise = rise
+	_vault_fall = fall
+	_vault_time = 0.0
+	_vault_length = clampf(from.distance_to(landing) / speed_value, _settings.vault_min_duration, _settings.vault_max_duration)
+	_vaulting = true
+	_grounded = false
+	velocity = Vector3.ZERO
+	_animator.begin_air(true)
+	return true
+
+
+## Distance libre jusqu'à un obstacle franchissable de face, ou -1.
+func _vault_gap(origin: Transform3D, direction: Vector3, look: float) -> float:
+	if not test_move(origin, direction * look, _step_collision, safe_margin, false, 1):
+		return -1.0
+	var normal: Vector3 = _step_collision.get_normal(0)
+	var flat := Vector3(normal.x, 0.0, normal.z)
+	if normal.y > cos(floor_max_angle) or flat.length_squared() < 0.0001 or direction.dot(-flat.normalized()) < _settings.vault_min_facing:
+		return -1.0
+	var obstacle: Object = _step_collision.get_collider(0)
+	if obstacle != null and obstacle.has_meta(&"franchissable") and not bool(obstacle.get_meta(&"franchissable")):
+		return -1.0
+	var gap: float = _step_collision.get_travel().length()
+	return gap if gap >= _settings.vault_min_gap else -1.0
+
+
+## Altitude du dessus de l'obstacle (monter au-dessus de la hauteur maximale, avancer au-dessus du bord,
+## redescendre), ou -INF s'il est hors des hauteurs franchissables.
+func _vault_top(origin: Transform3D, direction: Vector3, gap: float) -> float:
+	var lift: float = _settings.vault_max_height + _settings.vault_clearance
+	if test_move(origin, Vector3.UP * lift, null, safe_margin, false, 1):
+		return -INF
+	var raised: Transform3D = origin.translated(Vector3.UP * lift)
+	var over: Vector3 = direction * (gap + _settings.body_radius + _settings.step_surface_inset)
+	if test_move(raised, over, null, safe_margin, false, 1):
+		return -INF
+	if not test_move(raised.translated(over), Vector3.DOWN * lift, _step_collision, safe_margin, false, 1):
+		return -INF
+	var top: float = origin.origin.y + lift + _step_collision.get_travel().y
+	var height: float = top - origin.origin.y
+	return top if height >= _settings.vault_min_height and height <= _settings.vault_max_height else -INF
+
+
+## Réception au-delà de l'épaisseur maximale, sur un sol praticable au plus vault_max_drop_m sous le dessus
+## (dans _vault_to). Faux si l'obstacle est plus épais (le « sol » trouvé serait son dessus).
+func _vault_landing(origin: Transform3D, direction: Vector3, gap: float, top: float, apex: float) -> bool:
+	var high: Transform3D = origin.translated(Vector3.UP * (apex - origin.origin.y))
+	var beyond: Vector3 = direction * (gap + _settings.vault_max_depth + _settings.body_radius * 2.0)
+	if test_move(high, beyond, null, safe_margin, false, 1):
+		return false
+	var drop: Vector3 = Vector3.DOWN * (apex - origin.origin.y + _settings.vault_max_drop)
+	if not test_move(high.translated(beyond), drop, _step_collision, safe_margin, false, 1):
+		return false
+	if _step_collision.get_normal(0).y < cos(floor_max_angle):
+		return false
+	_vault_to = high.translated(beyond).origin + _step_collision.get_travel()
+	return _vault_to.y <= top - _settings.vault_min_height * 0.5
+
+
+func _step_vault(delta: float) -> void:
+	_vault_time += delta
+	var t: float = clampf(_vault_time / _vault_length, 0.0, 1.0)
+	global_position = _bezier(_vault_from, _vault_rise, _vault_fall, _vault_to, t)
+	velocity = Vector3.ZERO
+	if t >= 1.0:
+		_vaulting = false
+		_grounded = true
+		_air_time = 0.0
+		_animator.end_air(true)
+	_update_outputs(delta, false)
+
+
+static func _bezier(a: Vector3, b: Vector3, c: Vector3, d: Vector3, t: float) -> Vector3:
+	var u: float = 1.0 - t
+	return a * (u * u * u) + b * (3.0 * u * u * t) + c * (3.0 * u * t * t) + d * (t * t * t)
 
 
 ## Descente d'une marche : la capsule qui quitte le bord d'une marche ne touche plus que l'arête, dont la

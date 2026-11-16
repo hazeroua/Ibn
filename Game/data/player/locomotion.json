@@ -151,5 +151,25 @@
     "buffer_s": 0.15,
     "landing_min_air_s": 0.3,
     "blend_s": 0.08
+  },
+  "impact": {
+    "description": "Le personnage réagit au monde. Choc : en courant contre un mur presque de face (angle au plus bump_max_angle_deg, vitesse au moins bump_min_speed_mps), il s'arrête net et recule le buste (animation bump, commandes bloquées pendant sa durée). Contre un mur à faible vitesse réelle (blocked_speed_mps), il cesse de marcher sur place (pose de repos). Roulade : réception après au moins roll_min_air_s en l'air à au moins roll_min_speed_mps. Franchissement : en courant ou en marchant vite (vault_min_speed_mps) vers un obstacle bas presque de face (vault_max_angle_deg) repéré devant soi (entre vault_min_gap_m et vault_look_ahead_s × vitesse), haut de vault_min_height_m à vault_max_height_m et épais d'au plus vault_max_depth_m, avec un sol pour se recevoir au plus vault_max_drop_m plus bas que le dessus : saut par-dessus le long d'une courbe vérifiée sans contact (vault_samples segments ; montée d'abord, puis passage au-dessus, puis descente), à la vitesse de la course (durée bornée entre vault_min_duration_s et vault_max_duration_s), passant vault_clearance_m au-dessus. Un collisionneur marqué de la métadonnée « franchissable » à false n'est jamais franchi.",
+    "bump_min_speed_mps": 3.2,
+    "bump_max_angle_deg": 40.0,
+    "blocked_speed_mps": 0.25,
+    "roll_min_air_s": 0.75,
+    "roll_min_speed_mps": 3.0,
+    "vault_min_speed_mps": 2.4,
+    "vault_max_angle_deg": 35.0,
+    "vault_min_gap_m": 0.45,
+    "vault_look_ahead_s": 0.3,
+    "vault_min_height_m": 0.32,
+    "vault_max_height_m": 1.1,
+    "vault_max_depth_m": 1.0,
+    "vault_max_drop_m": 1.2,
+    "vault_clearance_m": 0.15,
+    "vault_min_duration_s": 0.4,
+    "vault_max_duration_s": 0.9,
+    "vault_samples": 8
   }
 }

@@ -8,7 +8,7 @@ func test_contract_group_layers_and_default_collision() -> void:
 	var player: PlayerCharacter = _spawn(world)
 	assert_true(player.is_in_group(&"player"))
 	assert_eq(player.collision_layer, 2, "couche 2")
-	assert_eq(player.collision_mask, 1, "masque 1")
+	assert_eq(player.collision_mask, 1 | 4, "masque : sol (1) et Barq (3)")
 	assert_true(player.get_node("Collision") is CollisionShape3D, "capsule sans modèle")
 	assert_false(player.is_animating(), "sans AnimationPlayer, aucune animation")
 	assert_eq(player.get_gait(), &"idle")

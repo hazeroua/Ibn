@@ -37,7 +37,7 @@ func _run_collect(move: Vector2, seconds: float, sprint: bool, delta: float = DT
 func test_settings_are_valid_and_complete() -> void:
 	assert_eq(_settings.error_count, 0)
 	assert_eq(_settings.collision_layer, 2, "le joueur est sur la couche 2")
-	assert_eq(_settings.collision_mask, 1, "le joueur regarde la couche 1")
+	assert_eq(_settings.collision_mask, 1 | 4, "le joueur heurte le sol (couche 1) et Barq (couche 3)")
 	assert_lt(_settings.gait_speed[LocomotionSettings.Gait.WALK_SLOW], _settings.gait_speed[LocomotionSettings.Gait.WALK])
 	assert_lt(_settings.gait_speed[LocomotionSettings.Gait.WALK], _settings.gait_speed[LocomotionSettings.Gait.RUN])
 

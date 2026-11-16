@@ -209,6 +209,30 @@
           }
         },
         {
+          "name": "bump",
+          "loop": false,
+          "recipe": {
+            "type": "clip",
+            "source": "Hit_Chest",
+            "time_scale": 1.5,
+            "start_s": 0.0,
+            "end_s": 0.333,
+            "no_rise_bone": "DEF-hips",
+            "rest_source": "Idle_Loop"
+          }
+        },
+        {
+          "name": "land_roll",
+          "loop": false,
+          "recipe": {
+            "type": "clip",
+            "source": "Roll",
+            "time_scale": 0.85,
+            "start_s": 0.0,
+            "end_s": 1.458
+          }
+        },
+        {
           "name": "ride_idle",
           "loop": true,
           "recipe": {
