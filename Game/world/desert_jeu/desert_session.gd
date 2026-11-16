@@ -39,6 +39,10 @@ func _ready() -> void:
 	if not scatter.load_rules(VEGETATION_PATH) or not scatter.set_features(water_bodies, field.features.wadis.scatter_polylines(wadi_step)):
 		push_error("DesertSession : règles de végétation invalides : %s" % scatter.get_last_error())
 		return
+	var palmeraie: PalmeraieCells = PalmeraieCells.create(PalmeraieLayout.load_default(field), field)
+	if palmeraie == null:
+		push_error("DesertSession : palmeraie invalide.")
+		return
 	var cliffs: DesertCliffs = DesertCliffs.build(field, meshes)
 	if cliffs == null:
 		return
@@ -50,7 +54,8 @@ func _ready() -> void:
 		foliage,
 		JsonData.get_int(JsonData.get_dictionary(data, "terrain", "desert.json"), "seed", "desert.json > terrain"),
 		JsonData.load_dictionary(GROUND_COVER_PATH),
-		cliffs
+		cliffs,
+		palmeraie
 	)
 	_streamer = WorldStreamer.new()
 	_streamer.name = "Streaming"

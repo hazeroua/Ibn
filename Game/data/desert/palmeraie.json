@@ -1,0 +1,144 @@
+{
+  "description": "Palmeraie de l'oasis principale : jardin d'oasis en trois étages (palmiers dattiers le long des séguias, grenadiers, figuiers et oliviers dans les vergers, cultures basses : orge, fèves, luzerne, légumes, vigne). Aucun placement à la main : PalmeraieLayout découpe le contour en parcelles au chargement (subdivision récursive déterministe depuis la graine, voies de 3 à 6 m, séguias sur les voies principales), puis PalmeraieCells construit chaque cellule de 250 m à la demande du streaming. Les murets en terre (tabia) entourent les parcelles, une ouverture par parcelle. Tout est décor. statut_historique P : plausible (jardins d'oasis du Maghreb et du Sahara au XIVe siècle : irrigation par séguias dérivées de la source, culture étagée sous les palmiers dattiers, enclos en pisé), sans lieu précis attesté.",
+  "statut_historique": "P",
+  "seed": 1382,
+  "contour": [
+    [448.0, -180.0], [422.6, -112.6], [401.4, -38.6], [330.4, -10.0], [260.0, -14.0], [191.9, -15.5], [121.4, -41.4], [101.1, -114.2],
+    [74.0, -180.0], [75.2, -256.5], [135.5, -304.5], [198.0, -329.7], [260.0, -370.0], [329.3, -347.2], [380.2, -300.2], [440.2, -254.6]
+  ],
+  "frame_angle_deg": 12.0,
+  "parcel": {
+    "min_m": 20.0,
+    "max_m": 40.0,
+    "split_jitter": 0.16,
+    "root_split_fraction": 0.5,
+    "max_height_range_m": 2.4,
+    "water_clearance_m": 14.0,
+    "wadi_clearance_m": 12.0,
+    "wadi_sample_m": 8.0,
+    "water_surface_margin_m": 0.6,
+    "sample_side": 3,
+    "index_cell_m": 16.0
+  },
+  "lanes": {
+    "canal_levels": 3,
+    "canal_lane_m": 6.0,
+    "path_m": 3.0,
+    "piece_m": 4.0,
+    "probe_m": 2.0
+  },
+  "kinds": [
+    {
+      "id": "verger",
+      "proportion": 0.38,
+      "ground": { "style": 0, "color": "#336621", "min_growth": 0.55 },
+      "trees": { "spacing_m": 6.5, "jitter_m": 0.9, "edge_margin_m": 2.3, "species": { "grenadier": 0.34, "figuier": 0.3, "olivier": 0.36 } }
+    },
+    {
+      "id": "orge",
+      "proportion": 0.26,
+      "ground": { "style": 1, "color": "#4c7526", "min_growth": 0.0 },
+      "tufts": { "species": "orge", "row_spacing_m": 1.3, "along_spacing_m": 1.4, "jitter_m": 0.18, "edge_margin_m": 1.0 }
+    },
+    {
+      "id": "feves",
+      "proportion": 0.14,
+      "ground": { "style": 2, "color": "#3d6b24", "min_growth": 0.0 },
+      "tufts": { "species": "feve", "row_spacing_m": 1.5, "along_spacing_m": 1.8, "jitter_m": 0.2, "edge_margin_m": 1.0 }
+    },
+    {
+      "id": "luzerne",
+      "proportion": 0.1,
+      "ground": { "style": 0, "color": "#2b661c", "min_growth": 0.8 }
+    },
+    {
+      "id": "legumes",
+      "proportion": 0.07,
+      "ground": { "style": 2, "color": "#457529", "min_growth": 0.4 }
+    },
+    {
+      "id": "vigne",
+      "proportion": 0.05,
+      "ground": { "style": 3, "color": "#42611f", "min_growth": 0.5 }
+    }
+  ],
+  "palms": {
+    "species": "palmier",
+    "spacing_m": 6.0,
+    "spacing_jitter_m": 1.3,
+    "side_offset_m": 1.9,
+    "side_jitter_m": 0.3,
+    "skip_probability": 0.08,
+    "scale_min": 0.9,
+    "scale_max": 1.3
+  },
+  "tree_scale": { "scale_min": 0.85, "scale_max": 1.2 },
+  "walls": {
+    "thickness_m": 0.5,
+    "height_m": 1.4,
+    "height_variation_m": 0.18,
+    "sink_m": 0.3,
+    "gate_m": 2.2,
+    "min_piece_m": 0.8,
+    "step_m": 3.0,
+    "collision_piece_max_m": 12.0,
+    "collision_height_tolerance_m": 0.35,
+    "color_low": "#806145",
+    "color_high": "#a38561"
+  },
+  "canal": {
+    "water_half_width_m": 0.45,
+    "bank_width_m": 0.55,
+    "bank_slope_m": 0.45,
+    "depth_m": 0.5,
+    "water_lift_m": 0.05,
+    "step_m": 3.0,
+    "chunk_m": 24.0,
+    "extension_probe_m": 0.5,
+    "bank_color": "#856647",
+    "bed_color": "#4c3b2b"
+  },
+  "basin": { "size_m": 3.6, "rim_height_m": 0.5, "rim_thickness_m": 0.5 },
+  "chadouf": { "species": "chadouf", "side_offset_m": 1.9, "distance_m": 4.2, "palm_clearance_m": 5.0 },
+  "ground": {
+    "grid_step_m": 5.0,
+    "lift_m": 0.1,
+    "inset_m": 0.3,
+    "visibility_range_end_m": 380.0,
+    "visibility_fade_margin_m": 40.0,
+    "row_spacing_m": [0.0, 1.3, 1.5, 2.2]
+  },
+  "water": {
+    "shader": "res://world/palmeraie/palmeraie_water.gdshader",
+    "shallow_color": "#33858099",
+    "deep_color": "#0d3d4ce0",
+    "flow_speed": 0.8,
+    "ripple_scale": 5.0,
+    "roughness": 0.1,
+    "visibility_range_end_m": 220.0
+  },
+  "materials": {
+    "ground_shader": "res://world/palmeraie/palmeraie_culture.gdshader",
+    "soil_color": "#5c452e",
+    "soil_wet_color": "#402e1f",
+    "ripe_color": "#cca847",
+    "earth_roughness": 1.0,
+    "decor_visibility_range_end_m": 520.0,
+    "decor_visibility_fade_margin_m": 40.0
+  },
+  "scatter_exclusion": { "shore_keep_m": 8.0 },
+  "species_display": {
+    "grenadier": { "visibility_fade_margin": 30.0, "cast_shadows": true },
+    "figuier": { "visibility_fade_margin": 30.0, "cast_shadows": true },
+    "olivier": { "visibility_fade_margin": 30.0, "cast_shadows": true },
+    "orge": { "visibility_range_end": 55.0, "visibility_fade_margin": 8.0, "cast_shadows": false },
+    "feve": { "visibility_range_end": 45.0, "visibility_fade_margin": 8.0, "cast_shadows": false },
+    "chadouf": { "visibility_range_end": 300.0, "visibility_fade_margin": 25.0, "cast_shadows": true }
+  },
+  "budget": {
+    "cell_build_ms_max": 400.0,
+    "load_layout_ms_max": 300.0,
+    "worst_case": "vue du haut de la crête au coucher du soleil, toute la palmeraie visible : environ 600 palmiers et 850 arbres fruitiers aux niveaux de détail 2 et imposteur, 6 000 triangles de sol cultivé, 8 000 de séguias, 25 000 de murets ; touffes de culture limitées à 55 m",
+    "estimate_visible_triangles": 230000
+  }
+}

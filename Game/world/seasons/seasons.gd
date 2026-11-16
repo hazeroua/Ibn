@@ -8,6 +8,9 @@ extends Node
 ##   season_grass_color (vec3), season_palm_color (vec3), season_wind_strength, season_dust, season_wetness (floats),
 ##   season_bloom (bloom : 1 en pleine saison des fleurs éphémères, 0 hors saison), season_flowering
 ##   (floraison des arbustes, de 0 à 1, facultative dans le fichier : 0 par défaut).
+##   season_fruit (maturité des fruits des arbres fruitiers, de 0 à 1), season_crop_growth (croissance des cultures
+##   basses : 0 sol nu, 1 pleine végétation) et
+##   season_crop_ripe (maturité des cultures : 0 vert, 1 doré), facultatifs dans le fichier (0 par défaut).
 ## - Lecture sans dépendance de code : get_value(name), get_multiplier(name), get_color(name), ou les uniformes.
 ##   DayNight, Wind et la végétation les lisent par get_node_or_null ou par les uniformes.
 ##
@@ -40,7 +43,10 @@ const DUST: int = 14
 const BLOOM: int = 15
 const FLOWERING: int = 16
 const WETNESS: int = 17
-const VALUE_COUNT: int = 18
+const VALUE_COUNT: int = 21
+const FRUIT: int = 18
+const CROP_GROWTH: int = 19
+const CROP_RIPE: int = 20
 
 ## Saison courante (la cible quand une transition est en cours).
 var season: StringName = &"ete"
@@ -97,6 +103,9 @@ func configure(data: Dictionary) -> void:
 		&"dust": DUST,
 		&"bloom": BLOOM,
 		&"flowering": FLOWERING,
+		&"fruit": FRUIT,
+		&"crop_growth": CROP_GROWTH,
+		&"crop_ripe": CROP_RIPE,
 	}
 	_from = (_values[default_id] as PackedFloat32Array).duplicate()
 	_to = _from.duplicate()
@@ -232,6 +241,9 @@ func _read_season(entry: Dictionary, context: String) -> PackedFloat32Array:
 	out[BLOOM] = JsonData.get_float(entry, "bloom", context)
 	out[FLOWERING] = clampf(JsonData.get_float_or(entry, "flowering", 0.0, context), 0.0, 1.0)
 	out[WETNESS] = JsonData.get_float(entry, "wetness", context)
+	out[FRUIT] = clampf(JsonData.get_float_or(entry, "fruit", 0.0, context), 0.0, 1.0)
+	out[CROP_GROWTH] = clampf(JsonData.get_float_or(entry, "crop_growth", 0.0, context), 0.0, 1.0)
+	out[CROP_RIPE] = clampf(JsonData.get_float_or(entry, "crop_ripe", 0.0, context), 0.0, 1.0)
 	return out
 
 
@@ -249,6 +261,9 @@ func _declare_globals() -> void:
 		["bloom", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0],
 		["flowering", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0],
 		["wetness", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0],
+		["fruit", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0],
+		["crop_growth", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0],
+		["crop_ripe", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0],
 	]
 	_uniform_names.clear()
 	for spec: Array in specs:
@@ -257,7 +272,7 @@ func _declare_globals() -> void:
 		ShaderGlobals.declare(uniform, spec[1] as RenderingServer.GlobalShaderParameterType, spec[2])
 
 
-## Écrit les dix uniformes (ordre de _declare_globals) ; aucune allocation de tableau.
+## Écrit les quatorze uniformes (ordre de _declare_globals) ; aucune allocation de tableau.
 func _publish() -> void:
 	var c: PackedFloat32Array = _current
 	RenderingServer.global_shader_parameter_set(_uniform_names[0], Vector3(c[SUN_R], c[SUN_G], c[SUN_B]))
@@ -272,3 +287,6 @@ func _publish() -> void:
 	RenderingServer.global_shader_parameter_set(_uniform_names[9], c[BLOOM])
 	RenderingServer.global_shader_parameter_set(_uniform_names[10], c[FLOWERING])
 	RenderingServer.global_shader_parameter_set(_uniform_names[11], c[WETNESS])
+	RenderingServer.global_shader_parameter_set(_uniform_names[12], c[FRUIT])
+	RenderingServer.global_shader_parameter_set(_uniform_names[13], c[CROP_GROWTH])
+	RenderingServer.global_shader_parameter_set(_uniform_names[14], c[CROP_RIPE])

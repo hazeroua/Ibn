@@ -8,7 +8,7 @@ extends RefCounted
 
 const SHADER_PATH: String = "res://world/desert_jeu/desert_foliage.gdshader"
 const SETTINGS_PATH: String = "res://data/desert/foliage.json"
-const TINTS: Dictionary[String, int] = {"none": 0, "grass": 1, "palm": 2, "bloom": 3, "flowering": 4}
+const TINTS: Dictionary[String, int] = {"none": 0, "grass": 1, "palm": 2, "bloom": 3, "flowering": 4, "fruit": 5, "crop": 6}
 
 
 ## Réglages par espèce (StringName -> Dictionary), tels que dans foliage.json.
@@ -54,6 +54,12 @@ static func build_levels(settings: Dictionary) -> Dictionary:
 		material.set_shader_parameter(&"sway_amount_m", JsonData.get_float(spec, "sway_amount_m", context))
 		if tint_name == "flowering":
 			material.set_shader_parameter(&"bloom_leaf_color", JsonData.get_vector3(spec, "bloom_leaf_color", context))
+		if tint_name == "fruit":
+			material.set_shader_parameter(&"fruit_leaf_color", JsonData.get_vector3(spec, "fruit_leaf_color", context))
+			material.set_shader_parameter(&"fruit_ripe_color", JsonData.get_vector3(spec, "fruit_ripe_color", context))
+		elif tint_name == "crop":
+			material.set_shader_parameter(&"crop_min_growth", JsonData.get_float(spec, "crop_min_growth", context))
+			material.set_shader_parameter(&"crop_ripe_color", JsonData.get_vector3(spec, "crop_ripe_color", context))
 		var levels: Array[Dictionary] = []
 		if spec.has("lods"):
 			var previous_end: float = 0.0
