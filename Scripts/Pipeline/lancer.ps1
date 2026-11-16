@@ -56,6 +56,9 @@ $manquantFaune = @(@('gazelle_dorcas.glb', 'tourterelle.glb', 'libellule.glb') |
 $plusRecentFaune = ($sourcesFaune | ForEach-Object { (Get-Item $_).LastWriteTimeUtc } | Measure-Object -Maximum).Maximum
 $plusAncienFaune = if ($modelesFaune.Count -gt 0) { ($modelesFaune | Measure-Object -Property LastWriteTimeUtc -Minimum).Minimum } else { [datetime]::MinValue }
 if ($manquantFaune -or $plusRecentFaune -gt $plusAncienFaune) { & (Join-Path $PSScriptRoot 'generer-faune.ps1') }
+# Personnages : régénérés quand leur préparateur Blender ou leur manifeste (animations du contrat) a changé ;
+# rien n'est refait si l'empreinte est à jour.
+& (Join-Path $PSScriptRoot 'importer-personnages.ps1')
 & (Join-Path $PSScriptRoot 'importer.ps1')
 & (Join-Path $PSScriptRoot 'construire.ps1')
 
