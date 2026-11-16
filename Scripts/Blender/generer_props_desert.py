@@ -1,4 +1,5 @@
-"""Génère les rochers, palmiers, buissons, herbes sèches et l'imposteur de palmier du désert, avec Blender en ligne de commande.
+"""Génère les rochers, palmiers, buissons, herbes sèches, l'imposteur de palmier et le couvert du sol (alfa, drinn,
+fleurs, cailloux, pierres plates, bois mort) du désert, avec Blender en ligne de commande.
 
     blender --background --factory-startup --python Scripts/Blender/generer_props_desert.py -- \
         --manifest Game/data/assets/desert_props.json --output-dir Game/assets/desert --report <rapport.json>
@@ -247,7 +248,8 @@ def build_grass(spec: dict, index: int) -> bmesh.types.BMesh:
         height = spec["height_m"] * rng.uniform(0.7, 1.15)
         width = spec["blade_width_m"]
         root = direction * rng.uniform(0.0, spec["radius_m"] * 0.4)
-        lean = spec["radius_m"] * rng.uniform(0.6, 1.0)
+        # lean_factor : 1 pour une herbe souple, proche de 0 pour une touffe raide (drinn).
+        lean = spec["radius_m"] * rng.uniform(0.6, 1.0) * spec.get("lean_factor", 1.0)
         a = add_vert(bm, root - side * width, base)
         b = add_vert(bm, root + side * width, base)
         mid = root + direction * lean * 0.35 + Vector((0.0, 0.0, height * 0.55))
@@ -256,6 +258,141 @@ def build_grass(spec: dict, index: int) -> bmesh.types.BMesh:
         e = add_vert(bm, root + direction * lean + Vector((0.0, 0.0, height)), tip)
         bm.faces.new((a, b, c, d))
         bm.faces.new((d, c, e))
+    return bm
+
+
+def build_pebble(spec: dict, index: int) -> bmesh.types.BMesh:
+    """Caillou : bipyramide hexagonale aplatie (12 triangles), un tiers enfoui dans le sol."""
+    rng = random.Random(spec["seeds"][index])
+    bm = new_bmesh()
+    base = spec["colors"]["base"]
+    top = spec["colors"]["top"]
+    radius = spec["radius_m"][index]
+    height = radius * spec["squash"][index]
+    sides = 6
+    phase = rng.uniform(0.0, 2 * math.pi)
+    rim = []
+    for i in range(sides):
+        angle = phase + 2 * math.pi * i / sides + rng.uniform(-0.15, 0.15)
+        r = radius * rng.uniform(0.75, 1.0)
+        rim.append(add_vert(bm, Vector((math.cos(angle) * r, math.sin(angle) * r, height * rng.uniform(0.1, 0.3))), mix(base, top, 0.4)))
+    apex = add_vert(bm, Vector((rng.uniform(-0.2, 0.2) * radius, rng.uniform(-0.2, 0.2) * radius, height)), top)
+    bottom = add_vert(bm, Vector((0.0, 0.0, -height * 0.5)), base)
+    for i in range(sides):
+        j = (i + 1) % sides
+        bm.faces.new((rim[i], rim[j], apex))
+        bm.faces.new((rim[j], rim[i], bottom))
+    return bm
+
+
+def build_flat_stone(spec: dict, index: int) -> bmesh.types.BMesh:
+    """Pierre plate : dalle pentagonale irrégulière (5 triangles dessus, 10 sur les côtés), posée à plat."""
+    rng = random.Random(spec["seeds"][index])
+    bm = new_bmesh()
+    base = spec["colors"]["base"]
+    top = spec["colors"]["top"]
+    length = spec["length_m"][index]
+    width = spec["width_m"][index]
+    thickness = spec["thickness_m"][index]
+    sides = 5
+    phase = rng.uniform(0.0, 2 * math.pi)
+    tilt = Vector((rng.uniform(-0.06, 0.06), rng.uniform(-0.06, 0.06)))
+    upper = []
+    lower = []
+    for i in range(sides):
+        angle = phase + 2 * math.pi * i / sides + rng.uniform(-0.2, 0.2)
+        x = math.cos(angle) * length * 0.5 * rng.uniform(0.8, 1.0)
+        y = math.sin(angle) * width * 0.5 * rng.uniform(0.8, 1.0)
+        z = thickness + tilt.x * x + tilt.y * y + rng.uniform(-0.01, 0.01)
+        upper.append(add_vert(bm, Vector((x, y, z)), mix(base, top, rng.uniform(0.6, 1.0))))
+        lower.append(add_vert(bm, Vector((x * 0.97, y * 0.97, -0.02)), base))
+    center = add_vert(bm, Vector((0.0, 0.0, thickness * 1.05)), top)
+    for i in range(sides):
+        j = (i + 1) % sides
+        bm.faces.new((upper[i], upper[j], center))
+        bm.faces.new((lower[i], lower[j], upper[j], upper[i]))
+    return bm
+
+
+def build_dead_wood(spec: dict, index: int) -> bmesh.types.BMesh:
+    """Branche morte blanchie, tordue, posée au sol : tube triangulaire effilé en segments et une brindille."""
+    rng = random.Random(spec["seeds"][index])
+    bm = new_bmesh()
+    base = spec["colors"]["base"]
+    tip = spec["colors"]["tip"]
+    length = spec["length_m"][index]
+    radius = spec["radius_m"][index]
+    segments = spec["segments"]
+    wobble = spec["wobble_m"][index]
+    phase = rng.uniform(0.0, 2 * math.pi)
+    twist = rng.uniform(0.0, 2 * math.pi)
+
+    def tube_ring(center: Vector, r: float, turn: float, color: tuple) -> list:
+        return [
+            add_vert(bm, center + Vector((0.0, math.cos(turn + 2 * math.pi * k / 3) * r, math.sin(turn + 2 * math.pi * k / 3) * r + r)), color)
+            for k in range(3)
+        ]
+
+    def join(a: list, b: list) -> None:
+        for k in range(3):
+            n = (k + 1) % 3
+            bm.faces.new((a[k], a[n], b[n], b[k]))
+
+    rings = []
+    for s in range(segments + 1):
+        t = s / segments
+        center = Vector((length * (t - 0.5), math.sin(phase + t * 5.0) * wobble, 0.0))
+        rings.append(tube_ring(center, radius * (1.0 - 0.7 * t), twist + t * 2.0, mix(base, tip, t)))
+    for s in range(segments):
+        join(rings[s], rings[s + 1])
+    for ring_verts, flip in ((rings[0], True), (rings[-1], False)):
+        cap = (ring_verts[2], ring_verts[1], ring_verts[0]) if flip else (ring_verts[0], ring_verts[1], ring_verts[2])
+        bm.faces.new(cap)
+    # Brindille : un segment partant du milieu, relevée et rejetée sur le côté.
+    start_index = segments // 2
+    start_t = start_index / segments
+    origin = Vector((length * (start_t - 0.5), math.sin(phase + start_t * 5.0) * wobble, 0.0))
+    direction = Vector((rng.uniform(0.2, 0.5), rng.choice((-1.0, 1.0)) * rng.uniform(0.6, 1.0), 0.0)).normalized()
+    twig_len = length * 0.28
+    twig_base = tube_ring(origin, radius * 0.45, 0.0, mix(base, tip, start_t))
+    twig_tip = [
+        add_vert(bm, origin + direction * twig_len + Vector((0.0, 0.0, radius * 0.8 + twig_len * 0.15)) + (v.co - origin) * 0.4, tip)
+        for v in twig_base
+    ]
+    join(twig_base, twig_tip)
+    bm.faces.new((twig_tip[0], twig_tip[1], twig_tip[2]))
+    return bm
+
+
+def build_flowers(spec: dict, index: int) -> bmesh.types.BMesh:
+    """Fleurs éphémères : quatre tiges (1 triangle) portant chacune une tête de trois pétales (3 triangles)."""
+    rng = random.Random(spec["seeds"][index])
+    bm = new_bmesh()
+    stem_base = spec["colors"]["stem_base"]
+    stem_tip = spec["colors"]["stem_tip"]
+    petal = spec["colors"]["petal"]
+    heart = spec["colors"]["heart"]
+    count = spec["flowers"]
+    for f in range(count):
+        angle = 2 * math.pi * f / count + rng.uniform(-0.4, 0.4)
+        direction = Vector((math.cos(angle), math.sin(angle), 0.0))
+        side = Vector((-direction.y, direction.x, 0.0))
+        root = direction * rng.uniform(0.02, spec["radius_m"] * 0.5)
+        height = spec["height_m"] * rng.uniform(0.7, 1.1)
+        top = root + direction * spec["radius_m"] * rng.uniform(0.2, 0.5) + Vector((0.0, 0.0, height))
+        width = spec["stem_width_m"]
+        a = add_vert(bm, root - side * width, stem_base)
+        b = add_vert(bm, root + side * width, stem_base)
+        c = add_vert(bm, top, stem_tip)
+        bm.faces.new((a, b, c))
+        head = spec["head_radius_m"] * rng.uniform(0.8, 1.2)
+        center = add_vert(bm, top + Vector((0.0, 0.0, 0.005)), heart)
+        rim = [
+            add_vert(bm, top + Vector((math.cos(angle + 2 * math.pi * k / 3), math.sin(angle + 2 * math.pi * k / 3), 0.35)) * head, petal)
+            for k in range(3)
+        ]
+        for k in range(3):
+            bm.faces.new((center, rim[k], rim[(k + 1) % 3]))
     return bm
 
 
@@ -293,6 +430,23 @@ def main() -> None:
     grass = manifest["models"]["herbe_seche"]
     for i, variant in enumerate(grass["variants"]):
         jobs.append((f"herbe_seche_{variant}", grass["max_triangles"], lambda i=i: build_grass(grass, i)))
+    cover = manifest["models"]
+    for tuft_id in ("alfa", "drinn"):
+        tuft = cover[tuft_id]
+        for i, variant in enumerate(tuft["variants"]):
+            jobs.append((f"{tuft_id}_{variant}", tuft["max_triangles"], lambda i=i, tuft=tuft: build_grass(tuft, i)))
+    flowers = cover["fleurs"]
+    for i, variant in enumerate(flowers["variants"]):
+        jobs.append((f"fleurs_{variant}", flowers["max_triangles"], lambda i=i: build_flowers(flowers, i)))
+    pebble = cover["caillou"]
+    for i, variant in enumerate(pebble["variants"]):
+        jobs.append((f"caillou_{variant}", pebble["max_triangles"], lambda i=i: build_pebble(pebble, i)))
+    slab = cover["pierre_plate"]
+    for i, variant in enumerate(slab["variants"]):
+        jobs.append((f"pierre_plate_{variant}", slab["max_triangles"], lambda i=i: build_flat_stone(slab, i)))
+    wood = cover["bois_mort"]
+    for i, variant in enumerate(wood["variants"]):
+        jobs.append((f"bois_mort_{variant}", wood["max_triangles"], lambda i=i: build_dead_wood(wood, i)))
     for name, budget, builder in jobs:
         reset_scene()
         material = make_material()

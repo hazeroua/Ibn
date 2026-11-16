@@ -5,14 +5,15 @@ extends Node
 ## - Variables : season (printemps, ete, automne, hiver), transitioning.
 ## - Uniformes globaux de shader (déclarés ici s'ils ne le sont pas déjà) : season_sun_color (vec3),
 ##   season_sun_intensity, season_sun_max_height (degrés), season_day_length (heures), season_fog_density,
-##   season_grass_color (vec3), season_palm_color (vec3), season_wind_strength, season_dust (floats).
+##   season_grass_color (vec3), season_palm_color (vec3), season_wind_strength, season_dust,
+##   season_bloom (floats ; bloom : 1 en pleine saison des fleurs éphémères, 0 hors saison).
 ## - Lecture sans dépendance de code : get_value(name), get_multiplier(name), get_color(name), ou les uniformes.
 ##   DayNight, Wind et la végétation les lisent par get_node_or_null ou par les uniformes.
 ##
 ## Pires cas : partie de 100 heures (aucun état ne dérive : tout est recalculé depuis deux saisons figées),
 ## changements de saison répétés en pleine transition (la transition repart de l'état affiché, sans saut),
-## galop en zone dense (hors transition le nœud ne traite rien ; pendant une transition : 15 mélanges
-## flottants et 9 écritures d'uniformes par image, aucune allocation, tableaux créés au démarrage).
+## galop en zone dense (hors transition le nœud ne traite rien ; pendant une transition : 16 mélanges
+## flottants et 10 écritures d'uniformes par image, aucune allocation, tableaux créés au démarrage).
 ## Réglages : res://data/seasons/seasons.json.
 
 signal season_changed(id: StringName)
@@ -35,7 +36,8 @@ const PALM_G: int = 11
 const PALM_B: int = 12
 const WIND_STRENGTH: int = 13
 const DUST: int = 14
-const VALUE_COUNT: int = 15
+const BLOOM: int = 15
+const VALUE_COUNT: int = 16
 
 ## Saison courante (la cible quand une transition est en cours).
 var season: StringName = &"ete"
@@ -90,6 +92,7 @@ func configure(data: Dictionary) -> void:
 		&"fog_density": FOG_DENSITY,
 		&"wind_strength": WIND_STRENGTH,
 		&"dust": DUST,
+		&"bloom": BLOOM,
 	}
 	_from = (_values[default_id] as PackedFloat32Array).duplicate()
 	_to = _from.duplicate()
@@ -161,7 +164,7 @@ static func blend_into(out: PackedFloat32Array, a: PackedFloat32Array, b: Packed
 
 
 ## Valeur courante (transition comprise) d'un réglage scalaire : sun_intensity, sun_max_height, day_length,
-## fog_density, wind_strength, dust. Renvoie 0 pour un nom inconnu.
+## fog_density, wind_strength, dust, bloom. Renvoie 0 pour un nom inconnu.
 func get_value(value_name: StringName) -> float:
 	if not _scalar_names.has(value_name):
 		push_error("Seasons : réglage inconnu : %s" % value_name)
@@ -222,6 +225,7 @@ func _read_season(entry: Dictionary, context: String) -> PackedFloat32Array:
 	out[FOG_DENSITY] = JsonData.get_float(entry, "fog_density", context)
 	out[WIND_STRENGTH] = JsonData.get_float(entry, "wind_strength", context)
 	out[DUST] = JsonData.get_float(entry, "dust", context)
+	out[BLOOM] = JsonData.get_float(entry, "bloom", context)
 	return out
 
 
@@ -236,6 +240,7 @@ func _declare_globals() -> void:
 		["palm_color", RenderingServer.GLOBAL_VAR_TYPE_VEC3, Vector3.ONE],
 		["wind_strength", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0],
 		["dust", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0],
+		["bloom", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0],
 	]
 	_uniform_names.clear()
 	for spec: Array in specs:
@@ -244,7 +249,7 @@ func _declare_globals() -> void:
 		ShaderGlobals.declare(uniform, spec[1] as RenderingServer.GlobalShaderParameterType, spec[2])
 
 
-## Écrit les neuf uniformes (ordre de _declare_globals) ; aucune allocation de tableau.
+## Écrit les dix uniformes (ordre de _declare_globals) ; aucune allocation de tableau.
 func _publish() -> void:
 	var c: PackedFloat32Array = _current
 	RenderingServer.global_shader_parameter_set(_uniform_names[0], Vector3(c[SUN_R], c[SUN_G], c[SUN_B]))
@@ -256,3 +261,4 @@ func _publish() -> void:
 	RenderingServer.global_shader_parameter_set(_uniform_names[6], Vector3(c[PALM_R], c[PALM_G], c[PALM_B]))
 	RenderingServer.global_shader_parameter_set(_uniform_names[7], c[WIND_STRENGTH])
 	RenderingServer.global_shader_parameter_set(_uniform_names[8], c[DUST])
+	RenderingServer.global_shader_parameter_set(_uniform_names[9], c[BLOOM])

@@ -1,5 +1,5 @@
 {
-  "description": "Affichage et collisions de la végétation du désert (jeu). Modèles générés par Scripts/Blender/generer_props_desert.py (desert_props.json). sway_* : balancement au vent (hauteur où il est maximal, amplitude en mètres). tint : teinte de saison (none, grass, palm). collision : cylindre au pied de chaque instance (rayon et hauteur multipliés par l'échelle de l'instance) (même couche que le terrain de la cellule) ; absente = traversable.",
+  "description": "Affichage et collisions de la végétation du désert (jeu). Modèles générés par Scripts/Blender/generer_props_desert.py (desert_props.json). sway_* : balancement au vent (hauteur où il est maximal, amplitude en mètres). tint : teinte de saison (none, grass, palm, bloom : fleurs visibles seulement quand season_bloom > 0). visibility_range_begin_m et visibility_begin_margin_m : début d'affichage des couches lointaines du couvert du sol (la couche proche s'arrête à sa propre distance, la lointaine commence là, avec fondu). collision : cylindre au pied de chaque instance (rayon et hauteur multipliés par l'échelle de l'instance) (même couche que le terrain de la cellule) ; absente = traversable.",
   "species": {
     "palmier": {
       "model": "res://assets/desert/palmier_a_lod1.glb",
@@ -19,6 +19,82 @@
       "tint": "grass",
       "sway_height_m": 0.55,
       "sway_amount_m": 0.1
+    },
+    "alfa_proche": {
+      "model": "res://assets/desert/alfa_a.glb",
+      "tint": "grass",
+      "sway_height_m": 0.7,
+      "sway_amount_m": 0.06
+    },
+    "alfa_loin": {
+      "model": "res://assets/desert/alfa_a.glb",
+      "tint": "grass",
+      "sway_height_m": 0.7,
+      "sway_amount_m": 0.06,
+      "visibility_range_begin_m": 30.0,
+      "visibility_begin_margin_m": 6.0
+    },
+    "drinn_proche": {
+      "model": "res://assets/desert/drinn_a.glb",
+      "tint": "grass",
+      "sway_height_m": 0.9,
+      "sway_amount_m": 0.03
+    },
+    "drinn_loin": {
+      "model": "res://assets/desert/drinn_a.glb",
+      "tint": "grass",
+      "sway_height_m": 0.9,
+      "sway_amount_m": 0.03,
+      "visibility_range_begin_m": 30.0,
+      "visibility_begin_margin_m": 6.0
+    },
+    "fleurs": {
+      "model": "res://assets/desert/fleurs_a.glb",
+      "tint": "bloom",
+      "sway_height_m": 0.3,
+      "sway_amount_m": 0.04
+    },
+    "caillou_a": {
+      "model": "res://assets/desert/caillou_a.glb",
+      "tint": "none",
+      "sway_height_m": 0.0,
+      "sway_amount_m": 0.0
+    },
+    "caillou_b": {
+      "model": "res://assets/desert/caillou_b.glb",
+      "tint": "none",
+      "sway_height_m": 0.0,
+      "sway_amount_m": 0.0
+    },
+    "caillou_c": {
+      "model": "res://assets/desert/caillou_c.glb",
+      "tint": "none",
+      "sway_height_m": 0.0,
+      "sway_amount_m": 0.0
+    },
+    "pierre_plate_a": {
+      "model": "res://assets/desert/pierre_plate_a.glb",
+      "tint": "none",
+      "sway_height_m": 0.0,
+      "sway_amount_m": 0.0
+    },
+    "pierre_plate_b": {
+      "model": "res://assets/desert/pierre_plate_b.glb",
+      "tint": "none",
+      "sway_height_m": 0.0,
+      "sway_amount_m": 0.0
+    },
+    "bois_mort_a": {
+      "model": "res://assets/desert/bois_mort_a.glb",
+      "tint": "none",
+      "sway_height_m": 0.0,
+      "sway_amount_m": 0.0
+    },
+    "bois_mort_b": {
+      "model": "res://assets/desert/bois_mort_b.glb",
+      "tint": "none",
+      "sway_height_m": 0.0,
+      "sway_amount_m": 0.0
     }
   }
 }

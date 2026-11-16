@@ -122,8 +122,8 @@ bool VegetationScatter::load_rules(const String &p_path) {
 	if (segments > static_cast<double>(kMaxHeightSegments)) {
 		return fail("sampling : grille de hauteurs trop fine" + where);
 	}
-	if (species_list.is_empty() || species_list.size() > 16) {
-		return fail("species : entre 1 et 16 espèces attendues" + where);
+	if (species_list.is_empty() || species_list.size() > 40) {
+		return fail("species : entre 1 et 40 espèces attendues" + where);
 	}
 
 	std::vector<Species> parsed;

@@ -15,6 +15,11 @@ extends Node
 ##      (la voler serait inaudible) : au plus « max_voices » pas sont donc joués par fenêtre de
 ##      min_steal_age_ms, quel que soit le nombre d'émetteurs.
 ##
+## Couvert du sol : si une source est branchée par set_ground_cover() et que le pied est à moins de
+## « ground_cover.radius_m » d'une touffe (alfa, drinn), un froissement léger est joué en plus du pas, sur une
+## deuxième voix de la même réserve (abandonné si aucune voix n'est volable). La source répond en O(1) par la
+## grille de la cellule (aucune requête physique).
+##
 ## Pires cas : 200 émetteurs simultanés (foule), tous audibles, tous les pas dans la même image ;
 ## collisionneur détruit avant la résolution ; surface inconnue. Aucun objet n'est créé pendant le
 ## jeu : tableaux compacts dimensionnés par configure(), coût d'un pas borné par le nombre de voix
@@ -70,6 +75,19 @@ var _surface_pitch_variation: PackedFloat32Array = PackedFloat32Array()
 var _variant_streams: Array[AudioStream] = []
 var _variant_length_usec: PackedInt64Array = PackedInt64Array()
 
+# Couvert du sol (froissement des touffes) : désactivé tant que le bloc « ground_cover » est absent des réglages.
+var _cover_enabled: bool = false
+var _cover_radius: float = 0.0
+var _cover_volume_db: float = 0.0
+var _cover_volume_variation_db: float = 0.0
+var _cover_pitch_variation: float = 0.0
+var _cover_first_variant: int = 0
+var _cover_variant_count: int = 0
+var _cover_last_variant: int = -1
+## Source branchée : (x, z, rayon) -> carré de la distance à la touffe la plus proche, ou -1.0 s'il n'y en a pas.
+var _cover_lookup: Callable = Callable()
+var _cover_rustles: int = 0
+
 # Allures, triées par vitesse minimale croissante.
 var _gait_ids: Array[StringName] = []
 var _gait_min_speed: PackedFloat32Array = PackedFloat32Array()
@@ -118,6 +136,11 @@ static func collect_variant_ids(settings: Dictionary) -> PackedStringArray:
 			var variant_id: String = variant
 			if not ids.has(variant_id):
 				ids.append(variant_id)
+	var cover: Variant = settings.get("ground_cover")
+	if typeof(cover) == TYPE_DICTIONARY and typeof((cover as Dictionary).get("variants")) == TYPE_ARRAY:
+		for cover_variant: Variant in (cover as Dictionary)["variants"] as Array:
+			if typeof(cover_variant) == TYPE_STRING and not ids.has(cover_variant as String):
+				ids.append(cover_variant as String)
 	return ids
 
 
@@ -131,6 +154,7 @@ func configure(settings: Dictionary, streams: Dictionary[String, AudioStream]) -
 	ok = _parse_voices(settings) and ok
 	ok = _parse_gaits(settings) and ok
 	ok = _parse_surfaces(settings, streams) and ok
+	ok = _parse_ground_cover(settings, streams) and ok
 	var depth: int = JsonData.get_int(settings, "terrain_search_depth", SETTINGS_PATH)
 	if depth < 0 or depth > MAX_TERRAIN_SEARCH_DEPTH:
 		push_error("Footsteps : « terrain_search_depth » doit être compris entre 0 et %d." % MAX_TERRAIN_SEARCH_DEPTH)
@@ -157,6 +181,13 @@ func connect_emitter(emitter: Object) -> bool:
 func disconnect_emitter(emitter: Object) -> void:
 	if emitter != null and is_instance_valid(emitter) and emitter.is_connected(FOOTSTEP_SIGNAL, _on_footstep_callable):
 		emitter.disconnect(FOOTSTEP_SIGNAL, _on_footstep_callable)
+
+
+## Branche la source du couvert du sol : lookup(x, z, rayon) renvoie le carré de la distance à la touffe la plus
+## proche dans le rayon, ou -1.0. L'appelant garde l'objet propriétaire de la méthode (il n'est pas retenu ici).
+## Un Callable vide débranche.
+func set_ground_cover(lookup: Callable) -> void:
+	_cover_lookup = lookup
 
 
 func is_emitter_connected(emitter: Object) -> bool:
@@ -195,6 +226,8 @@ func play_footstep(world_position: Vector3, speed: float, collider: Variant, now
 	_voice_start_usec[voice_index] = now_usec
 	_voice_end_usec[voice_index] = now_usec + int(float(_variant_length_usec[variant]) / pitch)
 	_steps_played += 1
+	if _cover_enabled and _cover_lookup.is_valid():
+		_play_rustle(world_position, _gait_volume_db[gait], now_usec)
 	return voice_index
 
 
@@ -274,12 +307,43 @@ func get_stats() -> Dictionary[String, int]:
 		"steps_dropped": _steps_dropped,
 		"voices_stolen": _voices_stolen,
 		"unknown_surfaces": _unknown_surfaces,
+		"rustles_played": _cover_rustles,
 	}
 
 
 func _on_footstep(_foot: int, world_position: Vector3, speed: float, collider: Variant) -> void:
 	@warning_ignore("return_value_discarded")
 	play_footstep(world_position, speed, collider, Time.get_ticks_usec())
+
+
+## Froissement des touffes sous le pied : une voix de plus, seulement s'il y a une touffe à portée. O(1).
+func _play_rustle(world_position: Vector3, gait_volume_db: float, now_usec: int) -> void:
+	var distance_squared: float = float(_cover_lookup.call(world_position.x, world_position.z, _cover_radius))
+	if distance_squared < 0.0:
+		return
+	var voice_index: int = _acquire_voice(now_usec)
+	if voice_index < 0:
+		return
+	var local: int = 0
+	if _cover_variant_count > 1:
+		if _cover_last_variant < 0:
+			local = _rng.randi_range(0, _cover_variant_count - 1)
+		else:
+			local = _rng.randi_range(0, _cover_variant_count - 2)
+			if local >= _cover_last_variant:
+				local += 1
+	_cover_last_variant = local
+	var variant: int = _cover_first_variant + local
+	var pitch: float = pow(2.0, _rng.randf_range(-_cover_pitch_variation, _cover_pitch_variation) / SEMITONES_PER_OCTAVE)
+	var voice: AudioStreamPlayer3D = _voices[voice_index]
+	voice.stream = _variant_streams[variant]
+	voice.pitch_scale = pitch
+	voice.volume_db = _cover_volume_db + gait_volume_db + _rng.randf_range(-_cover_volume_variation_db, _cover_volume_variation_db)
+	voice.position = world_position
+	voice.play()
+	_voice_start_usec[voice_index] = now_usec
+	_voice_end_usec[voice_index] = now_usec + int(float(_variant_length_usec[variant]) / pitch)
+	_cover_rustles += 1
 
 
 func _surface_from_value(value: Variant) -> int:
@@ -443,6 +507,41 @@ func _parse_gaits(settings: Dictionary) -> bool:
 	if _gait_ids.is_empty():
 		push_error("Footsteps : aucune allure dans %s." % SETTINGS_PATH)
 		ok = false
+	return ok
+
+
+## Bloc facultatif « ground_cover » : absent, le froissement est désactivé.
+func _parse_ground_cover(settings: Dictionary, streams: Dictionary[String, AudioStream]) -> bool:
+	_cover_enabled = false
+	_cover_variant_count = 0
+	_cover_last_variant = -1
+	if not settings.has("ground_cover"):
+		return true
+	var context: String = "%s, ground_cover" % SETTINGS_PATH
+	var cover: Dictionary = JsonData.get_dictionary(settings, "ground_cover", SETTINGS_PATH)
+	_cover_radius = JsonData.get_float(cover, "radius_m", context)
+	_cover_volume_db = JsonData.get_float(cover, "volume_db", context)
+	_cover_volume_variation_db = JsonData.get_float(cover, "volume_variation_db", context)
+	_cover_pitch_variation = JsonData.get_float(cover, "pitch_variation_semitones", context)
+	var ok: bool = true
+	if _cover_radius <= 0.0 or _cover_volume_variation_db < 0.0 or _cover_pitch_variation < 0.0:
+		push_error("Footsteps : rayon positif et variations positives ou nulles attendus (%s)." % context)
+		ok = false
+	_cover_first_variant = _variant_streams.size()
+	for variant: Variant in JsonData.get_array(cover, "variants", context):
+		var variant_id: String = str(variant)
+		var stream: AudioStream = streams.get(variant_id)
+		if stream == null or stream.get_length() <= 0.0:
+			push_error("Footsteps : son « %s » absent ou vide (%s)." % [variant_id, context])
+			ok = false
+			continue
+		_variant_streams.append(stream)
+		_variant_length_usec.append(int(stream.get_length() * USEC_PER_SECOND))
+	_cover_variant_count = _variant_streams.size() - _cover_first_variant
+	if _cover_variant_count == 0:
+		push_error("Footsteps : aucune variante valide (%s)." % context)
+		ok = false
+	_cover_enabled = ok
 	return ok
 
 
