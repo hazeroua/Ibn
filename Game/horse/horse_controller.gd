@@ -57,6 +57,11 @@ var _probe_shape: SphereShape3D
 var _exclude: Array[RID] = []
 var _step_collision := KinematicCollision3D.new()
 var _hoof_ray := PhysicsRayQueryParameters3D.new()
+var _call_path := HorseCallPath.new()
+var _waypoint: int = 0
+var _path_goal := Vector3.ZERO
+var _replan_timer: float = 0.0
+var _call: Dictionary = {}
 var _step_retry: float = 0.0
 var _max_slope_cos: float = 0.0
 var _cliff_drop: float = 0.0
@@ -146,6 +151,8 @@ func _ready() -> void:
 	safe_margin = float(body.get("safe_margin_m", 0.01))
 	_exclude = [get_rid()]
 	_probe.exclude = _exclude
+	_call = JsonData.get_dictionary(settings, "call", "horse.json")
+	_call_path.prepare(heightfield, settings)
 	_hoof_ray.collision_mask = GROUND_LAYER
 	_hoof_ray.exclude = _exclude
 	_build_visual()
@@ -161,21 +168,87 @@ func set_input(move: Vector2, sprint: bool) -> void:
 func call_to(position: Vector3) -> void:
 	_call_target_node = null
 	called_target = position
-	is_called = true
-	called.emit()
+	_start_call()
 
 
 ## Suit la position actuelle du joueur durant tout l'appel, plutôt que son ancienne position au moment du sifflet.
 func call_to_node(target: Node3D) -> void:
+	if target == null:
+		cancel_call()
+		return
 	_call_target_node = target
-	is_called = target != null
-	if is_called:
-		called.emit()
+	called_target = target.global_position
+	_start_call()
 
 
 func cancel_call() -> void:
 	is_called = false
 	_call_target_node = null
+	_call_path.path.clear()
+
+
+## Chemin de l'appel en cours (vide tant qu'il n'est pas calculé, ou s'il n'y en a pas).
+func call_path() -> PackedVector3Array:
+	return _call_path.path
+
+
+## Grille des chemins prête (calculée une fois en arrière-plan).
+func is_path_grid_ready() -> bool:
+	return _call_path.is_grid_ready()
+
+
+func _start_call() -> void:
+	if global_position.distance_to(called_target) > JsonData.get_float(_call, "max_distance_m", "horse.json > call"):
+		return
+	is_called = true
+	_request_path()
+	called.emit()
+
+
+func _request_path() -> void:
+	_path_goal = called_target
+	_replan_timer = float(_call["replan_interval_s"])
+	_waypoint = 0
+	_call_path.path.clear()
+	_call_path.request(global_position, called_target)
+
+
+## Direction et allure de l'appel : droit vers le joueur s'il est proche ou s'il n'y a pas (encore) de chemin,
+## sinon le long du chemin, point après point. Renvoie Vector2.ZERO à l'arrivée (l'appel se termine).
+func _call_move(delta: float) -> Vector2:
+	if is_instance_valid(_call_target_node):
+		called_target = _call_target_node.global_position
+	if _call_path.poll():
+		_waypoint = 0
+	_replan_timer -= delta
+	var to_target: Vector3 = called_target - global_position
+	to_target.y = 0.0
+	var distance: float = to_target.length()
+	if distance <= float(_call["arrival_distance_m"]):
+		is_called = false
+		_call_path.path.clear()
+		return Vector2.ZERO
+	if _replan_timer <= 0.0 and called_target.distance_to(_path_goal) > float(_call["replan_distance_m"]):
+		_request_path()
+	var aim: Vector3 = to_target
+	var path: PackedVector3Array = _call_path.path
+	if distance > float(_call["direct_distance_m"]) and _waypoint < path.size():
+		var reach: float = float(_call["waypoint_reach_m"])
+		while (
+			_waypoint < path.size() - 1
+			and Vector2(path[_waypoint].x - global_position.x, path[_waypoint].z - global_position.z).length() < reach
+		):
+			_waypoint += 1
+		aim = path[_waypoint] - global_position
+		aim.y = 0.0
+	var amount: float = float(_call["walk_input"])
+	if distance > float(_call["gallop_distance_m"]):
+		amount = float(_call["gallop_input"])
+	elif distance > float(_call["trot_distance_m"]):
+		amount = float(_call["trot_input"])
+	if aim.length_squared() < 0.0001:
+		return Vector2.ZERO
+	return Vector2(aim.x, aim.z).normalized() * amount
 
 
 func _physics_process(delta: float) -> void:
@@ -183,17 +256,8 @@ func _physics_process(delta: float) -> void:
 	var move: Vector2 = _input_move
 	var sprint: bool = _input_sprint
 	if is_called:
-		if is_instance_valid(_call_target_node):
-			called_target = _call_target_node.global_position
-		var to_target: Vector3 = called_target - global_position
-		to_target.y = 0.0
-		var call_data: Dictionary = settings.get("call", {}) as Dictionary
-		if to_target.length() <= float(call_data.get("arrival_distance_m", 2.6)):
-			is_called = false
-			move = Vector2.ZERO
-		else:
-			move = Vector2(to_target.x, to_target.z).normalized()
-			sprint = false
+		move = _call_move(delta)
+		sprint = false
 	locomotion.update(move, sprint, delta)
 	rotation.y = locomotion.yaw
 	var next_gait: StringName = locomotion.get_gait_name()
@@ -226,8 +290,10 @@ func _physics_process(delta: float) -> void:
 	if heightfield != null:
 		var ground_y: float = heightfield.height_at(global_position.x, global_position.z)
 		if global_position.y < ground_y - 0.5:
+			# Cellule pas encore chargée (Barq appelé de loin) : il marche sur le relief, sans chute accumulée.
 			global_position.y = ground_y
 			velocity.y = 0.0
+			_vertical_speed = 0.0
 	_update_visual(delta, intended.length())
 	_emit_hoofsteps(intended.length())
 	last_step_usec = Time.get_ticks_usec() - started
@@ -362,6 +428,10 @@ func _emit_hoofsteps(distance: float) -> void:
 				if body.has_meta(&"surface"):
 					surface = StringName(str(body.get_meta(&"surface")))
 	hoofstep.emit(hoof_position, locomotion.speed, surface, collider)
+
+
+func _exit_tree() -> void:
+	_call_path.abort()
 
 
 func _build_visual() -> void:

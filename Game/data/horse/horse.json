@@ -74,11 +74,21 @@
     "step_retry_delay_s": 0.25
   },
   "call": {
+    "description": "Sifflet : Barq vient par un chemin (A* sur une grille de grid_cell_m calculée une fois sur le relief ; cases trop raides, falaises et eau plus profonde que max_wade_depth_m exclues), au galop loin du joueur (gallop_distance_m), au trot puis au pas en approchant, et s'arrête à arrival_distance_m (portée de la monte). Le chemin est recalculé si le joueur s'est éloigné de replan_distance_m de la cible du chemin (au plus toutes les replan_interval_s). Près du joueur (direct_distance_m), Barq va droit vers lui. Au-delà de max_distance_m, il n'entend pas le sifflet.",
     "arrival_distance_m": 2.6,
-    "stop_distance_m": 5.0,
-    "call_speed_mps": 3.6,
-    "max_distance_m": 4000.0,
-    "turn_rate_deg": 115.0
+    "max_distance_m": 4500.0,
+    "grid_cell_m": 8.0,
+    "max_wade_depth_m": 0.6,
+    "nearest_walkable_search_cells": 6,
+    "waypoint_reach_m": 5.0,
+    "direct_distance_m": 20.0,
+    "replan_distance_m": 20.0,
+    "replan_interval_s": 1.5,
+    "gallop_distance_m": 45.0,
+    "trot_distance_m": 6.0,
+    "gallop_input": 1.0,
+    "trot_input": 0.6,
+    "walk_input": 0.37
   },
   "visual": {
     "body_length_m": 2.15,
