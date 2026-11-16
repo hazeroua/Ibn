@@ -101,7 +101,9 @@ func _load_models(models: Array, meshes: Dictionary) -> bool:
 			if not meshes.has(id):
 				push_error("DesertCliffs : maillage « %s » absent de foliage.json." % id)
 				return false
-			lods.append(meshes[id])
+			# Chaque espèce de foliage.json est une liste de niveaux { mesh, end_m } (un seul ici : un modèle par niveau).
+			var levels: Array = meshes[id]
+			lods.append((levels[0] as Dictionary)["mesh"] as Mesh)
 		var shape: ConvexPolygonShape3D = (lods[LOD_COUNT - 1] as Mesh).create_convex_shape(true, true)
 		if shape == null or shape.points.is_empty():
 			push_error("DesertCliffs : forme convexe impossible pour « %s »." % str(model))
