@@ -1,5 +1,5 @@
 {
-  "description": "Réglages des quatre saisons (printemps, été, automne, hiver). La saison de référence sert aux multiplicateurs (valeur / valeur de référence).",
+  "description": "Réglages des quatre saisons (bloom : floraison de 0 à 1, pilote les fleurs du laurier-rose) (printemps, été, automne, hiver). La saison de référence sert aux multiplicateurs (valeur / valeur de référence).",
   "default_season": "ete",
   "reference_season": "ete",
   "transition_seconds": 4.0,
@@ -7,19 +7,19 @@
   "seasons": {
     "printemps": {
       "sun_color": "#fff0d2", "sun_intensity": 0.92, "sun_max_height": 62.0, "day_length_hours": 12.5,
-      "fog_density": 0.0016, "grass_color": "#6f9a3a", "palm_color": "#5c8a35", "wind_strength": 0.4, "dust": 0.3, "wetness": 0.6
+      "fog_density": 0.0016, "grass_color": "#6f9a3a", "palm_color": "#5c8a35", "wind_strength": 0.4, "dust": 0.3, "bloom": 1.0, "flowering": 0.6, "wetness": 0.6
     },
     "ete": {
       "sun_color": "#ffe6b0", "sun_intensity": 1.0, "sun_max_height": 78.0, "day_length_hours": 14.0,
-      "fog_density": 0.0008, "grass_color": "#b4a24a", "palm_color": "#6f8f3a", "wind_strength": 0.3, "dust": 0.8, "wetness": 0.0
+      "fog_density": 0.0008, "grass_color": "#b4a24a", "palm_color": "#6f8f3a", "wind_strength": 0.3, "dust": 0.8, "bloom": 0.0, "flowering": 1.0, "wetness": 0.0
     },
     "automne": {
       "sun_color": "#ffd09a", "sun_intensity": 0.8, "sun_max_height": 52.0, "day_length_hours": 11.5,
-      "fog_density": 0.0022, "grass_color": "#a08040", "palm_color": "#7c8636", "wind_strength": 0.5, "dust": 0.5, "wetness": 0.2
+      "fog_density": 0.0022, "grass_color": "#a08040", "palm_color": "#7c8636", "wind_strength": 0.5, "dust": 0.5, "bloom": 0.0, "flowering": 0.45, "wetness": 0.2
     },
     "hiver": {
       "sun_color": "#dce6ff", "sun_intensity": 0.6, "sun_max_height": 36.0, "day_length_hours": 10.0,
-      "fog_density": 0.0042, "grass_color": "#7d8f58", "palm_color": "#56703a", "wind_strength": 0.65, "dust": 0.15, "wetness": 1.0
+      "fog_density": 0.0042, "grass_color": "#7d8f58", "palm_color": "#56703a", "wind_strength": 0.65, "dust": 0.15, "bloom": 0.0, "flowering": 0.05, "wetness": 1.0
     }
   }
 }

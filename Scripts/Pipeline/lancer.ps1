@@ -39,7 +39,7 @@ if (-not (Test-Path (Join-Path $Jeu 'assets/textures/polyhaven'))) { & (Join-Pat
 # Modèles du désert : régénérés si le générateur ou son manifeste est plus récent que le plus ancien modèle.
 $sourcesProps = @((Join-Path $Racine 'Scripts/Blender/generer_props_desert.py'), (Join-Path $Racine 'Game/data/assets/desert_props.json'))
 $modeles = @(Get-ChildItem -Path (Join-Path $Jeu 'assets/desert') -Filter '*.glb' -ErrorAction SilentlyContinue)
-$attendus = @('buisson_a.glb', 'herbe_seche_a.glb', 'palmier_a_lod1.glb')
+$attendus = @('buisson_a.glb', 'herbe_seche_a.glb', 'palmier_a_lod1.glb', 'acacia_a_lod0.glb', 'acacia_imposteur.glb', 'tamaris_a_lod0.glb', 'tamaris_imposteur.glb', 'jujubier_a.glb', 'laurier_rose_a.glb', 'retam_a.glb')
 $manquant = @($attendus | Where-Object { -not (Test-Path (Join-Path $Jeu "assets/desert/$_")) }).Count -gt 0
 $plusRecent = ($sourcesProps | ForEach-Object { (Get-Item $_).LastWriteTimeUtc } | Measure-Object -Maximum).Maximum
 $plusAncien = if ($modeles.Count -gt 0) { ($modeles | Measure-Object -Property LastWriteTimeUtc -Minimum).Minimum } else { [datetime]::MinValue }

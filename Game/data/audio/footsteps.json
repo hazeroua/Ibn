@@ -1,5 +1,5 @@
 {
-  "description": "Réglages des sons de pas (singleton Footsteps, res://audio/footsteps/footsteps.gd). Les variantes sont des identifiants du manifeste res://data/assets/sounds.json. Volumes en décibels, vitesses en mètres par seconde, distances en mètres.",
+  "description": "Réglages des sons de pas (singleton Footsteps, res://audio/footsteps/footsteps.gd). ground_cover : froissement joué en plus du pas quand une touffe (alfa, drinn) est à moins de radius_m du pied. Les variantes sont des identifiants du manifeste res://data/assets/sounds.json. Volumes en décibels, vitesses en mètres par seconde, distances en mètres.",
   "bus": {
     "name": "Footsteps",
     "send": "Master",
@@ -13,6 +13,13 @@
     "min_steal_age_ms": 40.0,
     "attenuation": "inverse_square",
     "panning_strength": 1.0
+  },
+  "ground_cover": {
+    "radius_m": 0.5,
+    "volume_db": -9.0,
+    "volume_variation_db": 2.0,
+    "pitch_variation_semitones": 1.5,
+    "variants": ["rustle_grass_01", "rustle_grass_02", "rustle_grass_03", "rustle_grass_04"]
   },
   "default_surface": "sable",
   "terrain_search_depth": 4,
@@ -56,6 +63,12 @@
       "volume_variation_db": 2.0,
       "pitch_variation_semitones": 1.5,
       "variants": ["footstep_water_01", "footstep_water_02", "footstep_water_03", "footstep_water_04", "footstep_water_05"]
+    },
+    "galets": {
+      "volume_db": -1.0,
+      "volume_variation_db": 2.0,
+      "pitch_variation_semitones": 1.8,
+      "variants": ["footstep_stone_01", "footstep_stone_03", "footstep_stone_05", "footstep_dirt_02", "footstep_dirt_05", "footstep_dirt_08"]
     },
     "bois": {
       "volume_db": -1.0,

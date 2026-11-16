@@ -46,7 +46,236 @@
       "statut_historique": "P"
     }
   ],
-  "wadis": [],
+  "wadis": [
+    {
+      "id": "oued_principal",
+      "points": [
+        [
+          -1900,
+          0
+        ],
+        [
+          -1750,
+          1
+        ],
+        [
+          -1605,
+          42
+        ],
+        [
+          -1474,
+          116
+        ],
+        [
+          -1329,
+          155
+        ],
+        [
+          -1191,
+          95
+        ],
+        [
+          -1072,
+          3
+        ],
+        [
+          -940,
+          -69
+        ],
+        [
+          -790,
+          -78
+        ],
+        [
+          -640,
+          -80
+        ],
+        [
+          -498,
+          -131
+        ],
+        [
+          -356,
+          -180
+        ],
+        [
+          -210,
+          -143
+        ],
+        [
+          -91,
+          -50
+        ],
+        [
+          29,
+          40
+        ],
+        [
+          175,
+          78
+        ],
+        [
+          324,
+          59
+        ],
+        [
+          474,
+          69
+        ],
+        [
+          618,
+          111
+        ],
+        [
+          768,
+          101
+        ],
+        [
+          893,
+          16
+        ],
+        [
+          1007,
+          -81
+        ]
+      ],
+      "widths": [
+        24,
+        30,
+        32,
+        27,
+        20,
+        16,
+        18,
+        24,
+        30,
+        32,
+        27,
+        20,
+        16,
+        18,
+        24,
+        30,
+        32,
+        27,
+        20,
+        16,
+        18,
+        24
+      ],
+      "width_m": 26.0,
+      "depth_m": 4.0,
+      "bank_blend_m": 18.0,
+      "influence_m": 70.0,
+      "bed_min_slope": 0.003,
+      "gorge": {
+        "from_m": 1260.0,
+        "to_m": 1660.0,
+        "rise_m": 24.0,
+        "ramp_m": 120.0,
+        "plateau_half_width_m": 40.0,
+        "plateau_blend_m": 70.0,
+        "wall_blend_m": 6.0,
+        "cliffs": {
+          "models": [
+            "falaise_a",
+            "falaise_b",
+            "falaise_c"
+          ],
+          "spacing_m": 10.0,
+          "jitter_m": 2.5,
+          "rows": [
+            0.3,
+            0.75
+          ],
+          "scale_min": 0.9,
+          "scale_max": 1.7,
+          "scale_step": 0.1,
+          "footprint_radius_m": 2.5,
+          "lod_ranges_m": [
+            60.0,
+            180.0,
+            1100.0
+          ],
+          "seed": 1409
+        }
+      },
+      "statut_historique": "F"
+    },
+    {
+      "id": "oued_affluent",
+      "points": [
+        [
+          -861,
+          -900
+        ],
+        [
+          -855,
+          -776
+        ],
+        [
+          -908,
+          -651
+        ],
+        [
+          -993,
+          -527
+        ],
+        [
+          -1055,
+          -402
+        ],
+        [
+          -1081,
+          -278
+        ],
+        [
+          -1102,
+          -154
+        ],
+        [
+          -1142,
+          -29
+        ],
+        [
+          -1191,
+          95
+        ]
+      ],
+      "widths": [
+        16,
+        17,
+        18,
+        16,
+        17,
+        19,
+        18,
+        20,
+        20
+      ],
+      "width_m": 18.0,
+      "depth_m": 2.5,
+      "bank_blend_m": 12.0,
+      "influence_m": 50.0,
+      "bed_min_slope": 0.003,
+      "joins": "oued_principal",
+      "statut_historique": "F"
+    }
+  ],
+  "wadi_settings": {
+    "segment_step_m": 8.0,
+    "max_segment_m": 10.0,
+    "arc_allowance": 1.25,
+    "rise_node_step_m": 20.0,
+    "pebble_fade_fraction": 0.35,
+    "bank_earth_margin_m": 8.0,
+    "proximity_inner_fraction": 0.5,
+    "join_tolerance_m": 2.0,
+    "carve_cell_m": 16.0,
+    "rise_cell_m": 125.0,
+    "axis_cell_m": 125.0,
+    "scatter_step_m": 30.0
+  },
   "terrain": {
     "seed": 1332,
     "half_extent_m": 2000.0,
@@ -106,7 +335,14 @@
       "detail_normal_strength": 0.5,
       "macro_scale": 0.0045,
       "macro_strength": 0.3,
-      "tiling_scale": 0.0021
+      "tiling_scale": 0.0021,
+      "galets_texture": "river_small_rocks",
+      "galets_uv_scale": 0.22,
+      "galets_tint": "#c9bfae",
+      "bed_far_tint": "#a89a82",
+      "bed_far_start_m": 150.0,
+      "bed_far_end_m": 500.0,
+      "bed_far_strength": 0.6
     }
   },
   "test_map": {

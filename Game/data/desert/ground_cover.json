@@ -1,0 +1,13 @@
+{
+  "description": "Couvert du sol du désert (alfa, drinn, fleurs, cailloux, pierres plates, bois mort) : réglages de la grille de recherche des touffes sous les pieds (GroundCoverGrid) et budget de triangles. Les règles de placement sont dans vegetation.json, l'affichage dans foliage.json, les sons dans res://data/audio/footsteps.json (bloc ground_cover). Plantes botaniquement attestées au Maghreb et au Sahara au XIVe siècle : alfa (Stipa tenacissima, hauts plateaux et steppes), drinn (Stipagrostis pungens, dunes du Sahara), fleurs annuelles éphémères après les pluies. statut_historique P : plausible, sans fait précis attaché.",
+  "statut_historique": "P",
+  "grid": {
+    "cell_m": 2.0,
+    "species": ["alfa_proche", "drinn_proche"]
+  },
+  "budget": {
+    "visible_triangles_max": 150000,
+    "worst_case": "toutes les espèces, au sprint, en vue rasante : disques de 30 m (couches proches), de 50 m (fleurs) et de 60 à 70 m (couches lointaines, cailloux, dalles, bois mort)",
+    "estimate_visible_triangles": 62000
+  }
+}

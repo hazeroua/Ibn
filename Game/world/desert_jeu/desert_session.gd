@@ -7,12 +7,15 @@ extends Node3D
 const DATA_PATH: String = "res://data/desert/desert.json"
 const STREAMING_PATH: String = "res://data/streaming/streaming.json"
 const VEGETATION_PATH: String = "res://data/desert/vegetation.json"
+const GROUND_COVER_PATH: String = "res://data/desert/ground_cover.json"
 const TIME_PANEL_SCENE: String = "res://ui/time_panel/time_panel.tscn"
 const SPAWN_WAIT_FRAMES_MAX: int = 1800
 
 var _streamer: WorldStreamer
 ## Gardé ici : le streaming l'appelle depuis des fils de fond pendant toute la partie.
 var _provider: DesertCellProvider
+## Interrogation du couvert du sol branchée sur les pas : gardée ici (Footsteps ne retient que la méthode).
+var _ground_cover: GroundCoverQuery
 var _player: PlayerCharacter
 var _rig: ThirdPersonCamera
 
@@ -22,12 +25,20 @@ func _ready() -> void:
 	var field: DesertHeightfield = DesertHeightfield.from_data(data)
 	var terrain: DesertTerrainCell = DesertTerrainCell.from_data(data)
 	var foliage: Dictionary = DesertFoliageMeshes.load_settings()
-	var meshes: Dictionary = DesertFoliageMeshes.build(foliage)
+	var meshes: Dictionary = DesertFoliageMeshes.build_levels(foliage)
 	if data.is_empty() or field == null or terrain == null or meshes.is_empty():
 		return
 	var scatter := VegetationScatter.new()
-	if not scatter.load_rules(VEGETATION_PATH) or not scatter.load_features(DATA_PATH):
+	var water_bodies: Array = JsonData.get_array(data, "water_bodies", "desert.json")
+	var wadi_step: float = JsonData.get_float(
+		JsonData.get_dictionary(data, "wadi_settings", "desert.json"), "scatter_step_m", "desert.json"
+	)
+	# La végétation suit le tracé lissé des oueds (et non les points de contrôle).
+	if not scatter.load_rules(VEGETATION_PATH) or not scatter.set_features(water_bodies, field.features.wadis.scatter_polylines(wadi_step)):
 		push_error("DesertSession : règles de végétation invalides : %s" % scatter.get_last_error())
+		return
+	var cliffs: DesertCliffs = DesertCliffs.build(field, meshes)
+	if cliffs == null:
 		return
 	_provider = DesertCellProvider.new(
 		terrain,
@@ -35,7 +46,9 @@ func _ready() -> void:
 		scatter,
 		meshes,
 		foliage,
-		JsonData.get_int(JsonData.get_dictionary(data, "terrain", "desert.json"), "seed", "desert.json > terrain")
+		JsonData.get_int(JsonData.get_dictionary(data, "terrain", "desert.json"), "seed", "desert.json > terrain"),
+		JsonData.load_dictionary(GROUND_COVER_PATH),
+		cliffs
 	)
 	_streamer = WorldStreamer.new()
 	_streamer.name = "Streaming"
@@ -43,6 +56,8 @@ func _ready() -> void:
 		return
 	_streamer.register_provider(_provider)
 	add_child(_streamer)
+	_ground_cover = GroundCoverQuery.new(_streamer)
+	(get_node("/root/Footsteps") as FootstepSystem).set_ground_cover(_ground_cover.nearest_cover_distance_squared)
 	var day_night: DayNightSystem = get_node("/root/DayNight") as DayNightSystem
 	add_child(day_night.build_environment())
 	_add_water(field)

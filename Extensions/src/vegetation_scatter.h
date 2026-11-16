@@ -81,6 +81,8 @@ private:
 		// Courbe facultative selon la distance (mètres) à l'oued le plus proche ; vide = multiplicateur 1.
 		std::vector<CurvePoint> wadi_curve;
 		float wadi_max_multiplier = 1.0f;
+		// Vrai : le multiplicateur est le plus grand des deux (près d'un plan d'eau OU près d'un oued), sinon leur produit.
+		bool water_or_wadi = false;
 		// Produit des deux maxima : borne de l'acceptation et du nombre d'essais.
 		float max_multiplier = 0.0f;
 		uint8_t surface_mask = 0;
