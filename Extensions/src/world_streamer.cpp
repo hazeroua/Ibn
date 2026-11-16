@@ -213,6 +213,7 @@ Vector2i WorldStreamer::world_to_cell(const Vector3 &p_position) const {
 void WorldStreamer::build_task(int64_t p_index) {
 	// Fil de travail : n'écrit que dans son propre emplacement, puis publie l'état (release).
 	Slot &slot = slots_[static_cast<size_t>(p_index)];
+	std::lock_guard<std::mutex> lock(provider_mutex_);
 	const Variant result = provider_->call(StringName("build_cell"), Variant(index_to_cell(static_cast<size_t>(p_index))));
 	Node3D *node = Object::cast_to<Node3D>(static_cast<Object *>(result));
 	slot.node = node;

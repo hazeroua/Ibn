@@ -12,6 +12,7 @@
 #include <godot_cpp/variant/vector3.hpp>
 
 #include <atomic>
+#include <mutex>
 #include <cstdint>
 #include <vector>
 
@@ -108,6 +109,10 @@ private:
 	float lookahead_s_ = 6.0F;
 	double budget_ms_ = 2.0;
 	int max_concurrent_ = 4;
+	// Le fournisseur (GDScript) n'est pas réentrant : ses tampons de travail (placement de la
+	// végétation, terrain) sont partagés. Ses appels sont donc faits un par un, toujours hors du fil
+	// principal ; max_concurrent_ ne fait qu'avancer la file d'attente.
+	std::mutex provider_mutex_;
 
 	godot::Object *provider_ = nullptr;
 	std::vector<Slot> slots_;
