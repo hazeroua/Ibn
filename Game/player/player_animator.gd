@@ -7,8 +7,15 @@ extends RefCounted
 ## vitesse de lecture proportionnelle à la vitesse réelle (pas de glissement des pieds) ; arrêts
 ## et virages joués une fois, à la durée de la manœuvre. Une animation n'est relancée qu'au
 ## changement d'état : par image, seule la vitesse de lecture est mise à jour.
+##
+## Pas : si le modèle a un squelette avec les os des pieds (locomotion.json > footsteps > animation_contacts), les
+## appuis de chaque animation sont lus une fois au branchement (FootContacts) ; à chaque image, update() relève ceux
+## que la lecture vient de franchir. Le bruit des pas tombe ainsi exactement quand le pied touche le sol, quelle que
+## soit la vitesse de lecture. Sans squelette, has_contacts() est faux et le personnage compte les pas à la distance.
 
 ## Boucles indexées par LocomotionSettings.Gait.
+## Appuis relevés au plus par mise à jour (une image de 100 ms en course en franchit au plus deux).
+const MAX_CROSSED: int = 8
 const LOOP_CLIPS: Array[StringName] = [&"locomotion/idle", &"locomotion/walk_slow", &"locomotion/walk", &"locomotion/run"]
 ## Manœuvres indexées par LocomotionMotor.Maneuver (la case NONE est vide).
 const MANEUVER_CLIPS: Array[StringName] = [
@@ -25,11 +32,23 @@ var _player: AnimationPlayer
 var _maneuver_lengths := PackedFloat64Array()
 var _current_clip: StringName = &""
 var _current_serial: int = -1
+var _skeleton: Skeleton3D
+var _foot_bones := PackedInt32Array()
+## Appuis par animation : nom -> PackedFloat32Array des temps ; pieds correspondants dans _contact_feet.
+var _contact_times: Dictionary[StringName, PackedFloat32Array] = {}
+var _contact_feet: Dictionary[StringName, PackedInt32Array] = {}
+var _contacts_ready: bool = false
+var _tracked_clip: StringName = &""
+var _tracked_position: float = 0.0
+## Pieds des appuis franchis à la dernière mise à jour (au plus 8 ; réutilisé, aucune allocation par image).
+var _crossed := PackedInt32Array()
+var _crossed_count: int = 0
 
 
 func _init(settings: LocomotionSettings) -> void:
 	_settings = settings
 	_maneuver_lengths.resize(MANEUVER_CLIPS.size())
+	_crossed.resize(MAX_CROSSED)
 
 
 ## Noms des animations du contrat absentes de l'AnimationPlayer (vide : bibliothèque complète).
@@ -64,6 +83,105 @@ func bind(player: AnimationPlayer) -> void:
 		animation.loop_mode = Animation.LOOP_NONE
 		_maneuver_lengths[index] = animation.length
 	_player = player
+	_bind_contacts(player)
+
+
+## Vrai si les appuis des pieds ont été lus dans les animations (les pas suivent alors l'animation).
+func has_contacts() -> bool:
+	return _player != null and _contacts_ready
+
+
+## Nombre d'appuis franchis à la dernière mise à jour ; foot_of(i) donne le pied (0 gauche, 1 droit).
+func crossed_count() -> int:
+	return _crossed_count
+
+
+func foot_of(index: int) -> int:
+	return _crossed[index]
+
+
+## Position du pied dans le monde (pose actuelle du squelette).
+func foot_world_position(foot: int) -> Vector3:
+	return _skeleton.global_transform * _skeleton.get_bone_global_pose(_foot_bones[foot]).origin
+
+
+## Appuis de toutes les animations du contrat (une fois). Sans squelette ni os des pieds : pas d'appuis (aucune erreur,
+## le personnage compte alors les pas à la distance). Squelette présent mais une allure sans deux appuis : erreur.
+func _bind_contacts(player: AnimationPlayer) -> void:
+	_contacts_ready = false
+	_contact_times.clear()
+	_contact_feet.clear()
+	_skeleton = null
+	_tracked_clip = &""
+	var root: Node = player.get_node_or_null(player.root_node)
+	if root == null:
+		return
+	var skeletons: Array[Node] = root.find_children("*", "Skeleton3D", true, false)
+	if skeletons.is_empty():
+		return
+	var skeleton: Skeleton3D = skeletons[0] as Skeleton3D
+	_foot_bones = PackedInt32Array()
+	for bone_name: String in _settings.foot_bone_names:
+		var bone: int = skeleton.find_bone(bone_name)
+		if bone < 0:
+			push_error("PlayerAnimator : os « %s » absent du squelette « %s »." % [bone_name, skeleton.name])
+			return
+		_foot_bones.append(bone)
+	var path: String = str(root.get_path_to(skeleton))
+	var clips: Array[StringName] = []
+	clips.append_array(LOOP_CLIPS)
+	for index: int in range(1, MANEUVER_CLIPS.size()):
+		clips.append(MANEUVER_CLIPS[index])
+	for clip: StringName in clips:
+		var result: Dictionary = FootContacts.analyze(
+			player.get_animation(clip),
+			skeleton,
+			path,
+			_foot_bones,
+			_settings.contact_samples_per_second,
+			_settings.contact_height,
+			_settings.contact_lift,
+			_settings.contact_min_gap
+		)
+		_contact_times[clip] = result["times"]
+		_contact_feet[clip] = result["feet"]
+	# Au repos, les petits déplacements des pieds ne sont pas des pas.
+	_contact_times[LOOP_CLIPS[LocomotionSettings.Gait.IDLE]] = PackedFloat32Array()
+	_contact_feet[LOOP_CLIPS[LocomotionSettings.Gait.IDLE]] = PackedInt32Array()
+	for gait: int in [LocomotionSettings.Gait.WALK_SLOW, LocomotionSettings.Gait.WALK, LocomotionSettings.Gait.RUN]:
+		if _contact_times[LOOP_CLIPS[gait]].size() < 2:
+			push_error("PlayerAnimator : moins de deux appuis trouvés dans « %s »." % LOOP_CLIPS[gait])
+			return
+	_skeleton = skeleton
+	_contacts_ready = true
+
+
+## Relève les appuis franchis entre la position de lecture précédente et l'actuelle (boucle : passage par la fin).
+func _track_contacts() -> void:
+	_crossed_count = 0
+	if not _contacts_ready:
+		return
+	var position: float = _player.current_animation_position
+	if _current_clip != _tracked_clip:
+		# Nouvelle animation : les appuis depuis son début comptent (une manœuvre démarre à 0).
+		_tracked_clip = _current_clip
+		_tracked_position = -1.0
+	var times: PackedFloat32Array = _contact_times.get(_current_clip, PackedFloat32Array())
+	var feet: PackedInt32Array = _contact_feet.get(_current_clip, PackedInt32Array())
+	var from: float = _tracked_position
+	_tracked_position = position
+	if position >= from:
+		_collect(times, feet, from, position)
+	else:
+		_collect(times, feet, from, INF)
+		_collect(times, feet, -1.0, position)
+
+
+func _collect(times: PackedFloat32Array, feet: PackedInt32Array, after: float, until: float) -> void:
+	for i: int in times.size():
+		if times[i] > after and times[i] <= until and _crossed_count < MAX_CROSSED:
+			_crossed[_crossed_count] = feet[i]
+			_crossed_count += 1
 
 
 func is_bound() -> bool:
@@ -77,6 +195,7 @@ func current_clip() -> StringName:
 
 ## Met à jour l'animation à partir de l'état du moteur et de la vitesse horizontale réelle (m/s).
 func update(motor: LocomotionMotor, real_speed: float) -> void:
+	_crossed_count = 0
 	if _player == null:
 		return
 	if motor.maneuver != LocomotionMotor.Maneuver.NONE:
@@ -86,10 +205,12 @@ func update(motor: LocomotionMotor, real_speed: float) -> void:
 			_player.play(clip, _settings.one_shot_blend_time)
 			if restart:
 				_player.seek(0.0, true)
+				_tracked_clip = &""
 			_current_clip = clip
 			_current_serial = motor.maneuver_serial
 			var length: float = _maneuver_lengths[motor.maneuver]
 			_player.speed_scale = length / motor.maneuver_duration if length > 0.0 else 1.0
+		_track_contacts()
 		return
 	_current_serial = -1
 	var loop_clip: StringName = LOOP_CLIPS[motor.gait]
@@ -101,3 +222,4 @@ func update(motor: LocomotionMotor, real_speed: float) -> void:
 	else:
 		var reference: float = _settings.gait_animation_reference_speed[motor.gait]
 		_player.speed_scale = clampf(real_speed / reference, _settings.speed_scale_min, _settings.speed_scale_max)
+	_track_contacts()

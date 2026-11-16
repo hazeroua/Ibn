@@ -1,5 +1,5 @@
 {
-  "description": "Carte « désert » du MVP 2 : relief de dunes de 4 × 4 km (cellules de 250 m diffusées par le streaming), sable, pierre et terre autour de l'oasis. Source de vérité de res://world/desert/desert.tscn (carte de test, reconstruite par Scripts/Pipeline/construire.ps1 -Constructeur desert) et du relief lu par DesertHeightfield.",
+  "description": "Carte « désert » du MVP 2 : relief de dunes de 4 × 4 km (cellules de 250 m diffusées par le streaming), sable, pierre et terre autour de l'oasis. terrace (facultatif, par plan d'eau) : jardins irrigués autour de l'eau, relief aplani en pente douce depuis la rive (surface + rise_m, puis grade m/m), plein jusqu'à radius_m et fondu sur blend_m ; sol en terre. Source de vérité de res://world/desert/desert.tscn (carte de test, reconstruite par Scripts/Pipeline/construire.ps1 -Constructeur desert) et du relief lu par DesertHeightfield.",
   "water_bodies": [
     {
       "id": "oasis_principale",
@@ -7,8 +7,10 @@
       "center": [260.0, -180.0],
       "radius_m": 55.0,
       "surface_height_m": 24.0,
-      "depth_m": 0.0,
-      "bank_blend_m": 140.0,
+      "depth_m": 2.2,
+      "shore_width_m": 9.0,
+      "bank_blend_m": 30.0,
+      "terrace": { "radius_m": 205.0, "blend_m": 90.0, "rise_m": 0.45, "grade": 0.004 },
       "statut_historique": "P"
     },
     {
@@ -331,7 +333,7 @@
       "earth_uv_scale": 0.19,
       "sand_tint": "#f2d9a8",
       "rock_tint": "#b09c84",
-      "earth_tint": "#8c6a45",
+      "earth_tint": "#7f7262",
       "detail_normal_strength": 0.5,
       "macro_scale": 0.0045,
       "macro_strength": 0.3,

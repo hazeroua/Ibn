@@ -209,9 +209,10 @@ static func _polar_arrays(
 	var cursor: int = 0
 	for i: int in segments:
 		var j: int = (i + 1) % segments
+		# Godot dessine les faces dont les sommets tournent dans le sens horaire vu de devant (ici : vu du ciel).
 		indices[cursor] = 0
-		indices[cursor + 1] = 1 + j
-		indices[cursor + 2] = 1 + i
+		indices[cursor + 1] = 1 + i
+		indices[cursor + 2] = 1 + j
 		cursor += 3
 	for ring: int in range(radii.size() - 1):
 		var inner: int = 1 + ring * segments
@@ -219,11 +220,11 @@ static func _polar_arrays(
 		for i: int in segments:
 			var j: int = (i + 1) % segments
 			indices[cursor] = inner + i
-			indices[cursor + 1] = inner + j
-			indices[cursor + 2] = outer + i
+			indices[cursor + 1] = outer + i
+			indices[cursor + 2] = inner + j
 			indices[cursor + 3] = inner + j
-			indices[cursor + 4] = outer + j
-			indices[cursor + 5] = outer + i
+			indices[cursor + 4] = outer + i
+			indices[cursor + 5] = outer + j
 			cursor += 6
 	var arrays: Array = []
 	arrays.resize(Mesh.ARRAY_MAX)

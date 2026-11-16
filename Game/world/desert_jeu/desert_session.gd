@@ -20,9 +20,13 @@ var _ground_cover: GroundCoverQuery
 var _player: PlayerCharacter
 var _rig: ThirdPersonCamera
 var _fauna: FaunaSystem
+## Vrai quand le pipeline (captures, mesures) impose le point de chargement du monde.
+var _pipeline_focused: bool = false
+var _pipeline_settled: bool = true
 
 
 func _ready() -> void:
+	add_to_group(&"pipeline_focus")
 	var data: Dictionary = JsonData.load_dictionary(DATA_PATH)
 	var field: DesertHeightfield = DesertHeightfield.from_data(data)
 	var terrain: DesertTerrainCell = DesertTerrainCell.from_data(data)
@@ -91,10 +95,34 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	if _pipeline_focused:
+		return
 	if _player != null:
 		_streamer.set_focus(_player.global_position, _player.velocity)
 		if _fauna != null:
 			_fauna.set_focus(_player.global_position, _player.velocity)
+
+
+## Captures et mesures du pipeline : le monde se charge autour du point de vue au lieu du personnage.
+func pipeline_focus_at(position: Vector3) -> void:
+	_pipeline_focused = true
+	_pipeline_settled = false
+	# Le personnage, loin du point de vue, perdrait son sol (cellules déchargées) et tomberait en entraînant la caméra :
+	# lui et sa caméra sont mis en pause, la caméra reste où le pipeline la place.
+	if _player != null:
+		_player.process_mode = Node.PROCESS_MODE_DISABLED
+	if _rig != null:
+		_rig.process_mode = Node.PROCESS_MODE_DISABLED
+	_streamer.set_focus(position, Vector3.ZERO)
+	if _fauna != null:
+		_fauna.set_focus(position, Vector3.ZERO)
+
+
+## Vrai quand plus aucune cellule n'attend son chargement autour du point imposé par le pipeline.
+func pipeline_is_settled() -> bool:
+	if not _pipeline_settled and _streamer.get_pending_count() == 0 and _streamer.get_loaded_count() > 0:
+		_pipeline_settled = true
+	return _pipeline_settled
 
 
 ## Un plan d'eau par entrée de water_bodies (oasis, lac, guelta, chott), avec sa limite invisible quand il est plus

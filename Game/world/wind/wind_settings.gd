@@ -30,6 +30,9 @@ var sand_spread: float = 0.0
 var sand_gravity_y: float = 0.0
 var sand_particle_size: float = 0.05
 var sand_color: Color = Color.WHITE
+var sand_near_fade_start: float = 0.0
+var sand_near_fade_end: float = 0.0
+var sand_ground_probe: float = 0.0
 var sand_update_interval: float = 0.1
 
 var haze_radius: float = 1.0
@@ -95,6 +98,9 @@ static func from_dictionary(data: Dictionary, context: String) -> WindSettings:
 	s.sand_gravity_y = JsonData.get_float(sand, "gravity_y", context)
 	s.sand_particle_size = JsonData.get_float(sand, "particle_size", context)
 	s.sand_color = JsonData.get_color(sand, "color", context)
+	s.sand_near_fade_start = JsonData.get_float(sand, "near_fade_start_m", context)
+	s.sand_near_fade_end = JsonData.get_float(sand, "near_fade_end_m", context)
+	s.sand_ground_probe = JsonData.get_float(sand, "ground_probe_m", context)
 	s.sand_update_interval = JsonData.get_float(sand, "update_interval", context)
 	var haze: Dictionary = JsonData.get_dictionary(data, "haze", context)
 	s.haze_radius = JsonData.get_float(haze, "radius", context)
@@ -150,7 +156,14 @@ func _is_valid(context: String) -> bool:
 		problems.append("sand.max_particles dans [1, 8192]")
 	if sand_box_size.x <= 0.0 or sand_box_size.y <= 0.0 or sand_box_size.z <= 0.0 or sand_lifetime <= 0.0:
 		problems.append("sand.box_size et lifetime > 0")
-	if sand_speed_max < sand_speed_min or sand_speed_min < 0.0 or sand_update_interval <= 0.0 or sand_particle_size <= 0.0:
+	if (
+		sand_speed_max < sand_speed_min
+		or sand_speed_min < 0.0
+		or sand_update_interval <= 0.0
+		or sand_particle_size <= 0.0
+		or sand_near_fade_end <= sand_near_fade_start
+		or sand_ground_probe <= 0.0
+	):
 		problems.append("sand : vitesses croissantes, intervalle et taille > 0")
 	if haze_radius <= 0.0 or haze_height <= 0.0 or haze_segments < 3 or haze_rings < 1 or haze_noise_scale <= 0.0:
 		problems.append("haze : rayon, hauteur, échelle > 0, segments >= 3, anneaux >= 1")

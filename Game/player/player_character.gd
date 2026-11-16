@@ -236,23 +236,35 @@ func _update_outputs(delta: float, was_grounded: bool) -> void:
 		_last_gait = gait_value
 		_last_gait_name = LocomotionSettings.GAIT_NAMES[gait_value]
 		if gait_value == LocomotionSettings.Gait.IDLE and previous != LocomotionSettings.Gait.IDLE:
-			if _tracker.stop(_settings.stride_for(previous)):
-				_emit_footstep(real_speed)
+			if _tracker.stop(_settings.stride_for(previous)) and not _animator.has_contacts():
+				_emit_footstep(real_speed, -1)
 		gait_changed.emit(_last_gait_name)
-	if grounded and was_grounded and distance > 0.0:
+	_animator.update(motor, real_speed)
+	if _animator.has_contacts():
+		# Pas calés sur l'animation : un pas par appui de pied franchi par la lecture, seulement au sol.
+		if grounded:
+			for i: int in _animator.crossed_count():
+				_emit_footstep(real_speed, _animator.foot_of(i))
+	elif grounded and was_grounded and distance > 0.0:
 		var stride: float = _settings.stride_for(motor.motion_gait)
 		var count: int = _tracker.advance(distance, stride)
 		for i: int in count:
-			_emit_footstep(real_speed)
+			_emit_footstep(real_speed, -1)
 	elif distance > _settings.teleport_distance:
 		_tracker.reset(_settings.stride_for(motor.motion_gait))
-	_animator.update(motor, real_speed)
 
 
-func _emit_footstep(speed_value: float) -> void:
-	var foot: int = _tracker.take_foot()
-	var lateral: float = _settings.foot_lateral_offset if foot == FootstepTracker.RIGHT else -_settings.foot_lateral_offset
-	var position_on_ground: Vector3 = global_position + global_basis.x * lateral
+## Émet un pas. foot = pied posé d'après l'animation (position lue sur le squelette), ou -1 : pied suivant de
+## l'alternance, posé à côté du centre du corps (personnage sans modèle animé).
+func _emit_footstep(speed_value: float, animated_foot: int) -> void:
+	var foot: int = animated_foot
+	var position_on_ground: Vector3
+	if foot >= 0:
+		position_on_ground = _animator.foot_world_position(foot)
+	else:
+		foot = _tracker.take_foot()
+		var lateral: float = _settings.foot_lateral_offset if foot == FootstepTracker.RIGHT else -_settings.foot_lateral_offset
+		position_on_ground = global_position + global_basis.x * lateral
 	var collider: Object = null
 	_ray.from = position_on_ground + Vector3.UP * _settings.foot_ray_start_height
 	_ray.to = position_on_ground + Vector3.DOWN * _settings.foot_ray_depth

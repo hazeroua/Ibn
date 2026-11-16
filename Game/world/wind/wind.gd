@@ -37,6 +37,9 @@ var _haze: WindHaze = null
 var _sand: WindSand = null
 var _audio: WindAudio = null
 var _root_3d: Node3D = null
+## Sol sous la caméra (relu à chaque mise à jour du sable, un rayon) : le sable vole au ras du sol, pas autour de la caméra.
+var _ground_ray: PhysicsRayQueryParameters3D = null
+var _sand_ground_y: float = NAN
 
 
 ## Fournit les réglages avant l'entrée dans l'arbre (tests) ; sinon ils sont lus dans wind.json.
@@ -81,6 +84,7 @@ func _process(delta: float) -> void:
 	if _sand_timer >= _settings.sand_update_interval:
 		_sand_timer = 0.0
 		_sand.apply_wind(direction, strength)
+		_probe_ground()
 
 
 ## Force de base (0 à 1) autour de laquelle varient la force et les rafales ; sert à la météo.
@@ -140,8 +144,28 @@ func _follow_camera() -> void:
 	var camera: Camera3D = get_viewport().get_camera_3d()
 	if camera == null:
 		return
-	_root_3d.global_position = camera.global_position + Vector3(0.0, _settings.sand_height_offset, 0.0)
-	_haze.global_position = camera.global_position
+	var origin: Vector3 = camera.global_position
+	_root_3d.global_position = origin
+	var ground: float = origin.y if is_nan(_sand_ground_y) else _sand_ground_y
+	_sand.global_position = Vector3(origin.x, ground + _settings.sand_height_offset, origin.z)
+	_haze.global_position = origin
+
+
+## Hauteur du sol sous la caméra (couche 1, jusqu'à sand_ground_probe_m plus bas) ; inchangée si rien n'est touché.
+func _probe_ground() -> void:
+	var camera: Camera3D = get_viewport().get_camera_3d()
+	if camera == null or not camera.is_inside_tree():
+		return
+	if _ground_ray == null:
+		_ground_ray = PhysicsRayQueryParameters3D.new()
+		_ground_ray.collision_mask = 1
+		_ground_ray.collide_with_areas = false
+	var origin: Vector3 = camera.global_position
+	_ground_ray.from = origin
+	_ground_ray.to = origin + Vector3.DOWN * _settings.sand_ground_probe
+	var hit: Dictionary = camera.get_world_3d().direct_space_state.intersect_ray(_ground_ray)
+	if not hit.is_empty():
+		_sand_ground_y = (hit["position"] as Vector3).y
 
 
 static func _declare_globals() -> void:

@@ -290,6 +290,11 @@ static func _build_material(shading: Dictionary) -> ShaderMaterial:
 	return material
 
 
+## Texture du sol (Poly Haven) par identifiant et carte (« diff », « nor_gl », « rough ») ; null et erreur si absente.
+static func ground_texture(texture_id: String, map_name: String) -> Texture2D:
+	return _load_texture(texture_id, map_name)
+
+
 static func _load_texture(texture_id: String, map_name: String) -> Texture2D:
 	var path: String = "%s/%s/%s_%s.jpg" % [POLYHAVEN_DIR, texture_id, texture_id, map_name]
 	if not ResourceLoader.exists(path):

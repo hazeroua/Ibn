@@ -46,6 +46,13 @@ var _cliff_cos: PackedFloat64Array = PackedFloat64Array()
 var _cliff_height: PackedFloat64Array = PackedFloat64Array()
 var _cliff_wall: PackedFloat64Array = PackedFloat64Array()
 var _cliff_back: PackedFloat64Array = PackedFloat64Array()
+## Terrasse facultative autour du plan d'eau (jardins irrigués) : le relief est aplani en une pente douce qui part de
+## la rive (surface + rise) et monte de grade mètres par mètre ; pleine jusqu'à terrace_radius, fondue sur terrace_blend
+## au-delà. Rayon nul = pas de terrasse. Le sol de la terrasse est de la terre (shore_weight).
+var _terrace_radius: PackedFloat64Array = PackedFloat64Array()
+var _terrace_blend: PackedFloat64Array = PackedFloat64Array()
+var _terrace_rise: PackedFloat64Array = PackedFloat64Array()
+var _terrace_grade: PackedFloat64Array = PackedFloat64Array()
 ## Une liste d'indices par case de la grille.
 var _water_cells: Array[PackedInt32Array] = []
 
@@ -95,7 +102,10 @@ func _load_water(bodies: Array, extra_reach_m: float) -> bool:
 			return false
 		if not _append_cliff(body, blend, context):
 			return false
-		var reach: float = radius + maxf(blend, extra_reach_m)
+		var terrace_reach: float = _append_terrace(body, radius, context)
+		if terrace_reach < 0.0:
+			return false
+		var reach: float = maxf(radius + maxf(blend, extra_reach_m), terrace_reach)
 		if absf(center.x) + radius > _half_extent or absf(center.y) + radius > _half_extent:
 			push_error("LandscapeFeatures : le plan d'eau sort du désert (%s)." % context)
 			return false
@@ -113,6 +123,29 @@ func _load_water(bodies: Array, extra_reach_m: float) -> bool:
 		_register_water(water_count, center.x - reach, center.y - reach, center.x + reach, center.y + reach)
 		water_count += 1
 	return true
+
+
+## Lit la terrasse facultative (clé « terrace ») ; renvoie sa portée depuis le centre (0 sans terrasse), -1 si invalide.
+func _append_terrace(body: Dictionary, radius: float, context: String) -> float:
+	var terrace_radius: float = 0.0
+	var blend: float = 1.0
+	var rise: float = 0.0
+	var grade: float = 0.0
+	if body.has("terrace"):
+		var terrace: Dictionary = JsonData.get_dictionary(body, "terrace", context)
+		var terrace_context: String = context + " > terrace"
+		terrace_radius = JsonData.get_float(terrace, "radius_m", terrace_context)
+		blend = JsonData.get_float(terrace, "blend_m", terrace_context)
+		rise = JsonData.get_float(terrace, "rise_m", terrace_context)
+		grade = JsonData.get_float(terrace, "grade", terrace_context)
+		if terrace_radius <= radius or blend <= 0.0 or rise < 0.0 or grade < 0.0 or grade > 0.2:
+			push_error("LandscapeFeatures : terrasse incohérente (rayon > rayon de l'eau, fondu > 0, pente de 0 à 0,2) (%s)." % context)
+			return -1.0
+	_terrace_radius.append(terrace_radius)
+	_terrace_blend.append(blend)
+	_terrace_rise.append(rise)
+	_terrace_grade.append(grade)
+	return terrace_radius + blend if terrace_radius > 0.0 else 0.0
 
 
 ## Lit la falaise facultative d'un plan d'eau (clé « cliff ») et l'ajoute aux tableaux parallèles ; sans falaise,
@@ -192,12 +225,17 @@ func carve(x: float, z: float, natural_height: float) -> float:
 		var dz: float = z - _z[index]
 		var distance: float = sqrt(dx * dx + dz * dz)
 		var radius: float = _radius[index]
+		var terrace_radius: float = _terrace_radius[index]
+		if terrace_radius > 0.0:
+			var flat: float = _surface[index] + _terrace_rise[index] + _terrace_grade[index] * maxf(distance - radius, 0.0)
+			height = lerpf(flat, height, smoothstep(terrace_radius, terrace_radius + _terrace_blend[index], distance))
 		var away: float = smoothstep(radius, radius + _blend[index], distance)
 		var shore: float = _shore[index]
 		if shore > 0.0:
 			var ramp: float = smoothstep(radius - shore, radius, distance)
 			var base: float = _floor[index] + (_surface[index] - _floor[index]) * ramp
-			height = lerpf(base, maxf(height, _surface[index]), away)
+			# Près de la rive, le sol ne descend pas sous la surface (l'eau ne déborde pas) ; loin, relief naturel.
+			height = lerpf(base, lerpf(maxf(height, _surface[index]), height, away), away)
 		else:
 			height = lerpf(_floor[index], height, away)
 		if _cliff_height[index] > 0.0 and distance > radius:
@@ -226,7 +264,11 @@ func shore_weight(x: float, z: float, margin_m: float) -> float:
 		var dx: float = x - _x[index]
 		var dz: float = z - _z[index]
 		var radius: float = _radius[index]
-		weight = maxf(weight, 1.0 - smoothstep(radius, radius + margin_m, sqrt(dx * dx + dz * dz)))
+		var distance: float = sqrt(dx * dx + dz * dz)
+		weight = maxf(weight, 1.0 - smoothstep(radius, radius + margin_m, distance))
+		var terrace_radius: float = _terrace_radius[index]
+		if terrace_radius > 0.0:
+			weight = maxf(weight, 1.0 - smoothstep(terrace_radius, terrace_radius + _terrace_blend[index], distance))
 	return weight
 
 

@@ -1,5 +1,5 @@
 {
-  "description": "Réglages du vent (autoload Wind, res://world/wind/wind.gd). Angles en degrés (0 = vers +x, 90 = vers +z), durées en secondes, distances en mètres, volumes en décibels. La force va de 0 à 1.",
+  "description": "Réglages du vent (autoload Wind, res://world/wind/wind.gd). Sable : grains ronds au ras du sol sous la caméra (rayon vers le bas jusqu'à ground_probe_m), effacés à moins de near_fade_end_m de la caméra. Angles en degrés (0 = vers +x, 90 = vers +z), durées en secondes, distances en mètres, volumes en décibels. La force va de 0 à 1.",
   "seed": 1332,
   "time_wrap": 4096.0,
   "direction": { "base_degrees": 70.0, "drift_degrees": 25.0, "drift_period": 240.0 },
@@ -7,16 +7,19 @@
   "gust": { "amplitude": 0.4, "periods": [7.3, 13.1, 3.7], "sharpness": 2.5 },
   "sand": {
     "max_particles": 1024,
-    "box_size": [44.0, 5.0, 44.0],
-    "height_offset": 0.5,
+    "box_size": [44.0, 2.4, 44.0],
+    "height_offset": 0.9,
     "lifetime": 2.5,
     "min_strength": 0.12,
     "speed_min": 1.5,
     "speed_max": 14.0,
     "spread_degrees": 12.0,
     "gravity_y": -0.4,
-    "particle_size": 0.07,
-    "color": "#d8bf8aa0",
+    "particle_size": 0.045,
+    "color": "#dcc493b0",
+    "near_fade_start_m": 0.6,
+    "near_fade_end_m": 3.0,
+    "ground_probe_m": 400.0,
     "update_interval": 0.1
   },
   "haze": {

@@ -72,15 +72,16 @@ static func _mesh_for(radius: float) -> ArrayMesh:
 	for i: int in segments:
 		var j: int = (i + 1) % segments
 		var k: int = i * 9
+		# Sens horaire vu du ciel : la face visible de Godot.
 		indices[k] = 0
-		indices[k + 1] = 1 + j
-		indices[k + 2] = 1 + i
+		indices[k + 1] = 1 + i
+		indices[k + 2] = 1 + j
 		indices[k + 3] = 1 + i
-		indices[k + 4] = 1 + j
-		indices[k + 5] = 1 + segments + i
+		indices[k + 4] = 1 + segments + i
+		indices[k + 5] = 1 + j
 		indices[k + 6] = 1 + j
-		indices[k + 7] = 1 + segments + j
-		indices[k + 8] = 1 + segments + i
+		indices[k + 7] = 1 + segments + i
+		indices[k + 8] = 1 + segments + j
 	var arrays: Array = []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices

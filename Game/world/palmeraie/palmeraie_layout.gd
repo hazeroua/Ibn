@@ -9,7 +9,11 @@ extends RefCounted
 
 const CONTEXT: String = "palmeraie.json"
 const SETTINGS_PATH: String = "res://data/desert/palmeraie.json"
-const WALL_STRIDE: int = 5  # x0, z0, x1, z1, collision (1) ou décor seul (0)
+const WALL_STRIDE: int = 5  # x0, z0, x1, z1, genre (WALL_DECOR, WALL_SOLID, WALL_RIM)
+## Genres de murets : décor seul, muret de parcelle (haut, avec collision), rebord de bassin (bas, avec collision).
+const WALL_DECOR: int = 0
+const WALL_SOLID: int = 1
+const WALL_RIM: int = 2
 const CANAL_STRIDE: int = 4  # x0, z0, x1, z1
 const POINT_STRIDE: int = 4  # x, z, échelle, lacet
 const BASIN_STRIDE: int = 4  # x, z, lacet, côté
@@ -210,6 +214,7 @@ func _build() -> void:
 	_build_walls()
 	_place_palms()
 	_place_orchards()
+	_place_parcel_palms()
 	_distribute()
 
 
@@ -238,6 +243,7 @@ func _subdivide() -> void:
 	var lanes: Dictionary = JsonData.get_dictionary(settings, "lanes", CONTEXT)
 	var min_m: float = JsonData.get_float(parcel, "min_m", CONTEXT)
 	var max_m: float = JsonData.get_float(parcel, "max_m", CONTEXT)
+	var edge_min_m: float = JsonData.get_float(parcel, "edge_min_m", CONTEXT)
 	var jitter: float = JsonData.get_float(parcel, "split_jitter", CONTEXT)
 	var root_fraction: float = JsonData.get_float(parcel, "root_split_fraction", CONTEXT)
 	var canal_levels: int = JsonData.get_int(lanes, "canal_levels", CONTEXT)
@@ -264,9 +270,13 @@ func _subdivide() -> void:
 		var length: float = maxf(width, height)
 		var depth: int = _n_depth[node]
 		var gap: float = canal_gap if depth < canal_levels else path_gap
-		if length <= max_m or length < 2.0 * min_m + gap:
+		# Feuille : assez petite et acceptable telle quelle. Une feuille refusée (bord du contour, rive, relief) est
+		# redécoupée jusqu'à edge_min_m, pour que les parcelles épousent le contour au lieu d'y laisser de grands vides.
+		var refining: bool = length <= max_m
+		var smallest: float = edge_min_m if refining else min_m
+		if length < 2.0 * smallest + gap or (refining and _parcel_fits(u0, v0, u1, v1)):
 			continue
-		var margin: float = min_m + gap * 0.5
+		var margin: float = smallest + gap * 0.5
 		var fraction: float = root_fraction if depth == 0 else 0.5 + _rng.randf_range(-jitter, jitter)
 		var cut: float = clampf(length * fraction, margin, length - margin)
 		_n_axis[node] = axis
@@ -302,9 +312,19 @@ func _add_node(u0: float, v0: float, u1: float, v1: float, depth: int) -> int:
 
 
 func _try_add_parcel(u0: float, v0: float, u1: float, v1: float) -> void:
+	if not _parcel_fits(u0, v0, u1, v1):
+		return
+	_pu0.append(u0)
+	_pv0.append(v0)
+	_pu1.append(u1)
+	_pv1.append(v1)
+
+
+## Vrai si le rectangle local peut être une parcelle : dans le contour, loin de l'eau et des oueds, relief assez plat.
+func _parcel_fits(u0: float, v0: float, u1: float, v1: float) -> bool:
 	var corners: PackedVector2Array = _rect_world(u0, v0, u1, v1)
 	if not _rect_inside_contour(corners):
-		return
+		return false
 	var parcel: Dictionary = JsonData.get_dictionary(settings, "parcel", CONTEXT)
 	var water_clear: float = JsonData.get_float(parcel, "water_clearance_m", CONTEXT)
 	var features: LandscapeFeatures = _field.features
@@ -315,7 +335,7 @@ func _try_add_parcel(u0: float, v0: float, u1: float, v1: float) -> void:
 		var dx: float = lu - clampf(lu, u0, u1)
 		var dz: float = lv - clampf(lv, v0, v1)
 		if sqrt(dx * dx + dz * dz) < features.water_radius(index) + water_clear:
-			return
+			return false
 	var side: int = JsonData.get_int(parcel, "sample_side", CONTEXT)
 	var wadi_clear: float = JsonData.get_float(parcel, "wadi_clearance_m", CONTEXT)
 	var margin: float = JsonData.get_float(parcel, "water_surface_margin_m", CONTEXT)
@@ -328,11 +348,11 @@ func _try_add_parcel(u0: float, v0: float, u1: float, v1: float) -> void:
 			low = minf(low, h)
 			high = maxf(high, h)
 			if features.distance_to_wadi(world.x, world.y) < wadi_clear:
-				return
+				return false
 			if features.distance_to_water(world.x, world.y) < INF and h < features.water_surface_height(world.x, world.y) + margin:
-				return
+				return false
 	if high - low > JsonData.get_float(parcel, "max_height_range_m", CONTEXT):
-		return
+		return false
 	# Oueds : échantillonnage serré (pas de wadi_sample_m) pour ne pas laisser passer un lit étroit entre deux points.
 	var wadi_step: float = JsonData.get_float(parcel, "wadi_sample_m", CONTEXT)
 	var columns: int = maxi(1, ceili((u1 - u0) / wadi_step))
@@ -341,11 +361,8 @@ func _try_add_parcel(u0: float, v0: float, u1: float, v1: float) -> void:
 		for j: int in rows + 1:
 			var point: Vector2 = _to_world(lerpf(u0, u1, float(i) / float(columns)), lerpf(v0, v1, float(j) / float(rows)))
 			if features.distance_to_wadi(point.x, point.y) < wadi_clear:
-				return
-	_pu0.append(u0)
-	_pv0.append(v0)
-	_pu1.append(u1)
-	_pv1.append(v1)
+				return false
+	return true
 
 
 func _rect_inside_contour(corners: PackedVector2Array) -> bool:
@@ -601,7 +618,7 @@ func _place_chadouf(lane: int, end_t: float, inward: float, basin_center: Vector
 	_basin_center = basin_center
 
 
-## Rebord du bassin : quatre murets bas sans collision.
+## Rebord du bassin : quatre murets bas, avec collision (assez bas pour être enjambés).
 func _basin_rim(center: Vector2, yaw: float, size: float) -> void:
 	var half: float = size * 0.5
 	var cs: float = cos(yaw)
@@ -611,11 +628,11 @@ func _basin_rim(center: Vector2, yaw: float, size: float) -> void:
 		var local: Vector2 = corner_sign * half
 		corners.append(center + Vector2(local.x * cs - local.y * sn, local.x * sn + local.y * cs))
 	for i: int in 4:
-		_add_wall(corners[i], corners[(i + 1) % 4], 0.0)
+		_add_wall(corners[i], corners[(i + 1) % 4], float(WALL_RIM))
 
 
-func _add_wall(a: Vector2, b: Vector2, collides: float) -> void:
-	_wall_data.append_array(PackedFloat32Array([a.x, a.y, b.x, b.y, collides]))
+func _add_wall(a: Vector2, b: Vector2, kind: float) -> void:
+	_wall_data.append_array(PackedFloat32Array([a.x, a.y, b.x, b.y, kind]))
 	var mid: Vector2 = (a + b) * 0.5
 	_wall_cell.append(_cell_of(mid.x, mid.y))
 
@@ -656,13 +673,13 @@ func _build_walls() -> void:
 			var start: Vector2 = a - direction * half
 			var stop: Vector2 = b + direction * half
 			if side != gate_side or length < gate * 2.0 + min_piece * 2.0:
-				_add_wall(_to_world(start.x, start.y), _to_world(stop.x, stop.y), 1.0)
+				_add_wall(_to_world(start.x, start.y), _to_world(stop.x, stop.y), float(WALL_SOLID))
 				continue
 			var gate_start: float = _rng.randf_range(min_piece, length - gate - min_piece)
 			var first_end: Vector2 = a + direction * gate_start
 			var second_start: Vector2 = a + direction * (gate_start + gate)
-			_add_wall(_to_world(start.x, start.y), _to_world(first_end.x, first_end.y), 1.0)
-			_add_wall(_to_world(second_start.x, second_start.y), _to_world(stop.x, stop.y), 1.0)
+			_add_wall(_to_world(start.x, start.y), _to_world(first_end.x, first_end.y), float(WALL_SOLID))
+			_add_wall(_to_world(second_start.x, second_start.y), _to_world(stop.x, stop.y), float(WALL_SOLID))
 
 
 # --- Palmiers et arbres fruitiers ---------------------------------------------------------------------------------------
@@ -740,6 +757,48 @@ func _place_orchards() -> void:
 						break
 				var world: Vector2 = _to_world(u, v)
 				_add_point(chosen, world.x, world.y, _rng.randf_range(scale_min, scale_max), _rng.randf_range(0.0, TAU))
+
+
+## Étage haut du jardin : palmiers dans toutes les parcelles, sur une grille irrégulière de parcel_spacing_m. Dans les
+## vergers, la grille est décalée d'une demi-maille par rapport aux arbres fruitiers (les troncs ne se croisent pas).
+func _place_parcel_palms() -> void:
+	var palms: Dictionary = JsonData.get_dictionary(settings, "palms", CONTEXT)
+	var species := StringName(JsonData.get_string(palms, "species", CONTEXT))
+	var spacing: float = JsonData.get_float(palms, "parcel_spacing_m", CONTEXT)
+	var jitter: float = JsonData.get_float(palms, "parcel_jitter_m", CONTEXT)
+	var edge: float = JsonData.get_float(palms, "parcel_edge_margin_m", CONTEXT)
+	var skip: float = JsonData.get_float(palms, "skip_probability", CONTEXT)
+	var scale_min: float = JsonData.get_float(palms, "scale_min", CONTEXT)
+	var scale_max: float = JsonData.get_float(palms, "scale_max", CONTEXT)
+	var kinds: Array = JsonData.get_array(settings, "kinds", CONTEXT)
+	for i: int in parcel_count:
+		var kind: Dictionary = kinds[_pkind[i]]
+		var step: float = spacing
+		var u_start: float = _pu0[i] + edge
+		var v_start: float = _pv0[i] + edge
+		if kind.has("trees"):
+			# Même maille que les arbres (un palmier tous les deux intervalles), au centre des carrés d'arbres.
+			var tree_spacing: float = JsonData.get_float(JsonData.get_dictionary(kind, "trees", CONTEXT), "spacing_m", CONTEXT)
+			step = tree_spacing * maxf(1.0, roundf(spacing / tree_spacing))
+			var columns: int = maxi(1, floori((_pu1[i] - _pu0[i]) / tree_spacing))
+			var rows: int = maxi(1, floori((_pv1[i] - _pv0[i]) / tree_spacing))
+			u_start = (_pu0[i] + _pu1[i]) * 0.5 - float(columns - 1) * tree_spacing * 0.5 + tree_spacing * 0.5
+			v_start = (_pv0[i] + _pv1[i]) * 0.5 - float(rows - 1) * tree_spacing * 0.5 + tree_spacing * 0.5
+			jitter = 0.0
+		var u: float = u_start
+		while u <= _pu1[i] - edge:
+			var v: float = v_start
+			while v <= _pv1[i] - edge:
+				var pu: float = clampf(u + _rng.randf_range(-jitter, jitter), _pu0[i] + edge, _pu1[i] - edge)
+				var pv: float = clampf(v + _rng.randf_range(-jitter, jitter), _pv0[i] + edge, _pv1[i] - edge)
+				var scale: float = _rng.randf_range(scale_min, scale_max)
+				var yaw: float = _rng.randf_range(0.0, TAU)
+				if _rng.randf() >= skip:
+					var world: Vector2 = _to_world(pu, pv)
+					_add_point(species, world.x, world.y, scale, yaw)
+					_palm_all.append_array(PackedFloat32Array([world.x, world.y, scale, yaw]))
+				v += step
+			u += step
 
 
 # --- Répartition par cellule -------------------------------------------------------------------------------------------

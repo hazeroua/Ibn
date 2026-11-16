@@ -38,12 +38,32 @@ func build(settings: WindSettings) -> void:
 	var draw_material := StandardMaterial3D.new()
 	draw_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	draw_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	draw_material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	draw_material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
 	draw_material.albedo_color = settings.sand_color
 	draw_material.disable_fog = false
+	# Grain rond aux bords doux (et non un carré plein), effacé tout près de la caméra pour ne jamais masquer la vue.
+	draw_material.albedo_texture = _grain_texture()
+	draw_material.distance_fade_mode = BaseMaterial3D.DISTANCE_FADE_PIXEL_ALPHA
+	draw_material.distance_fade_min_distance = settings.sand_near_fade_start
+	draw_material.distance_fade_max_distance = settings.sand_near_fade_end
 	quad.material = draw_material
 	draw_pass_1 = quad
 	emitting = false
+
+
+## Disque blanc à bord dégradé (16 × 16), partagé : la couleur et la transparence viennent du matériau.
+static func _grain_texture() -> GradientTexture2D:
+	var gradient := Gradient.new()
+	gradient.set_color(0, Color(1.0, 1.0, 1.0, 1.0))
+	gradient.set_color(1, Color(1.0, 1.0, 1.0, 0.0))
+	var texture := GradientTexture2D.new()
+	texture.gradient = gradient
+	texture.fill = GradientTexture2D.FILL_RADIAL
+	texture.fill_from = Vector2(0.5, 0.5)
+	texture.fill_to = Vector2(1.0, 0.5)
+	texture.width = 16
+	texture.height = 16
+	return texture
 
 
 ## Adapte le sable au vent (direction dans le plan x, z ; force de 0 à 1). Aucune allocation.

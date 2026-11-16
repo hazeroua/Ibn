@@ -1,5 +1,5 @@
 {
-  "description": "Palmeraie de l'oasis principale : jardin d'oasis en trois étages (palmiers dattiers le long des séguias, grenadiers, figuiers et oliviers dans les vergers, cultures basses : orge, fèves, luzerne, légumes, vigne). Aucun placement à la main : PalmeraieLayout découpe le contour en parcelles au chargement (subdivision récursive déterministe depuis la graine, voies de 3 à 6 m, séguias sur les voies principales), puis PalmeraieCells construit chaque cellule de 250 m à la demande du streaming. Les murets en terre (tabia) entourent les parcelles, une ouverture par parcelle. Tout est décor. statut_historique P : plausible (jardins d'oasis du Maghreb et du Sahara au XIVe siècle : irrigation par séguias dérivées de la source, culture étagée sous les palmiers dattiers, enclos en pisé), sans lieu précis attesté.",
+  "description": "Palmeraie de l'oasis principale : jardin d'oasis en trois étages (palmiers dattiers le long des séguias, grenadiers, figuiers et oliviers dans les vergers, cultures basses : orge, fèves, luzerne, légumes, vigne). Aucun placement à la main : PalmeraieLayout découpe le contour en parcelles au chargement (subdivision récursive déterministe depuis la graine, voies de 3 à 6 m, séguias sur les voies principales ; une parcelle refusée au bord du contour, près de l'eau ou sur un relief trop marqué est redécoupée jusqu'à edge_min_m), puis PalmeraieCells construit chaque cellule de 250 m à la demande du streaming. Les murets en terre (tabia) entourent les parcelles, une ouverture par parcelle ; murets, berges des séguias et rebords des bassins ont la texture de la terre du terrain (palmeraie_earth.gdshader), pied enfoui dans le sol. Séguias : canal de terre (lit horizontal en travers, crête au-dessus du lit et du sol, bouts fermés), on marche sur les berges et dans le lit ; rebords de bassin assez bas pour être enjambés. Tout est décor. statut_historique P : plausible (jardins d'oasis du Maghreb et du Sahara au XIVe siècle : irrigation par séguias dérivées de la source, culture étagée sous les palmiers dattiers, enclos en pisé), sans lieu précis attesté.",
   "statut_historique": "P",
   "seed": 1382,
   "contour": [
@@ -10,6 +10,7 @@
   "parcel": {
     "min_m": 20.0,
     "max_m": 40.0,
+    "edge_min_m": 9.0,
     "split_jitter": 0.16,
     "root_split_fraction": 0.5,
     "max_height_range_m": 2.4,
@@ -69,36 +70,38 @@
     "side_offset_m": 1.9,
     "side_jitter_m": 0.3,
     "skip_probability": 0.08,
+    "parcel_spacing_m": 10.0,
+    "parcel_jitter_m": 2.2,
+    "parcel_edge_margin_m": 2.0,
     "scale_min": 0.9,
     "scale_max": 1.3
   },
   "tree_scale": { "scale_min": 0.85, "scale_max": 1.2 },
   "walls": {
     "thickness_m": 0.5,
-    "height_m": 1.4,
+    "height_m": 1.1,
     "height_variation_m": 0.18,
     "sink_m": 0.3,
     "gate_m": 2.2,
     "min_piece_m": 0.8,
     "step_m": 3.0,
     "collision_piece_max_m": 12.0,
-    "collision_height_tolerance_m": 0.35,
-    "color_low": "#806145",
-    "color_high": "#a38561"
+    "collision_height_tolerance_m": 0.35
   },
   "canal": {
-    "water_half_width_m": 0.45,
-    "bank_width_m": 0.55,
-    "bank_slope_m": 0.45,
-    "depth_m": 0.5,
-    "water_lift_m": 0.05,
-    "step_m": 3.0,
+    "water_half_width_m": 0.32,
+    "inner_slope_m": 0.12,
+    "crest_width_m": 0.28,
+    "outer_slope_m": 0.55,
+    "crest_height_m": 0.24,
+    "crest_clearance_m": 0.1,
+    "toe_sink_m": 0.12,
+    "water_depth_m": 0.13,
+    "step_m": 2.0,
     "chunk_m": 24.0,
-    "extension_probe_m": 0.5,
-    "bank_color": "#856647",
-    "bed_color": "#4c3b2b"
+    "extension_probe_m": 0.5
   },
-  "basin": { "size_m": 3.6, "rim_height_m": 0.5, "rim_thickness_m": 0.5 },
+  "basin": { "size_m": 3.6, "rim_height_m": 0.26, "rim_thickness_m": 0.45 },
   "chadouf": { "species": "chadouf", "side_offset_m": 1.9, "distance_m": 4.2, "palm_clearance_m": 5.0 },
   "ground": {
     "grid_step_m": 5.0,
@@ -119,10 +122,14 @@
   },
   "materials": {
     "ground_shader": "res://world/palmeraie/palmeraie_culture.gdshader",
-    "soil_color": "#5c452e",
-    "soil_wet_color": "#402e1f",
+    "earth_shader": "res://world/palmeraie/palmeraie_earth.gdshader",
+    "pise_tint": "#b39b7a",
+    "wet_tint": "#5a4632",
+    "shade_strength": 0.22,
+    "wet_roughness": 0.5,
+    "soil_color": "#7f7262",
+    "soil_wet_color": "#5e4c3a",
     "ripe_color": "#cca847",
-    "earth_roughness": 1.0,
     "decor_visibility_range_end_m": 520.0,
     "decor_visibility_fade_margin_m": 40.0
   },

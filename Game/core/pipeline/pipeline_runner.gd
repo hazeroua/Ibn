@@ -25,6 +25,14 @@ const EXIT_RUNTIME: int = 4
 
 ## Plafond d'images par seconde servant à dimensionner la mémoire des mesures avant de commencer.
 const MAX_MEASURED_FPS: float = 2000.0
+## Groupe des scènes qui chargent le monde autour d'un point : elles reçoivent pipeline_focus_at(position).
+const FOCUS_GROUP: StringName = &"pipeline_focus"
+## Images attendues au plus pour le chargement du monde autour d'un point de vue.
+const STREAM_WAIT_FRAMES: int = 3000
+## Images laissées au chargeur avant de le croire à jour (il recalcule ses cellules au plus tard à la suivante).
+const STREAM_MIN_FRAMES: int = 5
+## Images attendues au plus, après le changement de scène, pour que la scène installe sa caméra active.
+const CAMERA_WAIT_FRAMES: int = 600
 const BYTES_PER_MEBIBYTE: float = 1048576.0
 
 var _args: Dictionary[String, String] = {}
@@ -70,9 +78,13 @@ func _execute() -> int:
 	if err != OK:
 		push_error("Pipeline : impossible de charger %s (%s)." % [scene_path, error_string(err)])
 		return EXIT_RUNTIME
-	await get_tree().process_frame
-	await get_tree().process_frame
-	var camera: Camera3D = get_viewport().get_camera_3d()
+	# Les scènes de jeu assemblent leur monde au chargement (caméra comprise) : on attend la caméra active.
+	var camera: Camera3D = null
+	for frame: int in CAMERA_WAIT_FRAMES:
+		await get_tree().process_frame
+		camera = get_viewport().get_camera_3d()
+		if camera != null:
+			break
 	if camera == null:
 		push_error("Pipeline : la scène %s ne contient aucune caméra active." % scene_path)
 		return EXIT_RUNTIME
@@ -90,6 +102,19 @@ func _execute() -> int:
 			return EXIT_BAD_ARGS
 
 
+## Attend que les scènes du groupe FOCUS_GROUP aient chargé le monde autour du point de vue (au plus STREAM_WAIT_FRAMES).
+func _wait_for_streaming() -> void:
+	for frame: int in STREAM_WAIT_FRAMES:
+		await get_tree().process_frame
+		var settled: bool = frame >= STREAM_MIN_FRAMES
+		for node: Node in get_tree().get_nodes_in_group(FOCUS_GROUP):
+			if node.has_method(&"pipeline_is_settled") and not bool(node.call(&"pipeline_is_settled")):
+				settled = false
+		if settled:
+			return
+	push_error("Pipeline : le monde ne s'est pas chargé autour du point de vue en %d images." % STREAM_WAIT_FRAMES)
+
+
 func _capture(camera: Camera3D, viewpoints: Array[Viewpoint]) -> int:
 	var out_dir: String = _require_arg("out")
 	if out_dir.is_empty():
@@ -105,6 +130,9 @@ func _capture(camera: Camera3D, viewpoints: Array[Viewpoint]) -> int:
 	var failures: int = 0
 	for viewpoint: Viewpoint in viewpoints:
 		camera.global_transform = viewpoint.transform
+		# Les mondes en cellules chargent autour du point de vue (et non autour du personnage).
+		get_tree().call_group(FOCUS_GROUP, &"pipeline_focus_at", viewpoint.transform.origin)
+		await _wait_for_streaming()
 		# Laisse l'image se stabiliser (mise à l'échelle temporelle, exposition, ombres).
 		for i: int in settle_frames:
 			await get_tree().process_frame

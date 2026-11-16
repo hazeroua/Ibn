@@ -44,7 +44,7 @@
       "acceleration": 3.0,
       "deceleration": 4.0,
       "turn_rate_degrees": 300.0,
-      "stride_length": 0.55,
+      "stride_length": 0.69,
       "animation_reference_speed": 0.8
     },
     "walk": {
@@ -52,7 +52,7 @@
       "acceleration": 4.0,
       "deceleration": 4.5,
       "turn_rate_degrees": 360.0,
-      "stride_length": 0.72,
+      "stride_length": 0.97,
       "animation_reference_speed": 1.45
     },
     "run": {
@@ -60,7 +60,7 @@
       "acceleration": 7.0,
       "deceleration": 8.0,
       "turn_rate_degrees": 270.0,
-      "stride_length": 1.3,
+      "stride_length": 2.15,
       "animation_reference_speed": 4.6
     }
   },
@@ -84,14 +84,21 @@
     "max_duration": 0.8
   },
   "footsteps": {
-    "description": "Pas : un pas à chaque longueur de foulée parcourue au sol. Rayon vers le bas sous chaque pied pour trouver le collisionneur.",
+    "description": "Pas. Avec un modèle animé : un pas à chaque appui d'un pied dans l'animation jouée (animation_contacts : os des pieds ; appui = pied revenu à moins de height_m de son point le plus bas après s'être levé de lift_m ; deux appuis à moins de min_gap_s n'en font qu'un ; échantillonnage des pistes, une fois au chargement). Sans modèle : un pas à chaque longueur de foulée parcourue au sol (stride_length des allures = distance parcourue par l'animation entre deux appuis). Rayon vers le bas sous le pied pour trouver le collisionneur.",
     "first_step_fraction": 0.5,
     "foot_lateral_offset": 0.11,
     "ray_start_height": 0.3,
     "ray_depth": 0.5,
     "ray_collision_mask_layers": [1],
     "rest_speed": 0.05,
-    "stop_step_min_fraction": 0.3
+    "stop_step_min_fraction": 0.3,
+    "animation_contacts": {
+      "foot_bones": ["DEF-foot.L", "DEF-foot.R"],
+      "height_m": 0.03,
+      "lift_m": 0.04,
+      "samples_per_second": 120.0,
+      "min_gap_s": 0.12
+    }
   },
   "animation": {
     "description": "Machine d'animation (bibliothèque « locomotion » du modèle) : fondus et bornes de la vitesse de lecture.",

@@ -81,6 +81,12 @@ var foot_ray_depth: float = 0.0
 var foot_ray_mask: int = 0
 var rest_speed: float = 0.0
 var stop_step_min_fraction: float = 0.0
+## Os des pieds (gauche, droit) dont les appuis, lus dans les animations, déclenchent les pas quand un modèle est branché.
+var foot_bone_names := PackedStringArray()
+var contact_height: float = 0.0
+var contact_lift: float = 0.0
+var contact_samples_per_second: float = 0.0
+var contact_min_gap: float = 0.0
 
 # Animation
 var blend_time: float = 0.0
@@ -227,6 +233,16 @@ func _read_footsteps(section: Dictionary) -> void:
 	foot_ray_mask = _layers(section, "ray_collision_mask_layers", context)
 	rest_speed = _positive(section, "rest_speed", context)
 	stop_step_min_fraction = _ranged(section, "stop_step_min_fraction", 0.0, 1.0, context)
+	var contacts: Dictionary = JsonData.get_dictionary(section, "animation_contacts", context)
+	var contacts_context: String = context + " > animation_contacts"
+	foot_bone_names = PackedStringArray()
+	for bone: Variant in JsonData.get_array(contacts, "foot_bones", contacts_context):
+		foot_bone_names.append(str(bone))
+	_check(foot_bone_names.size() == 2, "foot_bones doit nommer deux os (gauche, droit)", contacts_context)
+	contact_height = _ranged(contacts, "height_m", 0.001, 0.5, contacts_context)
+	contact_lift = _ranged(contacts, "lift_m", 0.001, 0.5, contacts_context)
+	contact_samples_per_second = _ranged(contacts, "samples_per_second", 10.0, 1000.0, contacts_context)
+	contact_min_gap = _ranged(contacts, "min_gap_s", 0.0, 1.0, contacts_context)
 
 
 func _read_animation(section: Dictionary) -> void:

@@ -39,19 +39,31 @@ void vertex() {
 	VERTEX.y += wave(world_xz * wave_scale, dir, wind_time * wave_speed * 3.0) * wave_height * wave_amount;
 }
 
+// Petites rides irrégulières : deux trains de vagues croisés et une modulation lente, pour ne jamais voir de motif répété.
+vec2 ripple_slope(vec2 p, vec2 dir, float t) {
+	vec2 side = vec2(-dir.y, dir.x);
+	float e = 0.05;
+	float b1 = wave(p, dir, t);
+	float b2 = wave(p * 2.63 + vec2(3.1, 7.7), normalize(dir + side * 0.6), t * 1.37);
+	float m = 0.6 + 0.4 * sin(dot(p, vec2(0.21, 0.17)) + t * 0.11);
+	float h = b1 * m + b2 * 0.45;
+	float hx = wave(p + vec2(e, 0.0), dir, t) * m + wave((p + vec2(e, 0.0)) * 2.63 + vec2(3.1, 7.7), normalize(dir + side * 0.6), t * 1.37) * 0.45;
+	float hz = wave(p + vec2(0.0, e), dir, t) * m + wave((p + vec2(0.0, e)) * 2.63 + vec2(3.1, 7.7), normalize(dir + side * 0.6), t * 1.37) * 0.45;
+	return vec2(hx - h, hz - h) / e;
+}
+
 void fragment() {
 	vec2 dir = normalize(wind_direction + vec2(0.0001));
 	vec2 p = world_xz * wave_scale;
 	float t = wind_time * wave_speed * 3.0;
-	float base = wave(p, dir, t);
-	float dx = wave(p + vec2(0.05, 0.0), dir, t) - base;
-	float dz = wave(p + vec2(0.0, 0.05), dir, t) - base;
-	NORMAL = normalize(NORMAL + vec3(dx, 0.0, dz) * normal_strength * 20.0 * wave_amount);
+	vec2 slope = ripple_slope(p, dir, t);
+	NORMAL = normalize(NORMAL + (VIEW_MATRIX * vec4(slope.x, 0.0, slope.y, 0.0)).xyz * normal_strength * 0.35 * wave_amount);
 	float edge = smoothstep(1.0 - edge_width, 1.0, UV.x);
 	vec4 color = mix(shallow_color, deep_color, smoothstep(0.0, 1.0, depth_fraction));
-	color = mix(color, foam_color, edge * 0.8);
+	// Écume discrète au bord, l'eau devient transparente sur la dernière bande de rive (le fond se voit).
+	color.rgb = mix(color.rgb, foam_color.rgb, edge * 0.25);
 	ALBEDO = color.rgb;
-	ALPHA = mix(color.a, 0.0, smoothstep(0.985, 1.0, UV.x));
+	ALPHA = color.a * (1.0 - smoothstep(1.0 - edge_width * 0.6, 1.0, UV.x));
 	ROUGHNESS = roughness_value;
 	METALLIC = reflection;
 	SPECULAR = 0.6;
