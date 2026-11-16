@@ -44,6 +44,13 @@ $manquant = @($attendus | Where-Object { -not (Test-Path (Join-Path $Jeu "assets
 $plusRecent = ($sourcesProps | ForEach-Object { (Get-Item $_).LastWriteTimeUtc } | Measure-Object -Maximum).Maximum
 $plusAncien = if ($modeles.Count -gt 0) { ($modeles | Measure-Object -Property LastWriteTimeUtc -Minimum).Minimum } else { [datetime]::MinValue }
 if ($manquant -or $plusRecent -gt $plusAncien) { & (Join-Path $PSScriptRoot 'generer-props-desert.ps1') }
+# Modèles de la faune : même règle (générateur ou manifeste plus récent que le plus ancien modèle).
+$sourcesFaune = @((Join-Path $Racine 'Scripts/Blender/generer_faune.py'), (Join-Path $Racine 'Game/data/assets/fauna_models.json'))
+$modelesFaune = @(Get-ChildItem -Path (Join-Path $Jeu 'assets/faune') -Filter '*.glb' -ErrorAction SilentlyContinue)
+$manquantFaune = @(@('gazelle_dorcas.glb', 'tourterelle.glb', 'libellule.glb') | Where-Object { -not (Test-Path (Join-Path $Jeu "assets/faune/$_")) }).Count -gt 0
+$plusRecentFaune = ($sourcesFaune | ForEach-Object { (Get-Item $_).LastWriteTimeUtc } | Measure-Object -Maximum).Maximum
+$plusAncienFaune = if ($modelesFaune.Count -gt 0) { ($modelesFaune | Measure-Object -Property LastWriteTimeUtc -Minimum).Minimum } else { [datetime]::MinValue }
+if ($manquantFaune -or $plusRecentFaune -gt $plusAncienFaune) { & (Join-Path $PSScriptRoot 'generer-faune.ps1') }
 & (Join-Path $PSScriptRoot 'importer.ps1')
 & (Join-Path $PSScriptRoot 'construire.ps1')
 
