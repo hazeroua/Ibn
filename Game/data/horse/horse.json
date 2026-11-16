@@ -1,0 +1,61 @@
+{
+  "description": "Réglages définitifs de Barq. Vitesses en m/s, endurance en secondes et distances en mètres.",
+  "body": {
+    "radius_m": 0.72,
+    "height_m": 1.9,
+    "collision_layer": 2,
+    "collision_mask": [1],
+    "safe_margin_m": 0.01,
+    "floor_max_angle_deg": 38.0,
+    "max_slides": 6
+  },
+  "gaits": {
+    "walk": { "speed_mps": 1.7, "acceleration_mps2": 3.0, "deceleration_mps2": 4.0, "stride_m": 1.4, "energy_per_second": 0.0 },
+    "trot": { "speed_mps": 3.6, "acceleration_mps2": 4.5, "deceleration_mps2": 5.5, "stride_m": 2.1, "energy_per_second": 0.8 },
+    "canter": { "speed_mps": 6.8, "acceleration_mps2": 5.5, "deceleration_mps2": 7.0, "stride_m": 3.1, "energy_per_second": 1.7 },
+    "sprint": { "speed_mps": 11.5, "acceleration_mps2": 7.0, "deceleration_mps2": 10.0, "stride_m": 4.4, "energy_per_second": 3.8 }
+  },
+  "endurance": {
+    "maximum": 100.0,
+    "recovery_per_second": 9.0,
+    "sprint_minimum": 8.0,
+    "sprint_recovery_gait": "canter"
+  },
+  "terrain": {
+    "max_slope_deg": 34.0,
+    "dangerous_drop_m": 1.15,
+    "look_ahead_m": 7.0,
+    "obstacle_probe_radius_m": 0.82,
+    "obstacle_probe_height_m": 1.1,
+    "obstacle_probe_distance_m": 2.2,
+    "avoidance_turn_deg": 22.0
+  },
+  "call": {
+    "arrival_distance_m": 2.6,
+    "stop_distance_m": 5.0,
+    "call_speed_mps": 3.6,
+    "max_distance_m": 4000.0,
+    "turn_rate_deg": 115.0
+  },
+  "visual": {
+    "body_length_m": 2.15,
+    "body_height_m": 1.25,
+    "leg_length_m": 1.05,
+    "leg_radius_m": 0.09,
+    "saddle_height_m": 1.72,
+    "animation_frequency": 2.4
+  },
+  "traces": {
+    "pool_size": 128,
+    "lifetime_s": 45.0,
+    "width_m": 0.18,
+    "length_m": 0.38,
+    "sand_surface": "sable"
+  },
+  "audio": {
+    "hoof_frequency_hz": 110.0,
+    "breath_frequency_hz": 75.0,
+    "max_distance_m": 42.0,
+    "voice_count": 4
+  }
+}
