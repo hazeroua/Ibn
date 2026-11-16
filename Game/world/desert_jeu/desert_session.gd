@@ -75,6 +75,11 @@ func _ready() -> void:
 	var day_night: DayNightSystem = get_node("/root/DayNight") as DayNightSystem
 	add_child(day_night.build_environment())
 	_add_water(field)
+	var water_sound := WaterAmbience.new()
+	if water_sound.build(FaunaWater.load_bodies(data, field)):
+		add_child(water_sound)
+	else:
+		water_sound.free()
 	_fauna = FaunaSystem.create(data, field, day_night)
 	if _fauna != null:
 		add_child(_fauna)

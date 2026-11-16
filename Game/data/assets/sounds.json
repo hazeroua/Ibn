@@ -28,91 +28,26 @@
       "origin": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
       "base_url": "https://raw.githubusercontent.com/petroulacl/fps-asset-kit/a19b7458a593598211c95ec46ef4eb4b6d1f94d7/sfx/footsteps/Fantozzi-footsteps/ogg/",
       "license_file": "https://github.com/petroulacl/fps-asset-kit/blob/a19b7458a593598211c95ec46ef4eb4b6d1f94d7/README.md"
+    },
+    "rubberduck_water": {
+      "title": "40 CC0 water / splash / slime SFX",
+      "author": "rubberduck (OpenGameArt), recueil de lavenderdotpet",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "origin": "https://opengameart.org/content/40-cc0-water-splash-slime-sfx",
+      "base_url": "https://raw.githubusercontent.com/lavenderdotpet/CC0-Public-Domain-Sounds/f2b6264f9ab89fabc266914c3654685d68c5a39b/40-cc0-water-splash-slime-sfx/",
+      "license_file": "https://github.com/lavenderdotpet/CC0-Public-Domain-Sounds/blob/f2b6264f9ab89fabc266914c3654685d68c5a39b/LICENSE"
+    },
+    "rubberduck_sfx_100_v2": {
+      "title": "100 CC0 SFX #2",
+      "author": "rubberduck (OpenGameArt), recueil de lavenderdotpet",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "origin": "https://opengameart.org/content/100-cc0-sfx-2",
+      "base_url": "https://raw.githubusercontent.com/lavenderdotpet/CC0-Public-Domain-Sounds/f2b6264f9ab89fabc266914c3654685d68c5a39b/100-cc0-sfx-2/",
+      "license_file": "https://github.com/lavenderdotpet/CC0-Public-Domain-Sounds/blob/f2b6264f9ab89fabc266914c3654685d68c5a39b/LICENSE"
     }
   },
-  "synthesized": {
-    "footstep_water_01": {
-      "kind": "water_step",
-      "seed": 9101,
-      "mix_rate": 22050,
-      "duration_s": 0.45,
-      "noise_cutoff_hz": 1720,
-      "attack_s": 0.006,
-      "decay_s": 0.082,
-      "bubble_count": 3,
-      "bubble_freq_min_hz": 380,
-      "bubble_freq_max_hz": 950,
-      "bubble_rise": 1.8,
-      "bubble_length_s": 0.05,
-      "bubble_gain": 0.3,
-      "gain": 0.8
-    },
-    "footstep_water_02": {
-      "kind": "water_step",
-      "seed": 9102,
-      "mix_rate": 22050,
-      "duration_s": 0.45,
-      "noise_cutoff_hz": 1940,
-      "attack_s": 0.006,
-      "decay_s": 0.094,
-      "bubble_count": 4,
-      "bubble_freq_min_hz": 380,
-      "bubble_freq_max_hz": 950,
-      "bubble_rise": 1.8,
-      "bubble_length_s": 0.05,
-      "bubble_gain": 0.3,
-      "gain": 0.8
-    },
-    "footstep_water_03": {
-      "kind": "water_step",
-      "seed": 9103,
-      "mix_rate": 22050,
-      "duration_s": 0.45,
-      "noise_cutoff_hz": 2160,
-      "attack_s": 0.006,
-      "decay_s": 0.10600000000000001,
-      "bubble_count": 2,
-      "bubble_freq_min_hz": 380,
-      "bubble_freq_max_hz": 950,
-      "bubble_rise": 1.8,
-      "bubble_length_s": 0.05,
-      "bubble_gain": 0.3,
-      "gain": 0.8
-    },
-    "footstep_water_04": {
-      "kind": "water_step",
-      "seed": 9104,
-      "mix_rate": 22050,
-      "duration_s": 0.45,
-      "noise_cutoff_hz": 2380,
-      "attack_s": 0.006,
-      "decay_s": 0.11800000000000001,
-      "bubble_count": 3,
-      "bubble_freq_min_hz": 380,
-      "bubble_freq_max_hz": 950,
-      "bubble_rise": 1.8,
-      "bubble_length_s": 0.05,
-      "bubble_gain": 0.3,
-      "gain": 0.8
-    },
-    "footstep_water_05": {
-      "kind": "water_step",
-      "seed": 9105,
-      "mix_rate": 22050,
-      "duration_s": 0.45,
-      "noise_cutoff_hz": 2600,
-      "attack_s": 0.006,
-      "decay_s": 0.13,
-      "bubble_count": 4,
-      "bubble_freq_min_hz": 380,
-      "bubble_freq_max_hz": 950,
-      "bubble_rise": 1.8,
-      "bubble_length_s": 0.05,
-      "bubble_gain": 0.3,
-      "gain": 0.8
-    }
-  },
-  "synthesized_description": "Sons calculés au chargement par SoundSynth (aucun fichier à télécharger) ; référencés comme les autres par leur identifiant.",
   "sounds": [
     {
       "id": "footstep_sand_01",
@@ -361,6 +296,89 @@
       "sha256": "319705aab5795c4c514cb7c62e0611926011ec9566f50525350e32863e47c29b",
       "bytes": 13080,
       "usage": "Froissement léger des touffes d'alfa et de drinn sous le pied"
+    },
+    {
+      "id": "footstep_water_01",
+      "source": "rubberduck_water",
+      "file": "splash_02.ogg",
+      "sha256": "eab0bb4bc01386528ba1e6244c6fd8940ee8d3c91ddb9e9cfea186e8560e04de",
+      "bytes": 37895,
+      "usage": "Pas dans l'eau peu profonde"
+    },
+    {
+      "id": "footstep_water_02",
+      "source": "rubberduck_water",
+      "file": "splash_03.ogg",
+      "sha256": "ae2cff9a47934ece590dda45ff18acf89c5c98cb5497ce71c50b3a315b225a94",
+      "bytes": 32013,
+      "usage": "Pas dans l'eau peu profonde"
+    },
+    {
+      "id": "footstep_water_03",
+      "source": "rubberduck_water",
+      "file": "splash_09.ogg",
+      "sha256": "123f78e6bef82b5dfb24f0a93f759b309bd12b21d05905ab401756fc588a31dc",
+      "bytes": 14795,
+      "usage": "Pas dans l'eau peu profonde"
+    },
+    {
+      "id": "footstep_water_04",
+      "source": "rubberduck_water",
+      "file": "splash_10.ogg",
+      "sha256": "69ec352dc6c0ea4691435e692063f903c98e5292579ba71297d4fbdb51c33649",
+      "bytes": 18959,
+      "usage": "Pas dans l'eau peu profonde"
+    },
+    {
+      "id": "footstep_water_05",
+      "source": "rubberduck_water",
+      "file": "splash_14.ogg",
+      "sha256": "018984c8e03488b65d4c2dd6e08a9c2115b395ded80cf7209f893e7e664c5d0e",
+      "bytes": 27752,
+      "usage": "Pas dans l'eau peu profonde"
+    },
+    {
+      "id": "footstep_water_06",
+      "source": "rubberduck_water",
+      "file": "splash_15.ogg",
+      "sha256": "9b0ef483f0d8939199c10ecf26d952fda92637cb7e1f323decb9388a07a79b03",
+      "bytes": 25671,
+      "usage": "Pas dans l'eau peu profonde"
+    },
+    {
+      "id": "footstep_water_07",
+      "source": "rubberduck_sfx_100_v2",
+      "file": "sfx100v2_footstep_wet_03.ogg",
+      "sha256": "4d475dd54d72a862cb72fcff4d1970161e619352f500f8b75755a2f5e987513e",
+      "bytes": 9029,
+      "usage": "Pas dans l'eau peu profonde"
+    },
+    {
+      "id": "ambience_water_oasis",
+      "source": "rubberduck_sfx_100_v2",
+      "file": "sfx100v2_loop_water_02.ogg",
+      "sha256": "32bc3462ebd2376d9b84e8f602969f8c2a475f589adee9804207e19116cda768",
+      "bytes": 104892,
+      "loop": true,
+      "usage": "Ambiance d'eau en boucle (sans clic)"
+    },
+    {
+      "id": "ambience_water_lake",
+      "source": "rubberduck_sfx_100_v2",
+      "file": "sfx100v2_loop_water_03.ogg",
+      "sha256": "33b123860425a34ce8de43cfa075b0b4ffb7a3cf090be5c21213c9b99f3d2fa3",
+      "bytes": 109094,
+      "loop": true,
+      "usage": "Ambiance d'eau en boucle (sans clic)"
+    },
+    {
+      "id": "ambience_water_guelta",
+      "source": "rubberduck_water",
+      "file": "loop_water_02.ogg",
+      "sha256": "2a39d9c6d3069e94f15b092f15bcfac7de54ca1bdc7c0b9a02b151bda6f3a29d",
+      "bytes": 269372,
+      "loop": true,
+      "usage": "Ambiance d'eau en boucle (sans clic)"
     }
   ]
 }

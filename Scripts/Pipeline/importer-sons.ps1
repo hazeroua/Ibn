@@ -5,8 +5,8 @@
 .DESCRIPTION
   Pour chaque son du manifeste : adresse = base_url de sa source + nom du fichier (commit figé),
   téléchargement dans un fichier temporaire, contrôle de la taille exacte et de la somme SHA-256,
-  puis rangement dans res://assets/sounds/<id>.ogg avec des réglages d'import explicites (pas de
-  boucle). Rien n'est retéléchargé si le fichier est déjà présent et intact. Seules les licences
+  puis rangement dans res://assets/sounds/<id>.ogg avec des réglages d'import explicites (boucle
+  seulement pour les sons d'ambiance marqués « loop »). Rien n'est retéléchargé si le fichier est déjà présent et intact. Seules les licences
   CC0 sont acceptées. Appelé à la fin de importer-ressources.ps1 ; lancer ensuite importer.ps1.
 #>
 [CmdletBinding()]
@@ -27,19 +27,20 @@ function Test-SonIntact([string]$Chemin, [long]$Octets, [string]$Sha256) {
     return (Get-Sha256 $Chemin) -eq $Sha256
 }
 
-function Write-ReglagesImportSon([string]$Chemin) {
-    # Réglages explicites : un pas ne boucle jamais, quel que soit le réglage par défaut de Godot.
+function Write-ReglagesImportSon([string]$Chemin, [bool]$Boucle) {
+    # Réglages explicites : un pas ne boucle jamais ; une ambiance (« loop » du manifeste) boucle toujours.
     $contenu = @(
         '[remap]', '', 'importer="oggvorbisstr"', 'type="AudioStreamOggVorbis"', '',
         '[params]', '',
-        'loop=false',
+        "loop=$($Boucle.ToString().ToLowerInvariant())",
         'loop_offset=0',
         'bpm=0',
         'beat_count=0',
         'bar_beats=4'
     )
     $import = "$Chemin.import"
-    if (-not (Test-Path $import)) {
+    # Réécrit si le réglage de boucle a changé (le reste du fichier est géré par Godot).
+    if ((-not (Test-Path $import)) -or -not (Select-String -Quiet -SimpleMatch -Pattern $contenu[7] -Path $import)) {
         $contenu | Set-Content -Encoding ASCII $import
     }
 }
@@ -95,6 +96,6 @@ foreach ($son in $manifeste.sounds) {
         Get-SonDistant ($source.base_url + $son.file) $destination $octets $son.sha256 $son.id
         $telecharges++
     }
-    Write-ReglagesImportSon $destination
+    Write-ReglagesImportSon $destination ([bool]($son.PSObject.Properties['loop'] -and $son.loop))
 }
 Write-Ok "$($ids.Count) sons vérifiés (taille et SHA-256), dont $telecharges téléchargés"

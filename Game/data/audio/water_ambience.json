@@ -1,0 +1,13 @@
+{
+  "description": "Ambiance des plans d'eau : un enregistrement en boucle (CC0, sounds.json) par plan d'eau dont le type figure dans « kinds » (le chott, sel presque sec, reste muet). La source est placée au point du rivage le plus proche de l'auditeur (sous lui s'il est dans l'eau) : la transition de distance est continue même pour un grand lac. Joué seulement à moins de max_distance_m du rivage, arrêté au-delà de max_distance_m + stop_hysteresis_m. Le vent masque l'eau (wind_mask_db à force maximale), l'immersion (auditeur dans l'eau) la rapproche (immersion_db). Le volume suit sa cible à au plus volume_rate_db_per_s (aucun saut, aucun clic). Mise à jour tous les poll_interval_s, jamais par image.",
+  "bus": {"name": "Eau", "send": "Master", "volume_db": 0.0},
+  "poll_interval_s": 0.1,
+  "stop_hysteresis_m": 12.0,
+  "volume_rate_db_per_s": 18.0,
+  "start_volume_db": -40.0,
+  "kinds": {
+    "oasis": {"sound": "ambience_water_oasis", "volume_db": -9.0, "unit_size_m": 10.0, "max_distance_m": 90.0, "wind_mask_db": 8.0, "immersion_db": 3.0},
+    "lac": {"sound": "ambience_water_lake", "volume_db": -8.0, "unit_size_m": 14.0, "max_distance_m": 120.0, "wind_mask_db": 8.0, "immersion_db": 3.0},
+    "guelta": {"sound": "ambience_water_guelta", "volume_db": -12.0, "unit_size_m": 6.0, "max_distance_m": 60.0, "wind_mask_db": 6.0, "immersion_db": 2.0}
+  }
+}
