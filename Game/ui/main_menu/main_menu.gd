@@ -23,7 +23,9 @@ var _draft: Dictionary = {}
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	GameInput.set_mouse_capture(false)
+	var input_service: Node = get_node_or_null("/root/GameInput")
+	if input_service != null:
+		input_service.call(&"set_mouse_capture", false)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	_build_home()
 	_build_settings()
@@ -100,7 +102,7 @@ func _build_home() -> void:
 	settings_button.pressed.connect(func() -> void: _show_settings(true))
 	menu.add_child(settings_button)
 	var quit := _menu_button("Retour à l'accueil" if in_game else "Quitter le jeu")
-	quit.pressed.connect(_return_to_title if in_game else GameInput.quit_safely)
+	quit.pressed.connect(_return_to_title if in_game else _quit_game)
 	menu.add_child(quit)
 	start.grab_focus.call_deferred()
 
@@ -231,7 +233,8 @@ func _show_settings(show: bool) -> void:
 	_home.visible = not show
 	_settings_panel.visible = show
 	if show:
-		_draft = Settings.snapshot()
+		var settings_service: GameSettings = get_node_or_null("/root/Settings") as GameSettings
+		_draft = settings_service.snapshot() if settings_service != null else GameSettings.default_values()
 		_refresh_controls()
 		(_controls["profile"] as OptionButton).grab_focus.call_deferred()
 
@@ -287,8 +290,11 @@ func _mark_custom() -> void:
 
 
 func _apply_settings() -> void:
-	Settings.apply_user_values(_draft)
-	_draft = Settings.snapshot()
+	var settings_service: GameSettings = get_node_or_null("/root/Settings") as GameSettings
+	if settings_service == null:
+		return
+	settings_service.apply_user_values(_draft)
+	_draft = settings_service.snapshot()
 	_refresh_controls()
 
 
@@ -307,7 +313,9 @@ func _start_game() -> void:
 
 func _resume_game() -> void:
 	get_tree().paused = false
-	GameInput.set_mouse_capture(true)
+	var input_service: Node = get_node_or_null("/root/GameInput")
+	if input_service != null:
+		input_service.call(&"set_mouse_capture", true)
 	if in_game:
 		get_parent().queue_free()
 
@@ -315,6 +323,12 @@ func _resume_game() -> void:
 func _return_to_title() -> void:
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://ui/main_menu/main_menu.tscn")
+
+
+func _quit_game() -> void:
+	var input_service: Node = get_node_or_null("/root/GameInput")
+	if input_service != null:
+		input_service.call(&"quit_safely")
 
 
 func _menu_button(text: String) -> Button:
