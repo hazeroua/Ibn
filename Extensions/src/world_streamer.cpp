@@ -41,6 +41,15 @@ WorldStreamer::WorldStreamer() = default;
 
 WorldStreamer::~WorldStreamer() {
 	wait_all_tasks();
+	abort_attach(true);
+	for (size_t i = retiring_head_; i < retiring_.size(); ++i) {
+		memdelete(retiring_[i]);
+	}
+	retiring_.clear();
+	for (size_t i = doomed_head_; i < doomed_.size(); ++i) {
+		memdelete(doomed_[i]);
+	}
+	doomed_.clear();
 	for (Slot &slot : slots_) {
 		const int state = slot.state.load(std::memory_order_acquire);
 		if ((state == STATE_READY) && slot.node != nullptr) {
@@ -138,6 +147,10 @@ bool WorldStreamer::configure(const Dictionary &p_config) {
 	queue_.clear();
 	loaded_.assign(count, 0U);
 	loaded_.clear();
+	staged_.reserve(kStagedReserve);
+	doomed_.reserve(kDoomedReserve);
+	retiring_.clear();
+	retiring_.reserve(count);
 	build_callables_.clear();
 	build_callables_.reserve(count);
 	for (size_t i = 0; i < count; ++i) {
@@ -262,10 +275,19 @@ void WorldStreamer::dispatch_builds() {
 }
 
 void WorldStreamer::integrate_ready(int64_t p_deadline_us) {
+	Time *time = Time::get_singleton();
+	if (attaching_ >= 0) {
+		if (slots_[static_cast<size_t>(attaching_)].keep == 0) {
+			abort_attach(false); // le joueur est reparti : la cellule n'est jamais terminée
+		} else if (!attach_staged(p_deadline_us)) {
+			return;
+		} else {
+			finish_attach();
+		}
+	}
 	if (in_flight_ == 0) {
 		return;
 	}
-	Time *time = Time::get_singleton();
 	WorkerThreadPool *pool = WorkerThreadPool::get_singleton();
 	const size_t count = slots_.size();
 	for (size_t i = 0; i < count; ++i) {
@@ -289,18 +311,130 @@ void WorldStreamer::integrate_ready(int64_t p_deadline_us) {
 			continue;
 		}
 		if (slot.keep == 0) {
-			// Devenue inutile pendant sa construction (joueur parti ailleurs) : jetée sans toucher à l'arbre.
-			memdelete(slot.node);
+			// Devenue inutile pendant sa construction (joueur parti ailleurs) : jetée sans toucher à l'arbre,
+			// enfant par enfant sous le budget (hors de l'arbre, le détachement ne coûte rien).
+			for (int32_t c = slot.node->get_child_count() - 1; c >= 0; --c) {
+				Node *child = slot.node->get_child(c);
+				slot.node->remove_child(child);
+				doom(child);
+			}
+			doom(slot.node);
 			slot.node = nullptr;
 			slot.state.store(STATE_ABSENT, std::memory_order_relaxed);
 			dirty_ = true;
 			continue;
 		}
-		add_child(slot.node);
-		slot.state.store(STATE_LOADED, std::memory_order_relaxed);
-		loaded_.push_back(static_cast<uint32_t>(i));
-		++load_count_;
-		emit_signal(StringName("cell_loaded"), index_to_cell(i));
+		begin_attach(i);
+		if (!attach_staged(p_deadline_us)) {
+			return; // une seule cellule s'attache à la fois
+		}
+		finish_attach();
+	}
+}
+
+void WorldStreamer::begin_attach(size_t p_index) {
+	Slot &slot = slots_[p_index];
+	Node3D *node = slot.node;
+	// Enfants mis de côté hors de l'arbre (sans coût), la racine entre seule : ses formes de collision
+	// (relief) sont prêtes tout de suite, le reste (maillages, végétation, décor) arrive sous le budget.
+	staged_.clear();
+	staged_next_ = 0;
+	const int32_t children = node->get_child_count();
+	for (int32_t c = 0; c < children; ++c) {
+		staged_.push_back(node->get_child(c));
+	}
+	for (int32_t c = children - 1; c >= 0; --c) {
+		node->remove_child(staged_[static_cast<size_t>(c)]);
+	}
+	add_child(node);
+	slot.state.store(STATE_ATTACHING, std::memory_order_relaxed);
+	attaching_ = static_cast<int64_t>(p_index);
+}
+
+bool WorldStreamer::attach_staged(int64_t p_deadline_us) {
+	Node3D *node = slots_[static_cast<size_t>(attaching_)].node;
+	Time *time = Time::get_singleton();
+	while (staged_next_ < staged_.size()) {
+		node->add_child(staged_[staged_next_]);
+		++staged_next_;
+		if (static_cast<int64_t>(time->get_ticks_usec()) >= p_deadline_us) {
+			break;
+		}
+	}
+	return staged_next_ >= staged_.size();
+}
+
+void WorldStreamer::finish_attach() {
+	const size_t index = static_cast<size_t>(attaching_);
+	attaching_ = -1;
+	staged_.clear();
+	staged_next_ = 0;
+	slots_[index].state.store(STATE_LOADED, std::memory_order_relaxed);
+	loaded_.push_back(static_cast<uint32_t>(index));
+	++load_count_;
+	emit_signal(StringName("cell_loaded"), index_to_cell(index));
+}
+
+void WorldStreamer::abort_attach(bool p_immediate) {
+	if (attaching_ < 0) {
+		return;
+	}
+	const size_t index = static_cast<size_t>(attaching_);
+	attaching_ = -1;
+	for (size_t c = staged_next_; c < staged_.size(); ++c) {
+		if (p_immediate) {
+			memdelete(staged_[c]);
+		} else {
+			doom(staged_[c]);
+		}
+	}
+	staged_.clear();
+	staged_next_ = 0;
+	release_slot(index, false, p_immediate);
+	dirty_ = true;
+}
+
+void WorldStreamer::doom(Node *p_node) {
+	if (doomed_.size() < kDoomedReserve) {
+		doomed_.push_back(p_node);
+	} else {
+		memdelete(p_node); // réserve de 16 384 nœuds jamais atteinte en pratique : pas d'allocation
+	}
+}
+
+void WorldStreamer::free_doomed(int64_t p_deadline_us) {
+	Time *time = Time::get_singleton();
+	// Démontage : un enfant sort de l'arbre à chaque pas, la racine en dernier.
+	while (retiring_head_ < retiring_.size()) {
+		Node3D *root = retiring_[retiring_head_];
+		const int32_t children = root->get_child_count();
+		if (children > 0) {
+			Node *child = root->get_child(children - 1);
+			root->remove_child(child);
+			doom(child);
+		} else {
+			remove_child(root);
+			doom(root);
+			++retiring_head_;
+		}
+		if (static_cast<int64_t>(time->get_ticks_usec()) >= p_deadline_us) {
+			break;
+		}
+	}
+	if (retiring_head_ >= retiring_.size()) {
+		retiring_.clear();
+		retiring_head_ = 0;
+	}
+	while (doomed_head_ < doomed_.size()) {
+		memdelete(doomed_[doomed_head_]);
+		++doomed_head_;
+		if (static_cast<int64_t>(time->get_ticks_usec()) >= p_deadline_us) {
+			break;
+		}
+	}
+	if (doomed_head_ >= doomed_.size()) {
+		doomed_.clear();
+		doomed_head_ = 0;
 	}
 }
 
@@ -310,11 +444,15 @@ void WorldStreamer::release_slot(size_t p_index, bool p_emit, bool p_immediate) 
 	slot.node = nullptr;
 	slot.state.store(STATE_ABSENT, std::memory_order_relaxed);
 	if (node != nullptr) {
-		remove_child(node);
 		if (p_immediate) {
+			remove_child(node);
 			memdelete(node);
+		} else if (retiring_.size() < retiring_.capacity()) {
+			// Reste dans l'arbre et se démonte sous le budget des images suivantes (free_doomed).
+			retiring_.push_back(node);
 		} else {
-			node->queue_free();
+			remove_child(node);
+			memdelete(node);
 		}
 	}
 	++unload_count_;
@@ -360,6 +498,7 @@ void WorldStreamer::update(double p_delta) {
 	// Les retraits d'abord : ils libèrent de la place avant les insertions.
 	unload_stale(deadline_us);
 	integrate_ready(deadline_us);
+	free_doomed(deadline_us);
 	dispatch_builds();
 	const double elapsed_ms = static_cast<double>(static_cast<int64_t>(time->get_ticks_usec()) - start_us) / 1000.0;
 	max_update_ms_ = std::max(max_update_ms_, elapsed_ms);
@@ -382,6 +521,18 @@ void WorldStreamer::wait_all_tasks() {
 
 void WorldStreamer::clear() {
 	wait_all_tasks();
+	abort_attach(true);
+	for (size_t i = retiring_head_; i < retiring_.size(); ++i) {
+		remove_child(retiring_[i]);
+		memdelete(retiring_[i]);
+	}
+	retiring_.clear();
+	retiring_head_ = 0;
+	for (size_t i = doomed_head_; i < doomed_.size(); ++i) {
+		memdelete(doomed_[i]);
+	}
+	doomed_.clear();
+	doomed_head_ = 0;
 	const size_t count = slots_.size();
 	for (size_t i = 0; i < count; ++i) {
 		Slot &slot = slots_[i];
@@ -425,7 +576,7 @@ int64_t WorldStreamer::get_loaded_count() const {
 }
 
 int64_t WorldStreamer::get_pending_count() const {
-	return in_flight_;
+	return in_flight_ + (attaching_ >= 0 ? 1 : 0);
 }
 
 PackedVector2Array WorldStreamer::get_loaded_cells() const {
@@ -447,6 +598,8 @@ Dictionary WorldStreamer::get_stats() const {
 	stats["unloads"] = unload_count_;
 	stats["failures"] = failed_count_;
 	stats["budget_ms"] = budget_ms_;
+	stats["attaching"] = attaching_ >= 0;
+	stats["doomed"] = static_cast<int64_t>(doomed_.size() - doomed_head_ + retiring_.size() - retiring_head_);
 	return stats;
 }
 

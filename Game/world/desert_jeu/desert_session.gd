@@ -106,10 +106,16 @@ func _ready() -> void:
 func _physics_process(_delta: float) -> void:
 	if _pipeline_focused:
 		return
-	if _player != null:
-		_streamer.set_focus(_player.global_position, _player.velocity)
-		if _fauna != null:
-			_fauna.set_focus(_player.global_position, _player.velocity)
+	if _player == null:
+		return
+	# En selle, le personnage ne bouge pas par lui-même (sa vitesse est nulle) : c'est Barq qui porte le regard
+	# du streaming et sa vitesse (jusqu'à 11,5 m/s) qui fait anticiper les cellules.
+	var carrier: CharacterBody3D = _player
+	if _horse_mount != null and _horse_mount.horse != null and _horse_mount.state != HorseMountSystem.State.ON_FOOT:
+		carrier = _horse_mount.horse
+	_streamer.set_focus(carrier.global_position, carrier.velocity)
+	if _fauna != null:
+		_fauna.set_focus(carrier.global_position, carrier.velocity)
 
 
 ## Barq est créé après le joueur et sa caméra : le système peut ainsi l'afficher près du point d'apparition et

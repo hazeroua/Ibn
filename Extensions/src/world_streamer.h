@@ -77,6 +77,7 @@ private:
 		STATE_FAILED = 3,
 		STATE_LOADED = 4,
 		STATE_DEAD = 5, // échec déjà signalé : la cellule n'est plus jamais demandée
+		STATE_ATTACHING = 6, // racine dans l'arbre, enfants ajoutés un par un sous le budget de l'image
 	};
 
 	struct Slot {
@@ -95,6 +96,15 @@ private:
 	void unload_stale(int64_t p_deadline_us);
 	// p_immediate : libération immédiate (clear), sinon différée à la fin de l'image (queue_free).
 	void release_slot(size_t p_index, bool p_emit, bool p_immediate);
+	// Ajoute les enfants mis de côté de la cellule en cours d'attache jusqu'à l'échéance (au moins un) ;
+	// vrai quand la cellule est complète.
+	bool attach_staged(int64_t p_deadline_us);
+	void begin_attach(size_t p_index);
+	void finish_attach();
+	void abort_attach(bool p_immediate);
+	// Démonte les cellules retirées puis libère leurs nœuds jusqu'à l'échéance, au moins un pas par image.
+	void free_doomed(int64_t p_deadline_us);
+	void doom(godot::Node *p_node);
 	void wait_all_tasks();
 	int64_t cell_index_at(float p_x, float p_z) const;
 	godot::Vector2i index_to_cell(size_t p_index) const;
@@ -122,6 +132,19 @@ private:
 	std::vector<godot::Callable> build_callables_;
 	std::vector<uint32_t> queue_; // indices triés par priorité (réservé à la configuration)
 	std::vector<uint32_t> loaded_; // cellules chargées (réservé à la configuration)
+	// Une seule cellule s'attache à la fois : ses enfants, mis de côté avant l'entrée de la racine dans l'arbre.
+	static constexpr size_t kStagedReserve = 4096;
+	static constexpr size_t kDoomedReserve = 16384;
+	int64_t attaching_ = -1;
+	std::vector<godot::Node *> staged_;
+	size_t staged_next_ = 0;
+	// Nœuds retirés de l'arbre, libérés quelques-uns par image (une cellule entière d'un coup ferait un pic).
+	std::vector<godot::Node *> doomed_;
+	size_t doomed_head_ = 0;
+	// Cellules retirées encore dans l'arbre : démontées enfant par enfant (chaque sortie d'arbre coûte), puis
+	// la racine sort. Réservé à la configuration (au plus une par cellule de la grille).
+	std::vector<godot::Node3D *> retiring_;
+	size_t retiring_head_ = 0;
 	size_t queue_head_ = 0;
 	int in_flight_ = 0;
 	bool unload_pending_ = false;
