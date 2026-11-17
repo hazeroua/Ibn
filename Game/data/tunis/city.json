@@ -1,11 +1,13 @@
 {
-  "schema_version": 1,
-  "seed": 1348,
-  "origin": [0.0, 0.0, 0.0],
+  "bounds": {"max_cell":[2,2],"min_cell":[-2,-2]},
   "cell_size_m": 64.0,
-  "bounds": {
-    "min_cell": [-2, -2],
-    "max_cell": [2, 2]
-  },
-  "cells": []
+  "cells": [
+    "cells/cell_-1_-1.json",
+    "cells/cell_-1_0.json",
+    "cells/cell_0_-1.json",
+    "cells/cell_0_0.json"
+  ],
+  "origin": [0.0,0.0,0.0],
+  "schema_version": 1,
+  "seed": 1348
 }

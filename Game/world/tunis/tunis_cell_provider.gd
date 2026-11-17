@@ -20,25 +20,14 @@ static func create() -> TunisCellProvider:
 	for raw_path: Variant in JsonData.get_array(city, "cells", "city.json"):
 		cells.append(JsonData.load_dictionary(DATA_ROOT + String(raw_path)))
 	return from_documents(
-		city,
-		catalog,
-		cells,
-		JsonData.load_dictionary(DATA_ROOT + "interactions.json"),
-		JsonData.load_dictionary(DATA_ROOT + "audio.json")
+		city, catalog, cells, JsonData.load_dictionary(DATA_ROOT + "interactions.json"), JsonData.load_dictionary(DATA_ROOT + "audio.json")
 	)
 
 
 static func from_documents(
-	city: Dictionary,
-	catalog_data: Dictionary,
-	cells: Array,
-	interactions: Dictionary,
-	audio: Dictionary,
-	scene_overrides: Dictionary = {}
+	city: Dictionary, catalog_data: Dictionary, cells: Array, interactions: Dictionary, audio: Dictionary, scene_overrides: Dictionary = {}
 ) -> TunisCellProvider:
-	var errors := TunisDataValidator.validate_documents(
-		city, catalog_data, cells, interactions, audio
-	)
+	var errors := TunisDataValidator.validate_documents(city, catalog_data, cells, interactions, audio)
 	if not errors.is_empty():
 		for message: String in errors:
 			push_error("TunisCellProvider: " + message)
@@ -63,10 +52,7 @@ static func from_documents(
 		var entries: Array[TunisInstanceData] = []
 		for raw_entry: Variant in cell_data["instances"]:
 			entries.append(TunisInstanceData.from_dictionary(raw_entry))
-		entries.sort_custom(
-			func(a: TunisInstanceData, b: TunisInstanceData) -> bool:
-				return String(a.id) < String(b.id)
-		)
+		entries.sort_custom(func(a: TunisInstanceData, b: TunisInstanceData) -> bool: return String(a.id) < String(b.id))
 		provider._cells[coordinate] = entries
 	return provider
 
@@ -76,7 +62,10 @@ func build_cell(stream_cell: Vector2i) -> Node3D:
 	if not contains_logical_cell(logical_cell):
 		push_error("TunisCellProvider: cellule hors des limites : %s." % logical_cell)
 		return null
-	var instances: Array[TunisInstanceData] = _cells.get(logical_cell, [])
+	# Une cellule sans instance reste une cellule valide (vide) : le tableau par défaut doit être typé.
+	var instances: Array[TunisInstanceData] = []
+	if _cells.has(logical_cell):
+		instances = _cells[logical_cell]
 	return _builder.build(logical_cell, cell_origin(logical_cell), instances)
 
 
@@ -89,19 +78,11 @@ func logical_to_stream(logical_cell: Vector2i) -> Vector2i:
 
 
 func contains_logical_cell(cell: Vector2i) -> bool:
-	return (
-		cell.x >= _min_cell.x
-		and cell.y >= _min_cell.y
-		and cell.x <= _max_cell.x
-		and cell.y <= _max_cell.y
-	)
+	return cell.x >= _min_cell.x and cell.y >= _min_cell.y and cell.x <= _max_cell.x and cell.y <= _max_cell.y
 
 
 func cell_origin(logical_cell: Vector2i) -> Vector3:
-	return (
-		_origin
-		+ Vector3(float(logical_cell.x) * _cell_size_m, 0.0, float(logical_cell.y) * _cell_size_m)
-	)
+	return _origin + Vector3(float(logical_cell.x) * _cell_size_m, 0.0, float(logical_cell.y) * _cell_size_m)
 
 
 func cell_count() -> int:

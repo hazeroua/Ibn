@@ -6,7 +6,7 @@
   1. Qualité du GDScript (gdlint, gdformat)
   2. Ressources libres (importer-ressources)
   3. Compilation C++ (debug et release)
-  4. Import Godot
+  4. Import Godot, puis données générées de la médina à jour
   5. Construction des scènes générées
   6. Tests GUT
   7. Mesures de performance et captures d'écran de chaque carte (sauf -SansRendu)
@@ -41,6 +41,7 @@ Write-Ok "$($scripts.Count) scripts conformes"
 & (Join-Path $PSScriptRoot 'importer-ressources.ps1')
 & (Join-Path $PSScriptRoot 'compiler.ps1') -Cible toutes
 & (Join-Path $PSScriptRoot 'importer.ps1')
+& (Join-Path $PSScriptRoot 'generer-medina.ps1') -Verifier
 & (Join-Path $PSScriptRoot 'construire.ps1')
 if (-not $Rapide) { & (Join-Path $PSScriptRoot 'tester.ps1') }
 
@@ -49,6 +50,7 @@ if (-not $SansRendu -and -not $Rapide) {
         & (Join-Path $PSScriptRoot 'mesurer.ps1') -Carte $carte -SansBudgets:$SansBudgets
         & (Join-Path $PSScriptRoot 'capturer.ps1') -Carte $carte
     }
+    & (Join-Path $PSScriptRoot 'capturer-medina.ps1')
 }
 
 Write-Etape 'Validation terminée'
