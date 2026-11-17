@@ -13,6 +13,7 @@ config/features=PackedStringArray("4.7", "Forward Plus")
 [autoload]
 
 GameInput="*res://core/input/game_input.gd"
+Settings="*res://core/settings/game_settings.gd"
 Pipeline="*res://core/pipeline/pipeline_runner.gd"
 Footsteps="*res://audio/footsteps/footsteps.gd"
 DayNight="*res://world/sky/day_night.gd"

@@ -347,7 +347,14 @@ func _vault_landing(origin: Transform3D, direction: Vector3, gap: float, top: fl
 func _step_vault(delta: float) -> void:
 	_vault_time += delta
 	var t: float = clampf(_vault_time / _vault_length, 0.0, 1.0)
-	global_position = _bezier(_vault_from, _vault_rise, _vault_fall, _vault_to, t)
+	var next_position: Vector3 = _bezier(_vault_from, _vault_rise, _vault_fall, _vault_to, t)
+	if test_move(global_transform, next_position - global_position, null, safe_margin, false, 1):
+		_vaulting = false
+		_grounded = false
+		_air_time = 0.0
+		velocity = Vector3.ZERO
+		return
+	global_position = next_position
 	velocity = Vector3.ZERO
 	if t >= 1.0:
 		_vaulting = false

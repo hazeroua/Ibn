@@ -12,6 +12,36 @@ const MAX_BUILD_MS: float = 120.0
 const MAX_SHAPES_PER_BODY: int = 80
 
 
+func test_wall_collisions_align_with_visible_walls_outside_origin_cell() -> void:
+	var field: DesertHeightfield = DesertHeightfield.from_data(JsonData.load_dictionary(DESERT_PATH))
+	var layout: PalmeraieLayout = PalmeraieLayout.load_default(field)
+	var cells: PalmeraieCells = PalmeraieCells.create(layout, field)
+	for cz: int in field.cells_per_side:
+		for cx: int in field.cells_per_side:
+			var cell := Vector2i(cx, cz)
+			var data: PalmeraieLayout.PalmeraieCellData = layout.cell_data(cell)
+			if data == null or data.walls.is_empty():
+				continue
+			var origin := Vector3(-field.half_extent + cx * field.cell_size, 0.0, -field.half_extent + cz * field.cell_size)
+			if origin.x == 0.0 and origin.z == 0.0:
+				continue
+			var wall := Vector2(data.walls[0], data.walls[1]).lerp(Vector2(data.walls[2], data.walls[3]), 0.5)
+			var body := StaticBody3D.new()
+			body.position = origin
+			cells.add_decor(cell, body)
+			var nearest: float = INF
+			for child: Node in body.get_children():
+				if child is CollisionObject3D:
+					var collider := child as CollisionObject3D
+					for owner_id: int in collider.get_shape_owners():
+						var center: Vector3 = origin + collider.shape_owner_get_transform(owner_id).origin
+						nearest = minf(nearest, Vector2(center.x, center.z).distance_to(wall))
+			body.free()
+			assert_lt(nearest, 10.0, "collision du muret proche du muret visible")
+			return
+	fail_test("aucune cellule de palmeraie avec muret trouvée")
+
+
 func test_every_palmeraie_cell_builds_within_bounds() -> void:
 	var field: DesertHeightfield = DesertHeightfield.from_data(JsonData.load_dictionary(DESERT_PATH))
 	var layout: PalmeraieLayout = PalmeraieLayout.load_default(field)

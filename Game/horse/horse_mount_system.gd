@@ -97,11 +97,13 @@ func _physics_process(delta: float) -> void:
 			if _state_time >= _clip_length(PlayerAnimator.MOUNT_CLIP):
 				_mount_attach_from = _mount_point()
 				_enter(State.MOUNTING_ATTACH)
+				# Le clip de montée finit déjà le cavalier en hauteur. La pose assise
+				# compense le déplacement de la racine vers la selle pendant le fondu.
+				_play_rider(PlayerAnimator.RIDE_CLIP, MOUNT_ATTACH_TIME)
 		State.MOUNTING_ATTACH:
 			horse.set_input(Vector2.ZERO, false)
 			if _state_time >= MOUNT_ATTACH_TIME:
 				_enter(State.MOUNTED)
-				_current_rider_clip = &""
 		State.MOUNTED:
 			if Input.is_action_just_pressed(MOUNT_ACTION):
 				_dismount_requested = true

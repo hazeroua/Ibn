@@ -4,14 +4,14 @@ extends Node
 ## alors le singleton « Pipeline » qui charge la scène et pilote la caméra.
 
 const DEFAULT_SCENE_SETTING: String = "ibn/boot/default_scene"
+const MENU_SCENE: String = "res://ui/main_menu/main_menu.tscn"
 
 
 func _ready() -> void:
 	if Pipeline.is_active():
 		return
 	var args: Dictionary[String, String] = CommandLine.parse(OS.get_cmdline_user_args())
-	var default_scene: String = str(ProjectSettings.get_setting(DEFAULT_SCENE_SETTING, ""))
-	var scene_path: String = args.get("scene", default_scene)
+	var scene_path: String = args.get("scene", MENU_SCENE)
 	if scene_path.is_empty() or not ResourceLoader.exists(scene_path):
 		push_error("Boot : scène introuvable « %s ». Lancez Scripts/Pipeline/construire.ps1." % scene_path)
 		get_tree().quit(1)

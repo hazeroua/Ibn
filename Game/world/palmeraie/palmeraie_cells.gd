@@ -387,7 +387,9 @@ func _add_wall_collisions(
 ) -> void:
 	var tolerance: float = JsonData.get_float(walls, "collision_height_tolerance_m", CONTEXT)
 	var max_piece: float = JsonData.get_float(walls, "collision_piece_max_m", CONTEXT)
-	var origin: Vector3 = (body as Node3D).position
+	# Le corps des murets est enfant de la cellule : ses formes sont locales à la cellule,
+	# tandis que les points du plan sont en coordonnées du monde.
+	var origin: Vector3 = (body as Node3D).get_parent().position
 	var step: float = length / float(count)
 	var yaw: float = atan2(-direction.y, direction.x)
 	var first: int = 0

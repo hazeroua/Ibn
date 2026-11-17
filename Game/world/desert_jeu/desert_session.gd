@@ -30,6 +30,24 @@ var _horse_mount: HorseMountSystem
 ## Vrai quand le pipeline (captures, mesures) impose le point de chargement du monde.
 var _pipeline_focused: bool = false
 var _pipeline_settled: bool = true
+var _pause_layer: CanvasLayer
+
+
+func _input(event: InputEvent) -> void:
+	if not _pipeline_focused and _player != null and _pause_layer == null and event.is_action_pressed(&"quit_game"):
+		_pause_layer = CanvasLayer.new()
+		_pause_layer.layer = 90
+		_pause_layer.process_mode = Node.PROCESS_MODE_ALWAYS
+		_pause_layer.tree_exited.connect(func() -> void: _pause_layer = null)
+		var menu := MainMenu.new()
+		menu.in_game = true
+		menu.set_process_input(false)
+		menu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		_pause_layer.add_child(menu)
+		add_child(_pause_layer)
+		menu.set_process_input.call_deferred(true)
+		get_tree().paused = true
+		get_viewport().set_input_as_handled()
 
 
 func _ready() -> void:
@@ -70,7 +88,11 @@ func _ready() -> void:
 	)
 	_streamer = WorldStreamer.new()
 	_streamer.name = "Streaming"
-	if not _streamer.load_config(STREAMING_PATH):
+	var streaming_config: Dictionary = JsonData.load_dictionary(STREAMING_PATH)
+	var user_settings: GameSettings = get_node_or_null("/root/Settings") as GameSettings
+	if user_settings != null:
+		streaming_config = user_settings.apply_streaming_overrides(streaming_config)
+	if not _streamer.configure(streaming_config):
 		return
 	_streamer.register_provider(_provider)
 	add_child(_streamer)

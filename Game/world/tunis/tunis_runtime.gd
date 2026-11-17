@@ -20,7 +20,11 @@ func initialize(provider: TunisCellProvider = null, streamer: WorldStreamer = nu
 		return false
 	_streamer = streamer if streamer != null else WorldStreamer.new()
 	_streamer.name = "Streaming"
-	if not _streamer.load_config(STREAMING_PATH) or not _streamer.register_provider(_provider):
+	var streaming_config: Dictionary = JsonData.load_dictionary(STREAMING_PATH)
+	var user_settings: GameSettings = get_node_or_null("/root/Settings") as GameSettings
+	if user_settings != null:
+		streaming_config = user_settings.apply_streaming_overrides(streaming_config)
+	if not _streamer.configure(streaming_config) or not _streamer.register_provider(_provider):
 		_streamer.free()
 		_streamer = null
 		return false
