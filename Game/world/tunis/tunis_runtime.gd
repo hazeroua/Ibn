@@ -21,7 +21,11 @@ func initialize(provider: TunisCellProvider = null, streamer: WorldStreamer = nu
 	_streamer = streamer if streamer != null else WorldStreamer.new()
 	_streamer.name = "Streaming"
 	var streaming_config: Dictionary = JsonData.load_dictionary(STREAMING_PATH)
-	var user_settings: GameSettings = get_node_or_null("/root/Settings") as GameSettings
+	# initialize() peut précéder l'entrée dans l'arbre : les réglages se lisent depuis la racine du SceneTree.
+	var tree: SceneTree = Engine.get_main_loop() as SceneTree
+	var user_settings: GameSettings = null
+	if tree != null:
+		user_settings = tree.root.get_node_or_null(^"Settings") as GameSettings
 	if user_settings != null:
 		streaming_config = user_settings.apply_streaming_overrides(streaming_config)
 	if not _streamer.configure(streaming_config) or not _streamer.register_provider(_provider):

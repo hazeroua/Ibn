@@ -14,6 +14,7 @@ const VEGETATION_PATH: String = "res://data/desert/vegetation.json"
 const GROUND_COVER_PATH: String = "res://data/desert/ground_cover.json"
 const TIME_PANEL_SCENE: String = "res://ui/time_panel/time_panel.tscn"
 const WORLD_MAP_SCENE: String = "res://ui/world_map/world_map.tscn"
+const TUNIS_TRANSITION_PATH: String = "res://data/tunis/transition.json"
 const SPAWN_WAIT_FRAMES_MAX: int = 1800
 
 var _streamer: WorldStreamer
@@ -27,6 +28,7 @@ var _fauna: FaunaSystem
 ## Barq reste une entité de la session : il est visible dès l'apparition du joueur et conserve ses traces, sons et
 ## commande de monte même pendant une partie de très longue durée.
 var _horse_mount: HorseMountSystem
+var _tunis_gate: TunisGateTransition
 ## Vrai quand le pipeline (captures, mesures) impose le point de chargement du monde.
 var _pipeline_focused: bool = false
 var _pipeline_settled: bool = true
@@ -54,7 +56,10 @@ func _ready() -> void:
 	add_to_group(&"pipeline_focus")
 	var data: Dictionary = JsonData.load_dictionary(DATA_PATH)
 	var field: DesertHeightfield = DesertHeightfield.from_data(data)
-	var terrain: DesertTerrainCell = DesertTerrainCell.from_data(data)
+	var transition_data: Dictionary = JsonData.load_dictionary(TUNIS_TRANSITION_PATH)
+	if field == null or not field.configure_city_transition(transition_data):
+		return
+	var terrain: DesertTerrainCell = DesertTerrainCell.from_data(data, field)
 	var foliage: Dictionary = DesertFoliageMeshes.load_settings()
 	var meshes: Dictionary = DesertFoliageMeshes.build_levels(foliage)
 	if data.is_empty() or field == null or terrain == null or meshes.is_empty():
@@ -129,6 +134,7 @@ func _ready() -> void:
 	wading.setup(_player, field)
 	add_child(wading)
 	_add_horse(field)
+	_add_tunis_gate(transition_data)
 
 
 func _add_world_map(data: Dictionary) -> void:
@@ -185,6 +191,29 @@ func _add_horse(field: DesertHeightfield) -> void:
 	_horse_mount.name = "BarqSystem"
 	add_child(_horse_mount)
 	_horse_mount.setup(_player, _rig, field)
+
+
+func _add_tunis_gate(config: Dictionary) -> void:
+	_tunis_gate = TunisGateTransition.new()
+	_tunis_gate.name = "PorteDeTunis"
+	add_child(_tunis_gate)
+	var city := TunisWorldRuntime.new()
+	city.name = "Medina"
+	if not _tunis_gate.configure(config, _player, _horse_mount, city):
+		_tunis_gate.queue_free()
+		_tunis_gate = null
+		city.free()
+		push_error("DesertSession : raccord de Tunis invalide.")
+		return
+	var provider: TunisWorldProvider = TunisWorldProvider.with_offset(TunisCellProvider.create(), _tunis_gate.global_position)
+	if provider == null:
+		push_error("DesertSession : cellules de Tunis indisponibles.")
+		city.free()
+		_tunis_gate.queue_free()
+		_tunis_gate = null
+		return
+	city.prepare(provider)
+	_tunis_gate.add_child(city)
 
 
 ## Captures et mesures du pipeline : le monde se charge autour du point de vue au lieu du personnage.

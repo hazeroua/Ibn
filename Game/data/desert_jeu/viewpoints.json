@@ -1,5 +1,5 @@
 {
-  "description": "Points de vue reproductibles du désert jouable complet. Les vues au sol, de la palmeraie et de la crête couvrent les pires cas GPU du MVP 3.",
+  "description": "Points de vue reproductibles du désert jouable complet. Les vues au sol, de la palmeraie et de la crête couvrent les pires cas GPU du MVP 3 ; les vues « vue_tunis_* » montrent l'approche, la porte et la première rue de Tunis (MVP 4).",
   "viewpoints": [
     { "id": "vue_generale", "position": [-420.0, 75.0, -900.0], "target": [260.0, 20.0, -180.0] },
     { "id": "vue_crete", "position": [130.0, 70.0, 720.0], "target": [260.0, 28.0, -300.0] },
@@ -13,6 +13,10 @@
     { "id": "vue_lac_sol", "position": [560.0, 31.0, -250.0], "target": [620.0, 28.0, -300.0] },
     { "id": "vue_chott", "position": [800.0, 75.0, -450.0], "target": [1050.0, 27.0, -1000.0] },
     { "id": "vue_palmeraie_crete", "position": [120.0, 62.0, 40.0], "target": [260.0, 26.0, -190.0] },
-    { "id": "vue_palmeraie_parcelles", "position": [330.0, 48.0, -20.0], "target": [250.0, 26.0, -230.0] }
+    { "id": "vue_palmeraie_parcelles", "position": [330.0, 48.0, -20.0], "target": [250.0, 26.0, -230.0] },
+    { "id": "vue_tunis_approche", "position": [1000.7, 47.1, 996.0], "target": [1000.7, 49.0, 796.0] },
+    { "id": "vue_tunis_porte", "position": [994.0, 47.7, 812.0], "target": [1000.7, 49.5, 790.0] },
+    { "id": "vue_tunis_rue", "position": [1000.7, 47.7, 793.0], "target": [1000.7, 47.7, 775.0] },
+    { "id": "vue_tunis_dessus", "position": [1000.0, 170.0, 930.0], "target": [1000.0, 46.0, 760.0] }
   ]
 }

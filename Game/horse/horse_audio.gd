@@ -49,6 +49,11 @@ func hoof(world_position: Vector3, speed: float, collider: Object) -> void:
 
 
 func jump_started(world_position: Vector3) -> void:
+	neigh(world_position)
+
+
+## Hennissement (élan d'un saut, réponse au sifflet quand Barq ne peut pas venir).
+func neigh(world_position: Vector3) -> void:
 	_play(_neigh_stream, world_position, -7.0, _rng.randf_range(0.96, 1.03))
 
 
