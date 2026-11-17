@@ -9,20 +9,53 @@ extends Node
 var _settings: WindSettings = null
 var _rumble: AudioStreamPlayer = null
 var _gust: AudioStreamPlayer = null
+var _owns_bus: bool = false
 
 
 ## Construit le bus et les deux lecteurs (une fois).
-func build(settings: WindSettings) -> void:
+func build(settings: WindSettings, start_playback: bool = true) -> void:
 	_settings = settings
 	name = "WindAudio"
-	_ensure_bus(settings.audio_bus, settings.audio_send)
+	_owns_bus = _ensure_bus(settings.audio_bus, settings.audio_send)
 	_rumble = _make_player("Rumble", settings.rumble, settings.seed_value)
 	_gust = _make_player("Gust", settings.gust, settings.seed_value + 1)
 	apply_wind(0.0, 0.0)
+	if start_playback:
+		start()
+
+
+func start() -> void:
+	for player: AudioStreamPlayer in [_rumble, _gust]:
+		if player != null and not player.playing:
+			player.play()
+
+
+func shutdown() -> void:
+	for player: AudioStreamPlayer in [_rumble, _gust]:
+		if player == null:
+			continue
+		player.stop()
+		player.stream = null
+
+
+## Libère explicitement les boucles synthétisées avant l'arrêt du serveur audio.
+## Sans cela, Windows conserve les AudioStreamWAV jusqu'à la destruction tardive
+## des singletons et Godot les signale comme objets orphelins à la fermeture.
+func _exit_tree() -> void:
+	shutdown()
+	_rumble = null
+	_gust = null
+	if _owns_bus and _settings != null:
+		var bus_index: int = AudioServer.get_bus_index(_settings.audio_bus)
+		if bus_index != -1:
+			AudioServer.remove_bus(bus_index)
+	_owns_bus = false
 
 
 ## Volume et hauteur selon la force du vent et la rafale (0 à 1). Aucune allocation.
 func apply_wind(strength: float, gust: float) -> void:
+	if _settings == null or _rumble == null or _gust == null:
+		return
 	_set_layer(_rumble, _settings.rumble, strength)
 	var gust_strength: float = maxf(strength - 0.15, 0.0) / 0.85 * (0.4 + 0.6 * gust)
 	_set_layer(_gust, _settings.gust, gust_strength)
@@ -46,7 +79,6 @@ func _make_player(player_name: String, layer: WindSettings.WindLayer, seed_value
 		seed_value, _settings.audio_loop_seconds, _settings.audio_mix_rate, layer.high_cutoff_hz, layer.low_cutoff_hz
 	)
 	add_child(player)
-	player.play()
 	return player
 
 
@@ -56,11 +88,12 @@ static func _set_layer(player: AudioStreamPlayer, layer: WindSettings.WindLayer,
 	player.pitch_scale = lerpf(layer.min_pitch, layer.max_pitch, t)
 
 
-static func _ensure_bus(bus_name: StringName, send: StringName) -> void:
+static func _ensure_bus(bus_name: StringName, send: StringName) -> bool:
 	if AudioServer.get_bus_index(bus_name) != -1:
-		return
+		return false
 	AudioServer.add_bus()
 	var index: int = AudioServer.bus_count - 1
 	AudioServer.set_bus_name(index, bus_name)
 	if AudioServer.get_bus_index(send) != -1:
 		AudioServer.set_bus_send(index, send)
+	return true

@@ -15,10 +15,14 @@ func test_height_at_cost() -> void:
 	var field: DesertHeightfield = DesertHeightfield.from_data(JsonData.load_dictionary(DATA_PATH))
 	var count: int = 200000
 	var sum: float = 0.0
-	var start: int = Time.get_ticks_usec()
-	for i: int in count:
-		sum += field.height_at(float(i % 4000) - 2000.0, float(i / 4000) * 80.0 - 2000.0)
-	var ns: float = float(Time.get_ticks_usec() - start) * 1000.0 / float(count)
+	var samples := PackedFloat32Array()
+	for _round_index: int in 3:
+		var start: int = Time.get_ticks_usec()
+		for i: int in count:
+			sum += field.height_at(float(i % 4000) - 2000.0, float(i / 4000) * 80.0 - 2000.0)
+		samples.append(float(Time.get_ticks_usec() - start) * 1000.0 / float(count))
+	samples.sort()
+	var ns: float = samples[1]
 	gut.p("height_at : %.0f ns par appel (%d appels, somme %.0f)" % [ns, count, sum])
 	assert_lt(ns, MAX_HEIGHT_NS)
 
@@ -26,10 +30,14 @@ func test_height_at_cost() -> void:
 func test_surface_at_cost() -> void:
 	var field: DesertHeightfield = DesertHeightfield.from_data(JsonData.load_dictionary(DATA_PATH))
 	var count: int = 50000
-	var start: int = Time.get_ticks_usec()
-	for i: int in count:
-		field.surface_at(Vector3(float(i % 4000) - 2000.0, 0.0, float(i / 4000) * 300.0 - 2000.0))
-	var ns: float = float(Time.get_ticks_usec() - start) * 1000.0 / float(count)
+	var samples := PackedFloat32Array()
+	for _round_index: int in 3:
+		var start: int = Time.get_ticks_usec()
+		for i: int in count:
+			field.surface_at(Vector3(float(i % 4000) - 2000.0, 0.0, float(i / 4000) * 300.0 - 2000.0))
+		samples.append(float(Time.get_ticks_usec() - start) * 1000.0 / float(count))
+	samples.sort()
+	var ns: float = samples[1]
 	gut.p("surface_at : %.0f ns par appel" % ns)
 	assert_lt(ns, MAX_HEIGHT_NS * 6.0)
 

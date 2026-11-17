@@ -38,7 +38,7 @@ window/vsync/vsync_mode=1
 [ibn]
 
 boot/default_scene="res://world/desert_jeu/desert_jeu.tscn"
-projet/mvp_en_cours="mvp-2"
+projet/mvp_en_cours="mvp-4"
 tests/budgets_de_temps_bloquants=false
 
 [layer_names]

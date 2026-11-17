@@ -1,0 +1,16 @@
+{
+  "description": "Marche reproductible dans la palmeraie dense, depuis la rive nord de l'oasis à travers les parcelles irriguées.",
+  "carrier": "player",
+  "arrival_radius_m": 3.0,
+  "stall_time_s": 8.0,
+  "stall_min_progress_m": 0.2,
+  "max_duration_s": 600.0,
+  "waypoints": [
+    { "id": "rive_nord", "position": [260.0, -100.0], "gait": "walk" },
+    { "id": "parcelles_nord_est", "position": [335.0, -70.0], "gait": "walk" },
+    { "id": "canal_est", "position": [405.0, -120.0], "gait": "walk_slow" },
+    { "id": "parcelles_est", "position": [420.0, -225.0], "gait": "walk" },
+    { "id": "lisiere_sud", "position": [330.0, -330.0], "gait": "run" },
+    { "id": "parcelles_sud_ouest", "position": [190.0, -335.0], "gait": "run" }
+  ]
+}

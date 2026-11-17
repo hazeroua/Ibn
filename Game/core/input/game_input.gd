@@ -20,6 +20,7 @@ var device_tracker: InputDeviceTracker = InputDeviceTracker.new()
 var _catalog: Dictionary = {}
 var _mouse_capture_requested: bool = false
 var _window_focused: bool = true
+var _quitting: bool = false
 
 
 func _init() -> void:
@@ -50,7 +51,28 @@ func _input(event: InputEvent) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"quit_game"):
-		get_tree().quit()
+		quit_safely()
+
+
+## Arrête tous les playbacks puis laisse au thread de mixage le temps de vider son fondu.
+## Godot conserve sinon les ressources des sons encore actifs au moment de détruire AudioServer.
+func quit_safely(exit_code: int = 0) -> void:
+	if _quitting:
+		return
+	_quitting = true
+	var nodes: Array[Node] = get_tree().root.find_children("*", "", true, false)
+	for node: Node in nodes:
+		if node is AudioStreamPlayer:
+			(node as AudioStreamPlayer).stop()
+			(node as AudioStreamPlayer).stream = null
+		elif node is AudioStreamPlayer2D:
+			(node as AudioStreamPlayer2D).stop()
+			(node as AudioStreamPlayer2D).stream = null
+		elif node is AudioStreamPlayer3D:
+			(node as AudioStreamPlayer3D).stop()
+			(node as AudioStreamPlayer3D).stream = null
+	await get_tree().create_timer(0.1).timeout
+	get_tree().quit(exit_code)
 
 
 func _notification(what: int) -> void:

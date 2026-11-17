@@ -20,6 +20,9 @@ enum Gait { WALK_SLOW, WALK, RUN }
 
 ## Noms des allures dans les données (contrat du personnage : walk_slow, walk, run).
 const GAIT_NAMES: Array[String] = ["walk_slow", "walk", "run"]
+const CARRIER_PLAYER: StringName = &"player"
+const CARRIER_HORSE: StringName = &"horse"
+const CARRIER_NAMES: Array[StringName] = [CARRIER_PLAYER, CARRIER_HORSE]
 ## Plus grand nombre de points de passage : la validation et le suivi restent linéaires.
 const MAX_WAYPOINTS: int = 10000
 ## Durée maximale d'un parcours : dimensionne la mémoire des mesures (900 s à 2 000 i/s = 1,8 million d'images).
@@ -34,6 +37,7 @@ const MAX_COORDINATE_M: float = 1000000.0
 
 var source: String = ""
 var description: String = ""
+var carrier: StringName = CARRIER_PLAYER
 var has_start: bool = false
 var start_position: Vector3 = Vector3.ZERO
 var arrival_radius: float = 0.0
@@ -71,6 +75,10 @@ func parse(data: Dictionary, context: String) -> PackedStringArray:
 	var problems := PackedStringArray()
 	source = context
 	description = _read_string(data, "description", context, problems)
+	carrier = StringName(str(data.get("carrier", CARRIER_PLAYER)))
+	if not CARRIER_NAMES.has(carrier):
+		problems.append("« carrier » doit valoir player ou horse (%s)." % context)
+		carrier = CARRIER_PLAYER
 	has_start = data.has("start_position")
 	if has_start:
 		start_position = _read_vector3(data, "start_position", context, problems)

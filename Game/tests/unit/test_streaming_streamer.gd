@@ -25,12 +25,17 @@ class FakeProvider:
 		for i: int in children:
 			var child := Node3D.new()
 			if child_enter_us > 0:
-				child.tree_entered.connect(OS.delay_usec.bind(child_enter_us))
+				child.tree_entered.connect(_burn_cpu.bind(child_enter_us))
 			node.add_child(child)
 		mutex.lock()
 		built += 1
 		mutex.unlock()
 		return node
+
+	static func _burn_cpu(duration_us: int) -> void:
+		var deadline_us: int = Time.get_ticks_usec() + duration_us
+		while Time.get_ticks_usec() < deadline_us:
+			pass
 
 
 var _streamer: WorldStreamer
@@ -137,7 +142,10 @@ func _run_path(points: Array[Vector3], speed: float, label: String) -> void:
 			frames += 1
 			if not _streamer.is_cell_loaded(_streamer.world_to_cell(pos)):
 				missing_frames += 1
-			OS.delay_usec(1000)
+			# Laisse périodiquement les ouvriers avancer. Sous Windows, Sleep(1 ms) est souvent
+			# arrondi à 15,6 ms : le faire à chaque image rendait ce test long de plusieurs minutes.
+			if frames % 32 == 0:
+				OS.delay_usec(1000)
 	var stats: Dictionary = _streamer.get_stats()
 	(
 		gut

@@ -17,6 +17,7 @@ extends Node
 enum Status { IDLE, RUNNING, FINISHED, STOPPED, BLOCKED, TIMED_OUT, PLAYER_LOST, NO_CAMERA }
 
 const PLAYER_GROUP: StringName = &"player"
+const HORSE_GROUP: StringName = &"horse"
 const MOVE_FORWARD: StringName = &"move_forward"
 const MOVE_BACK: StringName = &"move_back"
 const MOVE_LEFT: StringName = &"move_left"
@@ -36,6 +37,7 @@ const PHYSICS_PRIORITY: int = -100000
 ## En dessous de cette intensité, une action de déplacement est relâchée plutôt que pressée à zéro.
 const MIN_STRENGTH: float = 0.0001
 const FLAT_EPSILON: float = 0.000001
+const HORSE_PATH_REACH_M: float = 6.0
 
 var _route: PlayerRoute
 var _player: Node3D
@@ -51,6 +53,11 @@ var _distance_walked: float = 0.0
 var _last_position: Vector2 = Vector2.ZERO
 var _failure_message: String = ""
 var _pressed := PackedByteArray()
+var _horse: HorseController = null
+var _horse_path := PackedVector3Array()
+var _horse_path_index: int = 0
+var _horse_path_route_index: int = -1
+var _waiting_horse_path: bool = false
 
 
 func _init() -> void:
@@ -91,6 +98,23 @@ static func find_player(tree: SceneTree) -> Node3D:
 	return tree.get_first_node_in_group(PLAYER_GROUP) as Node3D
 
 
+static func actor_problem(tree: SceneTree, carrier: StringName) -> String:
+	var actors: Array[Node] = tree.get_nodes_in_group(carrier)
+	if actors.is_empty():
+		return "aucun porteur dans la scène (groupe « %s » vide)" % carrier
+	if actors.size() > 1:
+		return "%d nœuds dans le groupe « %s » : le porteur doit être unique" % [actors.size(), carrier]
+	if not actors[0] is Node3D:
+		return "le nœud %s du groupe « %s » n'est pas un Node3D" % [actors[0].get_path(), carrier]
+	return ""
+
+
+static func find_actor(tree: SceneTree, carrier: StringName) -> Node3D:
+	if not actor_problem(tree, carrier).is_empty():
+		return null
+	return tree.get_first_node_in_group(carrier) as Node3D
+
+
 ## Actions d'entrée dont le parcours a besoin (les allures absentes du parcours ne sont pas exigées).
 static func required_actions(route: PlayerRoute) -> Array[StringName]:
 	var actions: Array[StringName] = [MOVE_FORWARD, MOVE_BACK, MOVE_LEFT, MOVE_RIGHT]
@@ -114,6 +138,10 @@ func setup(route: PlayerRoute, player: Node3D) -> void:
 	release_all()
 	_route = route
 	_player = player
+	_horse = player as HorseController
+	_horse_path_route_index = -1
+	_waiting_horse_path = false
+	_horse_path = PackedVector3Array()
 	_points = route.points
 	_gaits = route.gaits
 	_status = Status.IDLE
@@ -143,6 +171,7 @@ func begin(automatic: bool = true) -> void:
 	_status = Status.RUNNING
 	_apply_gait(_gaits[0])
 	_reset_stall(_last_position.distance_to(_points[0]))
+	_request_horse_path()
 	_automatic = automatic
 	set_physics_process(automatic)
 
@@ -169,9 +198,28 @@ func tick(delta: float) -> void:
 			_stop_driving()
 			return
 		_apply_gait(_gaits[_index])
+		_request_horse_path()
 		to_target = _points[_index] - position
 		distance = to_target.length()
 		_reset_stall(distance)
+	if _horse != null:
+		if _waiting_horse_path:
+			if not _horse.poll_pipeline_path():
+				_release_movement()
+				return
+			_waiting_horse_path = false
+			_horse_path = _horse.pipeline_path()
+			_horse_path_index = 0
+		if not _horse_path.is_empty():
+			while _horse_path_index < _horse_path.size() - 1:
+				var path_point := Vector2(_horse_path[_horse_path_index].x, _horse_path[_horse_path_index].z)
+				if position.distance_to(path_point) >= HORSE_PATH_REACH_M:
+					break
+				_horse_path_index += 1
+				_reset_stall(INF)
+			var path_target: Vector3 = _horse_path[_horse_path_index]
+			to_target = Vector2(path_target.x, path_target.z) - position
+			distance = to_target.length()
 	if distance < _best_distance - _route.stall_min_progress:
 		_best_distance = distance
 		_stall_timer = 0.0
@@ -280,6 +328,22 @@ func _reset_stall(distance: float) -> void:
 func _stop_driving() -> void:
 	set_physics_process(false)
 	release_all()
+
+
+func _request_horse_path() -> void:
+	if _horse == null or _horse_path_route_index == _index:
+		return
+	_horse_path_route_index = _index
+	_horse_path = PackedVector3Array()
+	_horse_path_index = 0
+	_waiting_horse_path = true
+	var target := Vector3(_points[_index].x, _horse.global_position.y, _points[_index].y)
+	_horse.request_pipeline_path(target)
+
+
+func _release_movement() -> void:
+	for index: int in 4:
+		_set_action(index, 0.0)
 
 
 func _fail(status: Status, reason: String) -> void:

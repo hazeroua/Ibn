@@ -203,6 +203,20 @@ func is_path_grid_ready() -> bool:
 	return _call_path.is_grid_ready()
 
 
+## Pipeline de mesure : demande un chemin praticable sans activer le comportement de rappel autonome.
+func request_pipeline_path(target: Vector3) -> void:
+	_call_path.request(global_position, target)
+
+
+## Pipeline de mesure : vrai quand le chemin demandé est disponible.
+func poll_pipeline_path() -> bool:
+	return _call_path.poll()
+
+
+func pipeline_path() -> PackedVector3Array:
+	return _call_path.path
+
+
 func _start_call() -> void:
 	if global_position.distance_to(called_target) > JsonData.get_float(_call, "max_distance_m", "horse.json > call"):
 		return

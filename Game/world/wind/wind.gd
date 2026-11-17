@@ -40,6 +40,7 @@ var _root_3d: Node3D = null
 ## Sol sous la caméra (relu à chaque mise à jour du sable, un rayon) : le sable vole au ras du sol, pas autour de la caméra.
 var _ground_ray: RayCast3D = null
 var _sand_ground_y: float = NAN
+var _quitting: bool = false
 
 
 ## Fournit les réglages avant l'entrée dans l'arbre (tests) ; sinon ils sont lus dans wind.json.
@@ -68,13 +69,36 @@ func _ready() -> void:
 	_sand.build(_settings)
 	_audio = WindAudio.new()
 	add_child(_audio)
-	_audio.build(_settings)
+	var has_audio_output: bool = DisplayServer.get_name() != "headless"
+	_audio.build(_settings, has_audio_output)
+	if has_audio_output:
+		get_tree().auto_accept_quit = false
 	_update_model()
 	_publish()
 	_sand.apply_wind(direction, strength)
 
 
+func _notification(what: int) -> void:
+	if what != NOTIFICATION_WM_CLOSE_REQUEST or _quitting:
+		return
+	_quitting = true
+	_shutdown_audio_and_quit()
+
+
+func _shutdown_audio_and_quit() -> void:
+	if _audio != null:
+		_audio.shutdown()
+	var game_input: Node = get_node_or_null(^"/root/GameInput")
+	if game_input != null and game_input.has_method(&"quit_safely"):
+		await game_input.call(&"quit_safely")
+	else:
+		await get_tree().create_timer(0.1).timeout
+		get_tree().quit()
+
+
 func _process(delta: float) -> void:
+	if _audio == null or not is_instance_valid(_audio):
+		return
 	_model_time += delta
 	_shader_time = fmod(_shader_time + delta, _settings.time_wrap)
 	_update_model()
@@ -85,6 +109,12 @@ func _process(delta: float) -> void:
 		_sand_timer = 0.0
 		_sand.apply_wind(direction, strength)
 		_probe_ground()
+
+
+func _exit_tree() -> void:
+	set_process(false)
+	if _audio != null:
+		_audio.shutdown()
 
 
 ## Force de base (0 à 1) autour de laquelle varient la force et les rafales ; sert à la météo.

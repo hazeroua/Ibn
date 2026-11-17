@@ -15,6 +15,7 @@ const MOUNT_ACTION: StringName = &"mount_horse"
 const WHISTLE_ACTION: StringName = &"horse_whistle"
 const JUMP_ACTION: StringName = &"jump"
 const SPRINT_ACTION: StringName = &"sprint"
+const PIPELINE_GROUP: StringName = &"horse_mount"
 ## Vitesse en dessous de laquelle on peut descendre (m/s).
 const DISMOUNT_MAX_SPEED: float = 0.3
 
@@ -69,6 +70,7 @@ func setup(owner_player: PlayerCharacter, rig: ThirdPersonCamera, field: DesertH
 
 
 func _ready() -> void:
+	add_to_group(PIPELINE_GROUP)
 	process_priority = -10
 
 
