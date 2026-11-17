@@ -1,0 +1,1 @@
+{"cell_size_m":64.0,"grid_size":5,"origin_x_m":-128.0,"origin_z_m":-128.0,"load_radius_m":90.0,"unload_hysteresis_m":38.0,"lookahead_s":2.0,"frame_budget_ms":2.0,"max_concurrent_builds":1}

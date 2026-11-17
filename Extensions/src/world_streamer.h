@@ -44,6 +44,11 @@ public:
 
 	// Position et vitesse du joueur (m, m/s). Peu coûteux : à appeler à chaque image.
 	void set_focus(const godot::Vector3 &p_position, const godot::Vector3 &p_velocity);
+	// Maintient une cellule chargée indépendamment de la distance (intérieur en cours d'utilisation).
+	bool set_cell_pinned(const godot::Vector2i &p_cell, bool p_pinned);
+	bool is_cell_pinned(const godot::Vector2i &p_cell) const;
+	// Outil de pire cas : force ou relâche l'ensemble fini de la grille.
+	void set_all_cells_pinned(bool p_pinned);
 
 	// Avance le streaming d'une image. Appelée par _process quand l'autotraitement est actif.
 	void update(double p_delta);
@@ -86,6 +91,7 @@ private:
 		int64_t task_id = -1;
 		uint8_t want = 0; // dans le rayon de chargement
 		uint8_t keep = 0; // dans le rayon de déchargement (chargement + hystérésis)
+		uint8_t pinned = 0; // demandé explicitement par un intérieur ou un test de pire cas
 		float priority = 0.0F;
 	};
 
@@ -148,6 +154,7 @@ private:
 	size_t queue_head_ = 0;
 	int in_flight_ = 0;
 	bool unload_pending_ = false;
+	bool force_all_pinned_ = false;
 
 	float focus_x_ = 0.0F;
 	float focus_z_ = 0.0F;
