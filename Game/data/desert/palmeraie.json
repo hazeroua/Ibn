@@ -3,8 +3,70 @@
   "statut_historique": "P",
   "seed": 1382,
   "contour": [
-    [448.0, -180.0], [422.6, -112.6], [401.4, -38.6], [330.4, -10.0], [260.0, -14.0], [191.9, -15.5], [121.4, -41.4], [101.1, -114.2],
-    [74.0, -180.0], [75.2, -256.5], [135.5, -304.5], [198.0, -329.7], [260.0, -370.0], [329.3, -347.2], [380.2, -300.2], [440.2, -254.6]
+    [
+      448.0,
+      -180.0
+    ],
+    [
+      422.6,
+      -112.6
+    ],
+    [
+      401.4,
+      -38.6
+    ],
+    [
+      330.4,
+      -10.0
+    ],
+    [
+      260.0,
+      -14.0
+    ],
+    [
+      191.9,
+      -15.5
+    ],
+    [
+      121.4,
+      -41.4
+    ],
+    [
+      101.1,
+      -114.2
+    ],
+    [
+      74.0,
+      -180.0
+    ],
+    [
+      75.2,
+      -256.5
+    ],
+    [
+      135.5,
+      -304.5
+    ],
+    [
+      198.0,
+      -329.7
+    ],
+    [
+      260.0,
+      -370.0
+    ],
+    [
+      329.3,
+      -347.2
+    ],
+    [
+      380.2,
+      -300.2
+    ],
+    [
+      440.2,
+      -254.6
+    ]
   ],
   "frame_angle_deg": 12.0,
   "parcel": {
@@ -32,35 +94,80 @@
     {
       "id": "verger",
       "proportion": 0.38,
-      "ground": { "style": 0, "color": "#336621", "min_growth": 0.55 },
-      "trees": { "spacing_m": 6.5, "jitter_m": 0.9, "edge_margin_m": 2.3, "species": { "grenadier": 0.34, "figuier": 0.3, "olivier": 0.36 } }
+      "ground": {
+        "style": 0,
+        "color": "#336621",
+        "min_growth": 0.55
+      },
+      "trees": {
+        "spacing_m": 6.5,
+        "jitter_m": 0.9,
+        "edge_margin_m": 2.3,
+        "species": {
+          "grenadier": 0.34,
+          "figuier": 0.3,
+          "olivier": 0.36
+        }
+      }
     },
     {
       "id": "orge",
       "proportion": 0.26,
-      "ground": { "style": 1, "color": "#4c7526", "min_growth": 0.0 },
-      "tufts": { "species": "orge", "row_spacing_m": 1.3, "along_spacing_m": 1.4, "jitter_m": 0.18, "edge_margin_m": 1.0 }
+      "ground": {
+        "style": 1,
+        "color": "#4c7526",
+        "min_growth": 0.0
+      },
+      "tufts": {
+        "species": "orge",
+        "row_spacing_m": 1.3,
+        "along_spacing_m": 1.4,
+        "jitter_m": 0.18,
+        "edge_margin_m": 1.0
+      }
     },
     {
       "id": "feves",
       "proportion": 0.14,
-      "ground": { "style": 2, "color": "#3d6b24", "min_growth": 0.0 },
-      "tufts": { "species": "feve", "row_spacing_m": 1.5, "along_spacing_m": 1.8, "jitter_m": 0.2, "edge_margin_m": 1.0 }
+      "ground": {
+        "style": 2,
+        "color": "#3d6b24",
+        "min_growth": 0.0
+      },
+      "tufts": {
+        "species": "feve",
+        "row_spacing_m": 1.5,
+        "along_spacing_m": 1.8,
+        "jitter_m": 0.2,
+        "edge_margin_m": 1.0
+      }
     },
     {
       "id": "luzerne",
       "proportion": 0.1,
-      "ground": { "style": 0, "color": "#2b661c", "min_growth": 0.8 }
+      "ground": {
+        "style": 0,
+        "color": "#2b661c",
+        "min_growth": 0.8
+      }
     },
     {
       "id": "legumes",
       "proportion": 0.07,
-      "ground": { "style": 2, "color": "#457529", "min_growth": 0.4 }
+      "ground": {
+        "style": 2,
+        "color": "#457529",
+        "min_growth": 0.4
+      }
     },
     {
       "id": "vigne",
       "proportion": 0.05,
-      "ground": { "style": 3, "color": "#42611f", "min_growth": 0.5 }
+      "ground": {
+        "style": 3,
+        "color": "#42611f",
+        "min_growth": 0.5
+      }
     }
   ],
   "palms": {
@@ -76,7 +183,10 @@
     "scale_min": 0.9,
     "scale_max": 1.3
   },
-  "tree_scale": { "scale_min": 0.85, "scale_max": 1.2 },
+  "tree_scale": {
+    "scale_min": 0.85,
+    "scale_max": 1.2
+  },
   "walls": {
     "thickness_m": 0.5,
     "height_m": 1.1,
@@ -103,19 +213,74 @@
     "toe_sink_m": 0.12,
     "water_depth_m": 0.13,
     "step_m": 2.0,
-    "section_tints": [[0.0, 0.0, 0.45], [0.25, 0.0, 0.6], [0.25, 0.35, 0.5], [0.0, 1.0, 0.4], [0.0, 1.0, 0.4], [0.25, 0.35, 0.5], [0.25, 0.0, 0.6], [0.0, 0.0, 0.45]],
+    "section_tints": [
+      [
+        0.0,
+        0.0,
+        0.45
+      ],
+      [
+        0.25,
+        0.0,
+        0.6
+      ],
+      [
+        0.25,
+        0.35,
+        0.5
+      ],
+      [
+        0.0,
+        1.0,
+        0.4
+      ],
+      [
+        0.0,
+        1.0,
+        0.4
+      ],
+      [
+        0.25,
+        0.35,
+        0.5
+      ],
+      [
+        0.25,
+        0.0,
+        0.6
+      ],
+      [
+        0.0,
+        0.0,
+        0.45
+      ]
+    ],
     "chunk_m": 24.0,
     "extension_probe_m": 0.5
   },
-  "basin": { "size_m": 3.6, "rim_height_m": 0.26, "rim_thickness_m": 0.45 },
-  "chadouf": { "species": "chadouf", "side_offset_m": 1.9, "distance_m": 4.2, "palm_clearance_m": 5.0 },
+  "basin": {
+    "size_m": 3.6,
+    "rim_height_m": 0.26,
+    "rim_thickness_m": 0.45
+  },
+  "chadouf": {
+    "species": "chadouf",
+    "side_offset_m": 1.9,
+    "distance_m": 4.2,
+    "palm_clearance_m": 5.0
+  },
   "ground": {
     "grid_step_m": 5.0,
     "lift_m": 0.1,
     "inset_m": 0.3,
     "visibility_range_end_m": 380.0,
     "visibility_fade_margin_m": 40.0,
-    "row_spacing_m": [0.0, 1.3, 1.5, 2.2]
+    "row_spacing_m": [
+      0.0,
+      1.3,
+      1.5,
+      2.2
+    ]
   },
   "water": {
     "shader": "res://world/palmeraie/palmeraie_water.gdshader",
@@ -128,7 +293,9 @@
   },
   "materials": {
     "ground_shader": "res://world/palmeraie/palmeraie_culture.gdshader",
+    "ground_fade_shader": "res://world/palmeraie/palmeraie_culture_fade.gdshader",
     "earth_shader": "res://world/palmeraie/palmeraie_earth.gdshader",
+    "earth_fade_shader": "res://world/palmeraie/palmeraie_earth_fade.gdshader",
     "pise_tint": "#b39b7a",
     "wet_tint": "#5a4632",
     "shade_strength": 0.22,
@@ -139,14 +306,37 @@
     "decor_visibility_range_end_m": 520.0,
     "decor_visibility_fade_margin_m": 40.0
   },
-  "scatter_exclusion": { "shore_keep_m": 8.0 },
+  "scatter_exclusion": {
+    "shore_keep_m": 8.0
+  },
   "species_display": {
-    "grenadier": { "visibility_fade_margin": 30.0, "cast_shadows": true },
-    "figuier": { "visibility_fade_margin": 30.0, "cast_shadows": true },
-    "olivier": { "visibility_fade_margin": 30.0, "cast_shadows": true },
-    "orge": { "visibility_range_end": 55.0, "visibility_fade_margin": 8.0, "cast_shadows": false },
-    "feve": { "visibility_range_end": 45.0, "visibility_fade_margin": 8.0, "cast_shadows": false },
-    "chadouf": { "visibility_range_end": 300.0, "visibility_fade_margin": 25.0, "cast_shadows": true }
+    "grenadier": {
+      "visibility_fade_margin": 30.0,
+      "cast_shadows": true
+    },
+    "figuier": {
+      "visibility_fade_margin": 30.0,
+      "cast_shadows": true
+    },
+    "olivier": {
+      "visibility_fade_margin": 30.0,
+      "cast_shadows": true
+    },
+    "orge": {
+      "visibility_range_end": 55.0,
+      "visibility_fade_margin": 8.0,
+      "cast_shadows": false
+    },
+    "feve": {
+      "visibility_range_end": 45.0,
+      "visibility_fade_margin": 8.0,
+      "cast_shadows": false
+    },
+    "chadouf": {
+      "visibility_range_end": 300.0,
+      "visibility_fade_margin": 25.0,
+      "cast_shadows": true
+    }
   },
   "budget": {
     "cell_build_ms_max": 400.0,
