@@ -64,6 +64,9 @@ void WorldStreamer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("configure", "config"), &WorldStreamer::configure);
 	ClassDB::bind_method(D_METHOD("register_provider", "provider"), &WorldStreamer::register_provider);
 	ClassDB::bind_method(D_METHOD("set_focus", "position", "velocity"), &WorldStreamer::set_focus);
+	ClassDB::bind_method(D_METHOD("set_cell_pinned", "cell", "pinned"), &WorldStreamer::set_cell_pinned);
+	ClassDB::bind_method(D_METHOD("is_cell_pinned", "cell"), &WorldStreamer::is_cell_pinned);
+	ClassDB::bind_method(D_METHOD("set_all_cells_pinned", "pinned"), &WorldStreamer::set_all_cells_pinned);
 	ClassDB::bind_method(D_METHOD("update", "delta"), &WorldStreamer::update);
 	ClassDB::bind_method(D_METHOD("clear"), &WorldStreamer::clear);
 	ClassDB::bind_method(D_METHOD("is_cell_loaded", "cell"), &WorldStreamer::is_cell_loaded);
@@ -195,6 +198,33 @@ void WorldStreamer::set_focus(const Vector3 &p_position, const Vector3 &p_veloci
 	}
 }
 
+bool WorldStreamer::set_cell_pinned(const Vector2i &p_cell, bool p_pinned) {
+	ERR_FAIL_COND_V_MSG(!configured_, false, "WorldStreamer : configuration requise avant l'épinglage.");
+	ERR_FAIL_COND_V_MSG(p_cell.x < 0 || p_cell.y < 0 || p_cell.x >= grid_size_ || p_cell.y >= grid_size_, false,
+			"WorldStreamer : cellule à épingler hors de la grille.");
+	const size_t index = static_cast<size_t>(p_cell.y) * static_cast<size_t>(grid_size_) + static_cast<size_t>(p_cell.x);
+	const uint8_t value = p_pinned ? 1 : 0;
+	if (slots_[index].pinned != value) {
+		slots_[index].pinned = value;
+		dirty_ = true;
+	}
+	return true;
+}
+
+bool WorldStreamer::is_cell_pinned(const Vector2i &p_cell) const {
+	if (!configured_ || p_cell.x < 0 || p_cell.y < 0 || p_cell.x >= grid_size_ || p_cell.y >= grid_size_) {
+		return false;
+	}
+	const size_t index = static_cast<size_t>(p_cell.y) * static_cast<size_t>(grid_size_) + static_cast<size_t>(p_cell.x);
+	return force_all_pinned_ || slots_[index].pinned != 0;
+}
+
+void WorldStreamer::set_all_cells_pinned(bool p_pinned) {
+	ERR_FAIL_COND_MSG(!configured_, "WorldStreamer : configuration requise avant l'épinglage.");
+	force_all_pinned_ = p_pinned;
+	dirty_ = true;
+}
+
 int64_t WorldStreamer::cell_index_at(float p_x, float p_z) const {
 	const float fx = std::floor((p_x - origin_x_) / cell_size_);
 	const float fz = std::floor((p_z - origin_z_) / cell_size_);
@@ -247,15 +277,19 @@ void WorldStreamer::recompute_desired() {
 		const float d_pred = std::hypot(cx - predicted_x, cz - predicted_z);
 		const float nearest = std::min(d_focus, d_pred);
 		Slot &slot = slots_[i];
-		slot.want = nearest <= load_radius_ ? 1 : 0;
-		slot.keep = nearest <= unload_radius_ ? 1 : 0;
+		slot.want = (force_all_pinned_ || slot.pinned != 0 || nearest <= load_radius_) ? 1 : 0;
+		slot.keep = (force_all_pinned_ || slot.pinned != 0 || nearest <= unload_radius_) ? 1 : 0;
 		// Priorité : les cellules entre le joueur et sa position anticipée passent en premier.
 		slot.priority = d_focus + d_pred;
 		if (slot.want != 0 && slot.state.load(std::memory_order_relaxed) == STATE_ABSENT) {
 			queue_.push_back(static_cast<uint32_t>(i)); // capacité réservée : pas d'allocation
 		}
 	}
-	std::sort(queue_.begin(), queue_.end(), [this](uint32_t p_a, uint32_t p_b) { return slots_[p_a].priority < slots_[p_b].priority; });
+	std::sort(queue_.begin(), queue_.end(), [this](uint32_t p_a, uint32_t p_b) {
+		const float priority_a = slots_[p_a].priority;
+		const float priority_b = slots_[p_b].priority;
+		return priority_a == priority_b ? p_a < p_b : priority_a < priority_b;
+	});
 	queue_head_ = 0;
 	unload_pending_ = true;
 }
@@ -546,11 +580,13 @@ void WorldStreamer::clear() {
 		slot.state.store(STATE_ABSENT, std::memory_order_relaxed);
 		slot.want = 0;
 		slot.keep = 0;
+		slot.pinned = 0;
 	}
 	loaded_.clear();
 	queue_.clear();
 	queue_head_ = 0;
 	unload_pending_ = false;
+	force_all_pinned_ = false;
 	dirty_ = true;
 	last_focus_index_ = -2;
 	last_predicted_index_ = -2;

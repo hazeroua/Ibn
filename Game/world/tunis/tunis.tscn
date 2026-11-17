@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://world/tunis/tunis_runtime.gd" id="1_2cp06"]
+
+[node name="Tunis" type="Node3D"]
+script = ExtResource("1_2cp06")
