@@ -7,6 +7,9 @@ extends Node3D
 
 const DATA_PATH: String = "res://data/desert/desert.json"
 const STREAMING_PATH: String = "res://data/streaming/streaming.json"
+const LOD_FADE_INTERVAL_S: float = 0.1
+## Distance que la caméra peut parcourir entre deux choix de variante (40 m/s : caméra libre rapide).
+const LOD_FADE_GUARD_M: float = 4.0
 const VEGETATION_PATH: String = "res://data/desert/vegetation.json"
 const GROUND_COVER_PATH: String = "res://data/desert/ground_cover.json"
 const TIME_PANEL_SCENE: String = "res://ui/time_panel/time_panel.tscn"
@@ -70,6 +73,7 @@ func _ready() -> void:
 		return
 	_streamer.register_provider(_provider)
 	add_child(_streamer)
+	_add_lod_fade_switch()
 	_ground_cover = GroundCoverQuery.new(_streamer)
 	(get_node("/root/Footsteps") as FootstepSystem).set_ground_cover(_ground_cover.nearest_cover_distance_squared)
 	var day_night: DayNightSystem = get_node("/root/DayNight") as DayNightSystem
@@ -106,10 +110,33 @@ func _ready() -> void:
 func _physics_process(_delta: float) -> void:
 	if _pipeline_focused:
 		return
-	if _player != null:
-		_streamer.set_focus(_player.global_position, _player.velocity)
-		if _fauna != null:
-			_fauna.set_focus(_player.global_position, _player.velocity)
+	if _player == null:
+		return
+	# En selle, le personnage ne bouge pas par lui-même (sa vitesse est nulle) : c'est Barq qui porte le regard
+	# du streaming et sa vitesse (jusqu'à 11,5 m/s) qui fait anticiper les cellules.
+	var carrier: CharacterBody3D = _player
+	if _horse_mount != null and _horse_mount.horse != null and _horse_mount.state != HorseMountSystem.State.ON_FOOT:
+		carrier = _horse_mount.horse
+	_streamer.set_focus(carrier.global_position, carrier.velocity)
+	if _fauna != null:
+		_fauna.set_focus(carrier.global_position, carrier.velocity)
+
+
+## Choix des variantes de matériau des maillages à fondu (LodFadeMesh) : 10 fois par seconde, avec une marge
+## couvrant le galop de course (et la caméra libre) entre deux mises à jour.
+func _add_lod_fade_switch() -> void:
+	var timer := Timer.new()
+	timer.name = "LodFadeSwitch"
+	timer.wait_time = LOD_FADE_INTERVAL_S
+	timer.autostart = true
+	timer.timeout.connect(_update_lod_fades)
+	add_child(timer)
+
+
+func _update_lod_fades() -> void:
+	var camera: Camera3D = get_viewport().get_camera_3d()
+	if camera != null:
+		LodFadeMesh.update_all(camera.global_position, LOD_FADE_GUARD_M)
 
 
 ## Barq est créé après le joueur et sa caméra : le système peut ainsi l'afficher près du point d'apparition et

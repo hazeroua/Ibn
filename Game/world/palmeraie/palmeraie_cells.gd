@@ -11,6 +11,8 @@ const CONTEXT: String = "palmeraie.json"
 const FLOATS_PER_INSTANCE: int = 12
 const TUFT_SEED_SALT: int = 7919
 const UP: Vector3 = Vector3.UP
+## Murets (boîtes de collision) par corps enfant : assez peu pour que l'entrée d'un corps reste sous le budget.
+const WALLS_PER_BODY: int = 24
 
 var layout: PalmeraieLayout
 
@@ -19,6 +21,8 @@ var _settings: Dictionary = {}
 var _earth_material: ShaderMaterial
 var _ground_material: ShaderMaterial
 var _water_material: ShaderMaterial
+var _earth_fade_material: ShaderMaterial
+var _ground_fade_material: ShaderMaterial
 var _seed: int = 0
 var _tree_offset: float = -0.05
 
@@ -204,8 +208,13 @@ func add_decor(cell: Vector2i, body: Node3D) -> void:
 	var canal_faces := PackedVector3Array()
 	var walls: Dictionary = JsonData.get_dictionary(_settings, "walls", CONTEXT)
 	var basin: Dictionary = JsonData.get_dictionary(_settings, "basin", CONTEXT)
-	var collider: CollisionObject3D = body as CollisionObject3D
+	var cell_collider: CollisionObject3D = body as CollisionObject3D
+	var collider: CollisionObject3D = null
 	for i: int in data.walls.size() / PalmeraieLayout.WALL_STRIDE:
+		# Murets regroupés par WALLS_PER_BODY sur des corps enfants : le streaming les fait entrer dans l'arbre un
+		# par un sous son budget (289 formes d'un coup feraient un pic).
+		if cell_collider != null and i % WALLS_PER_BODY == 0:
+			collider = _child_body(cell_collider, "Murets_%d" % (i / WALLS_PER_BODY))
 		var k: int = i * PalmeraieLayout.WALL_STRIDE
 		var wall_kind: int = roundi(data.walls[k + 4])
 		var is_rim: bool = wall_kind == PalmeraieLayout.WALL_RIM
@@ -228,35 +237,63 @@ func add_decor(cell: Vector2i, body: Node3D) -> void:
 		_add_basin(water, Vector2(data.basins[k], data.basins[k + 1]), data.basins[k + 2], data.basins[k + 3])
 	for parcel: int in data.parcels:
 		_add_ground(ground, parcel)
-	if collider != null and not canal_faces.is_empty():
+	if cell_collider != null and not canal_faces.is_empty():
 		var shape := ConcavePolygonShape3D.new()
 		var origin: Vector3 = body.position
 		for i: int in canal_faces.size():
 			canal_faces[i] -= origin
 		shape.set_faces(canal_faces)
-		var owner_id: int = collider.create_shape_owner(collider)
-		collider.shape_owner_add_shape(owner_id, shape)
+		var canals: CollisionObject3D = _child_body(cell_collider, "Seguias")
+		var owner_id: int = canals.create_shape_owner(canals)
+		canals.shape_owner_add_shape(owner_id, shape)
 	var materials: Dictionary = JsonData.get_dictionary(_settings, "materials", CONTEXT)
 	var decor_end: float = JsonData.get_float(materials, "decor_visibility_range_end_m", CONTEXT)
 	var decor_margin: float = JsonData.get_float(materials, "decor_visibility_fade_margin_m", CONTEXT)
 	var ground_settings: Dictionary = JsonData.get_dictionary(_settings, "ground", CONTEXT)
 	var water_end: float = JsonData.get_float(JsonData.get_dictionary(_settings, "water", CONTEXT), "visibility_range_end_m", CONTEXT)
-	_attach(body, earth, _earth_material, "palmeraie_terre", decor_end, decor_margin)
+	_attach(body, earth, _earth_material, _earth_fade_material, "palmeraie_terre", decor_end, decor_margin)
 	_attach(
 		body,
 		ground,
 		_ground_material,
+		_ground_fade_material,
 		"palmeraie_cultures",
 		JsonData.get_float(ground_settings, "visibility_range_end_m", CONTEXT),
 		JsonData.get_float(ground_settings, "visibility_fade_margin_m", CONTEXT)
 	)
-	_attach(body, water, _water_material, "palmeraie_eau", water_end, decor_margin)
+	_attach(body, water, _water_material, null, "palmeraie_eau", water_end, decor_margin)
 
 
-func _attach(body: Node3D, surface: Surface, material: Material, node_name: String, range_end: float, margin: float) -> void:
+static func _fade_variant(base: ShaderMaterial, shader_path: String) -> ShaderMaterial:
+	var shader: Shader = load(shader_path) as Shader
+	if shader == null:
+		push_error("PalmeraieCells : shader de fondu introuvable (%s)." % shader_path)
+		return null
+	var variant: ShaderMaterial = base.duplicate() as ShaderMaterial
+	variant.shader = shader
+	for parameter: Dictionary in base.shader.get_shader_uniform_list():
+		variant.set_shader_parameter(parameter["name"], base.get_shader_parameter(parameter["name"]))
+	return variant
+
+
+## Corps statique enfant de la cellule (même couche), à l'origine de la cellule : mêmes coordonnées locales.
+static func _child_body(cell_body: CollisionObject3D, node_name: String) -> StaticBody3D:
+	var child := StaticBody3D.new()
+	child.name = node_name
+	child.collision_layer = cell_body.collision_layer
+	child.collision_mask = 0
+	cell_body.add_child(child)
+	return child
+
+
+## fade_material : variante de fondu d'un matériau opaque (LodFadeMesh : discard seulement en transition) ; null pour
+## un matériau déjà transparent (eau), qui garde le fondu tramé en permanence sans coût supplémentaire.
+func _attach(
+	body: Node3D, surface: Surface, material: Material, fade_material: Material, node_name: String, range_end: float, margin: float
+) -> void:
 	if surface.is_empty():
 		return
-	var instance := MeshInstance3D.new()
+	var instance: MeshInstance3D = LodFadeMesh.new() if fade_material != null else MeshInstance3D.new()
 	instance.name = node_name
 	instance.mesh = surface.to_mesh(material)
 	# Sommets en coordonnées du monde : la cellule est posée à son coin, on compense.
@@ -264,7 +301,10 @@ func _attach(body: Node3D, surface: Surface, material: Material, node_name: Stri
 	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	# Fondu tramé (pas de transparence triée par objet : murets et cultures restent dans la passe opaque).
 	# Sommets en coordonnées du monde et nœud ramené à l'origine du monde : le centre est celui du maillage.
-	LodFade.apply(instance, instance.mesh.get_aabb().get_center(), 0.0, 0.0, range_end, margin)
+	if fade_material != null:
+		(instance as LodFadeMesh).setup(material, fade_material, instance.mesh.get_aabb().get_center(), 0.0, 0.0, range_end, margin)
+	else:
+		LodFade.apply(instance, instance.mesh.get_aabb().get_center(), 0.0, 0.0, range_end, margin)
 	body.add_child(instance)
 
 
@@ -599,6 +639,11 @@ func _make_materials() -> bool:
 	_ground_material.set_shader_parameter(&"soil_color", JsonData.get_color(materials, "soil_color", CONTEXT))
 	_ground_material.set_shader_parameter(&"soil_wet_color", JsonData.get_color(materials, "soil_wet_color", CONTEXT))
 	_ground_material.set_shader_parameter(&"ripe_color", JsonData.get_color(materials, "ripe_color", CONTEXT))
+	# Variantes de transition : mêmes paramètres, shader avec le fondu tramé (LodFadeMesh).
+	_earth_fade_material = _fade_variant(_earth_material, JsonData.get_string(materials, "earth_fade_shader", CONTEXT))
+	_ground_fade_material = _fade_variant(_ground_material, JsonData.get_string(materials, "ground_fade_shader", CONTEXT))
+	if _earth_fade_material == null or _ground_fade_material == null:
+		return false
 	_water_material = ShaderMaterial.new()
 	_water_material.shader = water_shader
 	_water_material.set_shader_parameter(&"shallow_color", JsonData.get_color(water, "shallow_color", CONTEXT))

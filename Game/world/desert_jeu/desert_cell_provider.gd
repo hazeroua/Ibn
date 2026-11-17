@@ -1,9 +1,12 @@
 class_name DesertCellProvider
 extends RefCounted
+
 ## Fournisseur de cellules du désert pour le streaming : terrain (DesertTerrainCell) et végétation (MultiMesh par
 ## espèce). build_cell() est appelée depuis un fil de travail : elle ne touche jamais à l'arbre de scène, et
 ## les maillages et matériaux partagés sont préparés une fois, avant le premier chargement.
 
+## Troncs (cylindres de collision) par corps enfant : assez peu pour que l'entrée d'un corps reste sous le budget.
+const TRUNKS_PER_BODY: int = 48
 const SPECIES_SEED_SALT: int = 7919
 const COVER_PATH: String = "res://data/desert/ground_cover.json"
 
@@ -181,15 +184,23 @@ func _build_instances(id: StringName, transforms: PackedFloat32Array, origin: Ve
 	return instances
 
 
-## Un cylindre par instance, sur le corps statique de la cellule (sans nœud supplémentaire). Les formes
-## sont créées sur ce fil de travail, comme la collision du terrain, avant l'entrée dans l'arbre.
-func _add_trunk_collisions(body: CollisionObject3D, id: StringName, transforms: PackedFloat32Array) -> void:
+## Un cylindre par instance, regroupés par TRUNKS_PER_BODY sur des corps statiques enfants de la cellule : le
+## streaming les fait entrer dans l'arbre un par un sous son budget (des centaines de formes enregistrées d'un
+## coup feraient un pic). Les formes sont créées sur ce fil de travail, avant l'entrée dans l'arbre.
+func _add_trunk_collisions(cell_body: CollisionObject3D, id: StringName, transforms: PackedFloat32Array) -> void:
+	var body: StaticBody3D = null
 	var radius: float = _collision_radius[id]
 	var height: float = _collision_height[id]
 	var shapes: Dictionary[int, CylinderShape3D] = {}  # échelle arrondie au centième -> forme partagée
-	var origin: Vector3 = (body as Node3D).position
+	var origin: Vector3 = (cell_body as Node3D).position
 	var count: int = transforms.size() / DesertFoliageInstance.FLOATS_PER_INSTANCE
 	for i: int in count:
+		if i % TRUNKS_PER_BODY == 0:
+			body = StaticBody3D.new()
+			body.name = "Troncs_%s_%d" % [id, i / TRUNKS_PER_BODY]
+			body.collision_layer = cell_body.collision_layer
+			body.collision_mask = 0
+			cell_body.add_child(body)
 		var k: int = i * DesertFoliageInstance.FLOATS_PER_INSTANCE
 		# Échelle : longueur de l'axe X de la base (colonne 0 : éléments 0, 4, 8).
 		var scale: float = Vector3(transforms[k], transforms[k + 4], transforms[k + 8]).length()

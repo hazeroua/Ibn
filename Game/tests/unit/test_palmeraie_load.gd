@@ -8,6 +8,8 @@ const DESERT_PATH: String = "res://data/desert/desert.json"
 ## construction en moins de 50 ms sur un fil de travail).
 const MAX_SHAPES_PER_CELL: int = 320
 const MAX_BUILD_MS: float = 120.0
+## Formes au plus par corps de collision (murets par 24, en boîtes fusionnées).
+const MAX_SHAPES_PER_BODY: int = 80
 
 
 func test_every_palmeraie_cell_builds_within_bounds() -> void:
@@ -34,14 +36,25 @@ func test_every_palmeraie_cell_builds_within_bounds() -> void:
 			var elapsed_ms: float = float(Time.get_ticks_usec() - started) / 1000.0
 			worst_ms = maxf(worst_ms, elapsed_ms)
 			var shapes: int = 0
+			var worst_body_shapes: int = 0
 			var has_canal: bool = false
-			for owner_id: int in body.get_shape_owners():
-				shapes += body.shape_owner_get_shape_count(owner_id)
-				for index: int in body.shape_owner_get_shape_count(owner_id):
-					var shape: Shape3D = body.shape_owner_get_shape(owner_id, index)
-					if shape is ConcavePolygonShape3D:
-						has_canal = true
-						_check_canal_faces((shape as ConcavePolygonShape3D).get_faces(), body.position, field)
+			var bodies: Array[CollisionObject3D] = [body]
+			for child: Node in body.get_children():
+				if child is CollisionObject3D:
+					bodies.append(child as CollisionObject3D)
+			for collider: CollisionObject3D in bodies:
+				var own: int = 0
+				for owner_id: int in collider.get_shape_owners():
+					own += collider.shape_owner_get_shape_count(owner_id)
+					for index: int in collider.shape_owner_get_shape_count(owner_id):
+						var shape: Shape3D = collider.shape_owner_get_shape(owner_id, index)
+						if shape is ConcavePolygonShape3D:
+							has_canal = true
+							_check_canal_faces((shape as ConcavePolygonShape3D).get_faces(), body.position, field)
+				shapes += own
+				worst_body_shapes = maxi(worst_body_shapes, own)
+			# Formes réparties sur des corps enfants (entrée dans l'arbre étalée par le streaming).
+			assert_lte(worst_body_shapes, MAX_SHAPES_PER_BODY)
 			if has_canal:
 				canal_cells += 1
 			worst_shapes = maxi(worst_shapes, shapes)

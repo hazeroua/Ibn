@@ -10,6 +10,9 @@ class FakeProvider:
 	var build_delay_us: int = 0
 	var built: int = 0
 	var fail_cell: Vector2i = Vector2i(-1, -1)
+	var children: int = 8
+	## Coût simulé de l'entrée d'un enfant dans l'arbre (µs), comme un MultiMesh ou une forme de collision.
+	var child_enter_us: int = 0
 	var mutex := Mutex.new()
 
 	func build_cell(cell: Vector2i) -> Node3D:
@@ -19,8 +22,10 @@ class FakeProvider:
 			OS.delay_usec(build_delay_us)
 		var node := Node3D.new()
 		node.name = "Cell_%d_%d" % [cell.x, cell.y]
-		for i: int in 8:
+		for i: int in children:
 			var child := Node3D.new()
+			if child_enter_us > 0:
+				child.tree_entered.connect(OS.delay_usec.bind(child_enter_us))
 			node.add_child(child)
 		mutex.lock()
 		built += 1
@@ -169,3 +174,57 @@ func test_load_gallop_zigzag() -> void:
 		var x: float = -1900.0 + 600.0 * float(k + 1)
 		points.append(Vector3(x, 0.0, 1900.0 if k % 2 == 0 else -1900.0))
 	_run_path(points, 15.0, "galop en zigzag")
+
+
+## Pire cas (#42) : cellules lourdes (400 enfants coûtant 0,2 ms chacun à l'entrée dans l'arbre, soit 80 ms
+## par cellule). L'attache est étalée : aucune mise à jour ne dépasse le budget de plus d'un enfant, et chaque
+## cellule finit complète. Le retrait est étalé de même.
+func test_heavy_cells_attach_and_free_under_budget() -> void:
+	_provider.children = 400
+	_provider.child_enter_us = 200
+	_streamer.set_focus(Vector3.ZERO, Vector3.ZERO)
+	var budget_ms: float = float(_streamer.get_stats()["budget_ms"])
+	var worst_ms: float = 0.0
+	var updates: int = 0
+	var over: int = 0
+	var samples := PackedFloat32Array()
+	for i: int in 4000:
+		var started: int = Time.get_ticks_usec()
+		_streamer.update(0.016)
+		var elapsed: float = float(Time.get_ticks_usec() - started) / 1000.0
+		worst_ms = maxf(worst_ms, elapsed)
+		samples.append(elapsed)
+		updates += 1
+		if elapsed > budget_ms + 0.5:
+			over += 1
+		if _streamer.get_pending_count() == 0 and i > 2:
+			break
+		OS.delay_usec(200)
+	assert_eq(_streamer.get_pending_count(), 0, "toutes les cellules attachées")
+	var line: String = "Pire cas attache étalée : %d cellules, %d mises à jour, %d au-delà du budget, la plus longue %.2f ms"
+	gut.p(line % [_streamer.get_loaded_count(), updates, over, worst_ms])
+	assert_gt(_streamer.get_loaded_count(), 0)
+	# Avant l'étalement, chaque cellule coûtait 80 ms d'un bloc. Le fil principal de ce test partage la machine
+	# avec quatre constructions en cours : quelques mises à jour isolées peuvent déborder un peu.
+	assert_lt(float(over) / float(updates), 0.02, "au plus 2 % des mises à jour au-delà du budget")
+	# Une cellule entière d'un bloc coûterait 80 ms : le 99e centile reste au niveau du budget (la machine de test,
+	# partagée avec d'autres tests, peut produire un pic isolé sans rapport avec le streaming).
+	samples.sort()
+	var p99: float = samples[int(float(samples.size() - 1) * 0.99)]
+	assert_lt(p99, budget_ms + 1.0, "99e centile au niveau du budget")
+	assert_lt(worst_ms, 40.0, "aucun pic d'une cellule entière")
+	for child: Node in _streamer.get_children():
+		assert_eq(child.get_child_count(), 400, "cellule complète")
+	# Départ à l'autre bout du monde : retraits et libérations étalés, jamais de pic.
+	_provider.child_enter_us = 0
+	_streamer.set_focus(Vector3(1900.0, 0.0, 1900.0), Vector3.ZERO)
+	var worst_unload_ms: float = 0.0
+	for i: int in 4000:
+		var started: int = Time.get_ticks_usec()
+		_streamer.update(0.016)
+		worst_unload_ms = maxf(worst_unload_ms, float(Time.get_ticks_usec() - started) / 1000.0)
+		if _streamer.get_pending_count() == 0 and int(_streamer.get_stats()["doomed"]) == 0 and i > 2:
+			break
+		OS.delay_usec(200)
+	gut.p("Retraits étalés : mise à jour la plus longue %.2f ms" % worst_unload_ms)
+	assert_eq(int(_streamer.get_stats()["doomed"]), 0)

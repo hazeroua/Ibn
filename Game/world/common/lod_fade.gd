@@ -7,7 +7,9 @@ extends RefCounted
 
 ## center : centre de l'objet dans le repère du monde (celui que Godot utilise pour les plages de visibilité).
 ## begin = 0 : visible dès la caméra. end = 0 : jamais masqué au loin.
-static func apply(instance: GeometryInstance3D, center: Vector3, begin: float, begin_margin: float, end: float, end_margin: float) -> void:
+static func apply(
+	instance: GeometryInstance3D, center: Vector3, begin: float, begin_margin: float, end: float, end_margin: float
+) -> Vector4:
 	instance.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
 	var fade := Vector4(-2.0, -1.0, 1.0e9, 2.0e9)
 	if begin > 0.0:
@@ -22,3 +24,4 @@ static func apply(instance: GeometryInstance3D, center: Vector3, begin: float, b
 		fade.w = end + end_margin
 	instance.set_instance_shader_parameter(&"lod_fade", fade)
 	instance.set_instance_shader_parameter(&"lod_center", center)
+	return fade

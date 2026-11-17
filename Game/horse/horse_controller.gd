@@ -56,7 +56,8 @@ var _probe: PhysicsShapeQueryParameters3D
 var _probe_shape: SphereShape3D
 var _exclude: Array[RID] = []
 var _step_collision := KinematicCollision3D.new()
-var _hoof_ray := PhysicsRayQueryParameters3D.new()
+## Rayon du sabot (nœud RayCast3D : aucune allocation, contrairement à intersect_ray qui crée un dictionnaire).
+var _hoof_ray := RayCast3D.new()
 var _call_path := HorseCallPath.new()
 var _waypoint: int = 0
 var _path_goal := Vector3.ZERO
@@ -153,8 +154,13 @@ func _ready() -> void:
 	_probe.exclude = _exclude
 	_call = JsonData.get_dictionary(settings, "call", "horse.json")
 	_call_path.prepare(heightfield, settings)
+	_hoof_ray.name = "SondeSabot"
+	_hoof_ray.enabled = false
+	_hoof_ray.top_level = true
 	_hoof_ray.collision_mask = GROUND_LAYER
-	_hoof_ray.exclude = _exclude
+	_hoof_ray.add_exception(self)
+	_hoof_ray.target_position = Vector3.DOWN * 0.8
+	add_child(_hoof_ray)
 	_build_visual()
 	_last_position = global_position
 	locomotion.reset(rotation.y)
@@ -416,12 +422,11 @@ func _emit_hoofsteps(distance: float) -> void:
 	# donne sa surface aux sons et aux traces ; sans collisionneur, le relief (surface_at de Barq).
 	var collider: Object = self
 	var surface: StringName = surface_at(hoof_position)
-	if get_world_3d() != null:
-		_hoof_ray.from = hoof_position + Vector3.UP * 0.4
-		_hoof_ray.to = hoof_position + Vector3.DOWN * 0.4
-		var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(_hoof_ray)
-		if not hit.is_empty():
-			var body: Object = hit["collider"]
+	if _hoof_ray.is_inside_tree():
+		_hoof_ray.global_position = hoof_position + Vector3.UP * 0.4
+		_hoof_ray.force_raycast_update()
+		if _hoof_ray.is_colliding():
+			var body: Object = _hoof_ray.get_collider()
 			if body != null:
 				# Le son se résout comme pour les pas du personnage (métadonnée, terrain propriétaire, couvert du sol).
 				collider = body
@@ -440,6 +445,16 @@ func _build_visual() -> void:
 		return
 	add_child(_visual)
 	_animation_player = _visual.animation_player
+	# Hors de l'écran (et de ses ombres), squelette et animation s'arrêtent : aucun coût pour un Barq invisible.
+	var notifier := VisibleOnScreenEnabler3D.new()
+	notifier.name = "VisibleAEcran"
+	notifier.aabb = AABB(Vector3(-1.5, -0.2, -2.0), Vector3(3.0, 3.0, 4.0))
+	notifier.enable_mode = VisibleOnScreenEnabler3D.ENABLE_MODE_ALWAYS
+	if _animation_player == null:
+		return
+	# Chemin fixé avant l'entrée dans l'arbre (sinon la cible par défaut, Barq lui-même, serait désactivée).
+	notifier.enable_node_path = NodePath("../" + String(get_path_to(_animation_player)))
+	add_child(notifier)
 	var context: String = "horse.json > animations"
 	var animations: Dictionary = JsonData.get_dictionary(settings, "animations", "horse.json")
 	_gait_clips.clear()
