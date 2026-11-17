@@ -18,6 +18,7 @@ Footsteps="*res://audio/footsteps/footsteps.gd"
 DayNight="*res://world/sky/day_night.gd"
 Wind="*res://world/wind/wind.gd"
 Seasons="*res://world/seasons/seasons.gd"
+PerfMonitor="*res://core/perf/perf_monitor.gd"
 
 [debug]
 

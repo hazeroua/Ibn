@@ -1,0 +1,7 @@
+{
+  "description": "Moniteur de performance en jeu (PerfMonitor). Chaque image est enregistrée (PerfRecorder, C++, capacité réservée : aucune allocation) ; toutes les window_s secondes, un résumé est écrit dans le journal du jeu (Mesures/journaux/jeu.log via lancer.bat) : images par seconde moyennes et 1 % les plus lentes, image la plus longue, temps CPU et GPU, appels de rendu, primitives, mémoire vidéo, temps des scripts et de la physique, pic du streaming. À la sortie, le résumé de toute la partie. L'affichage à l'écran (action perf_overlay, F3) est rafraîchi refresh_s fois par seconde. hitch_ms : seuil d'une saccade comptée.",
+  "window_s": 60.0,
+  "recorder_capacity": 20000,
+  "refresh_s": 0.25,
+  "hitch_ms": 25.0
+}

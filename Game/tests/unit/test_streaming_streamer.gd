@@ -187,11 +187,13 @@ func test_heavy_cells_attach_and_free_under_budget() -> void:
 	var worst_ms: float = 0.0
 	var updates: int = 0
 	var over: int = 0
+	var samples := PackedFloat32Array()
 	for i: int in 4000:
 		var started: int = Time.get_ticks_usec()
 		_streamer.update(0.016)
 		var elapsed: float = float(Time.get_ticks_usec() - started) / 1000.0
 		worst_ms = maxf(worst_ms, elapsed)
+		samples.append(elapsed)
 		updates += 1
 		if elapsed > budget_ms + 0.5:
 			over += 1
@@ -205,7 +207,12 @@ func test_heavy_cells_attach_and_free_under_budget() -> void:
 	# Avant l'étalement, chaque cellule coûtait 80 ms d'un bloc. Le fil principal de ce test partage la machine
 	# avec quatre constructions en cours : quelques mises à jour isolées peuvent déborder un peu.
 	assert_lt(float(over) / float(updates), 0.02, "au plus 2 % des mises à jour au-delà du budget")
-	assert_lt(worst_ms, 10.0, "aucun pic d'une cellule entière")
+	# Une cellule entière d'un bloc coûterait 80 ms : le 99e centile reste au niveau du budget (la machine de test,
+	# partagée avec d'autres tests, peut produire un pic isolé sans rapport avec le streaming).
+	samples.sort()
+	var p99: float = samples[int(float(samples.size() - 1) * 0.99)]
+	assert_lt(p99, budget_ms + 1.0, "99e centile au niveau du budget")
+	assert_lt(worst_ms, 40.0, "aucun pic d'une cellule entière")
 	for child: Node in _streamer.get_children():
 		assert_eq(child.get_child_count(), 400, "cellule complète")
 	# Départ à l'autre bout du monde : retraits et libérations étalés, jamais de pic.

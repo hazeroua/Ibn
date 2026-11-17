@@ -23,6 +23,7 @@ const REQUIRED_ACTIONS: Array[StringName] = [
 	&"jump",
 	&"mount_horse",
 	&"horse_whistle",
+	&"perf_overlay",
 ]
 ## Actions jouables à la manette comme au clavier et à la souris.
 const BOTH_FAMILIES: Array[StringName] = [
@@ -38,6 +39,7 @@ const BOTH_FAMILIES: Array[StringName] = [
 	&"jump",
 	&"mount_horse",
 	&"horse_whistle",
+	&"perf_overlay",
 ]
 
 

@@ -10,26 +10,350 @@
   "max_events_per_family": 3,
   "joy_axis_activation": 0.5,
   "mouse_motion_activation_px": 3.0,
-  "contexts": ["game", "free_camera"],
+  "contexts": [
+    "game",
+    "free_camera"
+  ],
   "actions": [
-    { "name": "move_forward", "contexts": ["game", "free_camera"], "deadzone": 0.2, "events": [ { "type": "key", "physical": "W" }, { "type": "joy_axis", "axis": 1, "value": -1.0 } ] },
-    { "name": "move_back", "contexts": ["game", "free_camera"], "deadzone": 0.2, "events": [ { "type": "key", "physical": "S" }, { "type": "joy_axis", "axis": 1, "value": 1.0 } ] },
-    { "name": "move_left", "contexts": ["game", "free_camera"], "deadzone": 0.2, "events": [ { "type": "key", "physical": "A" }, { "type": "joy_axis", "axis": 0, "value": -1.0 } ] },
-    { "name": "move_right", "contexts": ["game", "free_camera"], "deadzone": 0.2, "events": [ { "type": "key", "physical": "D" }, { "type": "joy_axis", "axis": 0, "value": 1.0 } ] },
-    { "name": "move_up", "contexts": ["free_camera"], "deadzone": 0.5, "events": [ { "type": "key", "physical": "E" }, { "type": "joy_button", "button": 10 } ] },
-    { "name": "move_down", "contexts": ["free_camera"], "deadzone": 0.5, "events": [ { "type": "key", "physical": "Q" }, { "type": "joy_button", "button": 9 } ] },
-    { "name": "sprint", "contexts": ["game", "free_camera"], "deadzone": 0.3, "events": [ { "type": "key", "physical": "Shift" }, { "type": "joy_axis", "axis": 4, "value": 1.0 } ] },
-    { "name": "walk_slow", "contexts": ["game"], "deadzone": 0.5, "events": [ { "type": "key", "physical": "Ctrl" }, { "type": "joy_button", "button": 7 } ] },
-    { "name": "jump", "contexts": ["game"], "deadzone": 0.5, "events": [ { "type": "key", "physical": "Space" }, { "type": "joy_button", "button": 0 } ] },
-    { "name": "mount_horse", "contexts": ["game"], "deadzone": 0.5, "events": [ { "type": "key", "physical": "E" }, { "type": "joy_button", "button": 2 } ] },
-    { "name": "horse_whistle", "contexts": ["game"], "deadzone": 0.5, "events": [ { "type": "key", "physical": "H" }, { "type": "joy_button", "button": 3 } ] },
-    { "name": "look_left", "contexts": ["game", "free_camera"], "deadzone": 0.15, "events": [ { "type": "joy_axis", "axis": 2, "value": -1.0 } ] },
-    { "name": "look_right", "contexts": ["game", "free_camera"], "deadzone": 0.15, "events": [ { "type": "joy_axis", "axis": 2, "value": 1.0 } ] },
-    { "name": "look_up", "contexts": ["game", "free_camera"], "deadzone": 0.15, "events": [ { "type": "joy_axis", "axis": 3, "value": -1.0 } ] },
-    { "name": "look_down", "contexts": ["game", "free_camera"], "deadzone": 0.15, "events": [ { "type": "joy_axis", "axis": 3, "value": 1.0 } ] },
-    { "name": "camera_zoom_in", "contexts": ["game"], "deadzone": 0.5, "events": [ { "type": "mouse_button", "button": 4 }, { "type": "joy_button", "button": 11 } ] },
-    { "name": "camera_zoom_out", "contexts": ["game"], "deadzone": 0.5, "events": [ { "type": "mouse_button", "button": 5 }, { "type": "joy_button", "button": 12 } ] },
-    { "name": "look_hold", "contexts": ["free_camera"], "deadzone": 0.5, "events": [ { "type": "mouse_button", "button": 2 } ] },
-    { "name": "quit_game", "contexts": ["game", "free_camera"], "deadzone": 0.5, "events": [ { "type": "key", "physical": "Escape" }, { "type": "joy_button", "button": 4 } ] }
+    {
+      "name": "move_forward",
+      "contexts": [
+        "game",
+        "free_camera"
+      ],
+      "deadzone": 0.2,
+      "events": [
+        {
+          "type": "key",
+          "physical": "W"
+        },
+        {
+          "type": "joy_axis",
+          "axis": 1,
+          "value": -1.0
+        }
+      ]
+    },
+    {
+      "name": "move_back",
+      "contexts": [
+        "game",
+        "free_camera"
+      ],
+      "deadzone": 0.2,
+      "events": [
+        {
+          "type": "key",
+          "physical": "S"
+        },
+        {
+          "type": "joy_axis",
+          "axis": 1,
+          "value": 1.0
+        }
+      ]
+    },
+    {
+      "name": "move_left",
+      "contexts": [
+        "game",
+        "free_camera"
+      ],
+      "deadzone": 0.2,
+      "events": [
+        {
+          "type": "key",
+          "physical": "A"
+        },
+        {
+          "type": "joy_axis",
+          "axis": 0,
+          "value": -1.0
+        }
+      ]
+    },
+    {
+      "name": "move_right",
+      "contexts": [
+        "game",
+        "free_camera"
+      ],
+      "deadzone": 0.2,
+      "events": [
+        {
+          "type": "key",
+          "physical": "D"
+        },
+        {
+          "type": "joy_axis",
+          "axis": 0,
+          "value": 1.0
+        }
+      ]
+    },
+    {
+      "name": "move_up",
+      "contexts": [
+        "free_camera"
+      ],
+      "deadzone": 0.5,
+      "events": [
+        {
+          "type": "key",
+          "physical": "E"
+        },
+        {
+          "type": "joy_button",
+          "button": 10
+        }
+      ]
+    },
+    {
+      "name": "move_down",
+      "contexts": [
+        "free_camera"
+      ],
+      "deadzone": 0.5,
+      "events": [
+        {
+          "type": "key",
+          "physical": "Q"
+        },
+        {
+          "type": "joy_button",
+          "button": 9
+        }
+      ]
+    },
+    {
+      "name": "sprint",
+      "contexts": [
+        "game",
+        "free_camera"
+      ],
+      "deadzone": 0.3,
+      "events": [
+        {
+          "type": "key",
+          "physical": "Shift"
+        },
+        {
+          "type": "joy_axis",
+          "axis": 4,
+          "value": 1.0
+        }
+      ]
+    },
+    {
+      "name": "walk_slow",
+      "contexts": [
+        "game"
+      ],
+      "deadzone": 0.5,
+      "events": [
+        {
+          "type": "key",
+          "physical": "Ctrl"
+        },
+        {
+          "type": "joy_button",
+          "button": 7
+        }
+      ]
+    },
+    {
+      "name": "jump",
+      "contexts": [
+        "game"
+      ],
+      "deadzone": 0.5,
+      "events": [
+        {
+          "type": "key",
+          "physical": "Space"
+        },
+        {
+          "type": "joy_button",
+          "button": 0
+        }
+      ]
+    },
+    {
+      "name": "mount_horse",
+      "contexts": [
+        "game"
+      ],
+      "deadzone": 0.5,
+      "events": [
+        {
+          "type": "key",
+          "physical": "E"
+        },
+        {
+          "type": "joy_button",
+          "button": 2
+        }
+      ]
+    },
+    {
+      "name": "horse_whistle",
+      "contexts": [
+        "game"
+      ],
+      "deadzone": 0.5,
+      "events": [
+        {
+          "type": "key",
+          "physical": "H"
+        },
+        {
+          "type": "joy_button",
+          "button": 3
+        }
+      ]
+    },
+    {
+      "name": "look_left",
+      "contexts": [
+        "game",
+        "free_camera"
+      ],
+      "deadzone": 0.15,
+      "events": [
+        {
+          "type": "joy_axis",
+          "axis": 2,
+          "value": -1.0
+        }
+      ]
+    },
+    {
+      "name": "look_right",
+      "contexts": [
+        "game",
+        "free_camera"
+      ],
+      "deadzone": 0.15,
+      "events": [
+        {
+          "type": "joy_axis",
+          "axis": 2,
+          "value": 1.0
+        }
+      ]
+    },
+    {
+      "name": "look_up",
+      "contexts": [
+        "game",
+        "free_camera"
+      ],
+      "deadzone": 0.15,
+      "events": [
+        {
+          "type": "joy_axis",
+          "axis": 3,
+          "value": -1.0
+        }
+      ]
+    },
+    {
+      "name": "look_down",
+      "contexts": [
+        "game",
+        "free_camera"
+      ],
+      "deadzone": 0.15,
+      "events": [
+        {
+          "type": "joy_axis",
+          "axis": 3,
+          "value": 1.0
+        }
+      ]
+    },
+    {
+      "name": "camera_zoom_in",
+      "contexts": [
+        "game"
+      ],
+      "deadzone": 0.5,
+      "events": [
+        {
+          "type": "mouse_button",
+          "button": 4
+        },
+        {
+          "type": "joy_button",
+          "button": 11
+        }
+      ]
+    },
+    {
+      "name": "camera_zoom_out",
+      "contexts": [
+        "game"
+      ],
+      "deadzone": 0.5,
+      "events": [
+        {
+          "type": "mouse_button",
+          "button": 5
+        },
+        {
+          "type": "joy_button",
+          "button": 12
+        }
+      ]
+    },
+    {
+      "name": "look_hold",
+      "contexts": [
+        "free_camera"
+      ],
+      "deadzone": 0.5,
+      "events": [
+        {
+          "type": "mouse_button",
+          "button": 2
+        }
+      ]
+    },
+    {
+      "name": "quit_game",
+      "contexts": [
+        "game",
+        "free_camera"
+      ],
+      "deadzone": 0.5,
+      "events": [
+        {
+          "type": "key",
+          "physical": "Escape"
+        },
+        {
+          "type": "joy_button",
+          "button": 4
+        }
+      ]
+    },
+    {
+      "name": "perf_overlay",
+      "contexts": [
+        "game",
+        "free_camera"
+      ],
+      "deadzone": 0.5,
+      "events": [
+        {
+          "type": "key",
+          "physical": "F3"
+        },
+        {
+          "type": "joy_button",
+          "button": 15
+        }
+      ]
+    }
   ]
 }

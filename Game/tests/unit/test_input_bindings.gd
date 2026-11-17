@@ -151,7 +151,7 @@ func test_rebind_validation() -> void:
 	assert_eq(_bindings.rebind(&"sprint", _key(KEY_C), 5), InputBindings.RebindResult.INVALID_SLOT)
 	var max_per_family: int = int(_catalog["max_events_per_family"])
 	for slot: int in range(1, max_per_family):
-		assert_eq(_bindings.rebind(&"sprint", _key((KEY_F1 + slot) as Key), slot), InputBindings.RebindResult.OK)
+		assert_eq(_bindings.rebind(&"sprint", _key((KEY_F5 + slot) as Key), slot), InputBindings.RebindResult.OK)
 	assert_eq(_bindings.rebind(&"sprint", _key(KEY_F12), max_per_family), InputBindings.RebindResult.INVALID_SLOT)
 
 
