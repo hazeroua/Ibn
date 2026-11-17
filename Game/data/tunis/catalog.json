@@ -1,4 +1,18 @@
 {
   "schema_version": 1,
-  "prefabs": []
+  "prefabs": [
+    {"id":"rampart_straight","scene_path":"res://assets/tunis/rampart_straight.glb","footprint_m":[8.0,0.9],"snap_points":[],"has_collision":true,"lods":[{"distance_m":0.0,"asset_path":"res://assets/tunis/rampart_straight.glb"}],"category":"rampart"},
+    {"id":"rampart_corner","scene_path":"res://assets/tunis/rampart_corner.glb","footprint_m":[4.0,4.0],"snap_points":[],"has_collision":true,"lods":[{"distance_m":0.0,"asset_path":"res://assets/tunis/rampart_corner.glb"}],"category":"rampart"},
+    {"id":"city_gate","scene_path":"res://assets/tunis/city_gate.glb","footprint_m":[9.0,2.0],"snap_points":[],"has_collision":true,"lods":[{"distance_m":0.0,"asset_path":"res://assets/tunis/city_gate.glb"}],"category":"gate"},
+    {"id":"medina_arch","scene_path":"res://assets/tunis/medina_arch.glb","footprint_m":[3.8,0.7],"snap_points":[],"has_collision":true,"lods":[{"distance_m":0.0,"asset_path":"res://assets/tunis/medina_arch.glb"}],"category":"arch"},
+    {"id":"covered_passage","scene_path":"res://assets/tunis/covered_passage.glb","footprint_m":[4.0,5.0],"snap_points":[],"has_collision":true,"lods":[{"distance_m":0.0,"asset_path":"res://assets/tunis/covered_passage.glb"}],"category":"passage"},
+    {"id":"facade_house","scene_path":"res://assets/tunis/facade_house.glb","footprint_m":[5.0,1.0],"snap_points":[],"has_collision":true,"lods":[{"distance_m":0.0,"asset_path":"res://assets/tunis/facade_house.glb"}],"category":"facade"},
+    {"id":"facade_shop","scene_path":"res://assets/tunis/facade_shop.glb","footprint_m":[5.0,1.1],"snap_points":[],"has_collision":true,"lods":[{"distance_m":0.0,"asset_path":"res://assets/tunis/facade_shop.glb"}],"category":"facade"},
+    {"id":"wooden_door","scene_path":"res://assets/tunis/wooden_door.glb","footprint_m":[1.1,0.12],"snap_points":[],"has_collision":true,"lods":[{"distance_m":0.0,"asset_path":"res://assets/tunis/wooden_door.glb"}],"category":"door"},
+    {"id":"plaza_fountain","scene_path":"res://assets/tunis/plaza_fountain.glb","footprint_m":[3.2,3.2],"snap_points":[],"has_collision":true,"lods":[{"distance_m":0.0,"asset_path":"res://assets/tunis/plaza_fountain.glb"}],"category":"fountain"},
+    {"id":"interior_column","scene_path":"res://assets/tunis/interior_column.glb","footprint_m":[0.45,0.45],"snap_points":[],"has_collision":true,"lods":[{"distance_m":0.0,"asset_path":"res://assets/tunis/interior_column.glb"}],"category":"interior"},
+    {"id":"terrace_parapet","scene_path":"res://assets/tunis/terrace_parapet.glb","footprint_m":[2.0,0.35],"snap_points":[],"has_collision":true,"lods":[{"distance_m":0.0,"asset_path":"res://assets/tunis/terrace_parapet.glb"}],"category":"terrace"},
+    {"id":"market_stall","scene_path":"res://assets/tunis/market_stall.glb","footprint_m":[2.2,1.0],"snap_points":[],"has_collision":true,"lods":[{"distance_m":0.0,"asset_path":"res://assets/tunis/market_stall.glb"}],"category":"prop"},
+    {"id":"clay_jar","scene_path":"res://assets/tunis/clay_jar.glb","footprint_m":[0.65,0.65],"snap_points":[],"has_collision":true,"lods":[{"distance_m":0.0,"asset_path":"res://assets/tunis/clay_jar.glb"}],"category":"prop"}
+  ]
 }
