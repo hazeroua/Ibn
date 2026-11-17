@@ -1,0 +1,44 @@
+{
+  "enclosure": [-52.0,-50.0,52.0,46.0],
+  "gate": {"inward":[0,-1],"opening_half_width_m":2.43,"position":[0.7,46.0]},
+  "generator": "medina",
+  "graph": {"edges":[{"from":"main_street_p0","role":"main","to":"main_street_p1","way":"main_street","width_m":4.5},{"from":"main_street_p1","role":"main","to":"main_street_p2","way":"main_street","width_m":4.5},{"from":"main_street_p2","role":"main","to":"main_street_p3","way":"main_street","width_m":4.5},{"from":"west_alley_p0","role":"alley","to":"west_alley_p1","way":"west_alley","width_m":2.9},{"from":"west_alley_p1","role":"alley","to":"west_alley_p2","way":"west_alley","width_m":2.9},{"from":"west_alley_p2","role":"alley","to":"west_alley_p3","way":"west_alley","width_m":2.9},{"from":"east_lane_p0","role":"narrow","to":"east_lane_p1","way":"east_lane","width_m":1.8},{"from":"east_lane_p1","role":"narrow","to":"east_lane_p2","way":"east_lane","width_m":1.8},{"from":"east_lane_p2","role":"narrow","to":"east_lane_p3","way":"east_lane","width_m":1.8},{"from":"house_derb_p0","role":"alley","to":"house_derb_p1","way":"house_derb","width_m":2.6},{"from":"house_derb_p1","role":"alley","to":"house_derb_p2","way":"house_derb","width_m":2.6}],"nodes":[{"id":"gate","position":[0.7,46.0]},{"id":"plaza","position":[9.1,-5.1]},{"id":"main_street_p0","position":[0.7,46.0]},{"id":"main_street_p1","position":[0.7,27.1]},{"id":"main_street_p2","position":[9.0,27.1]},{"id":"main_street_p3","position":[9.0,2.5]},{"id":"west_alley_p0","position":[0.7,35.0]},{"id":"west_alley_p1","position":[-12.4,35.0]},{"id":"west_alley_p2","position":[-12.4,-4.8]},{"id":"west_alley_p3","position":[-0.7,-4.8]},{"id":"east_lane_p0","position":[18.9,-6.6]},{"id":"east_lane_p1","position":[28.3,-6.6]},{"id":"east_lane_p2","position":[28.3,17.4]},{"id":"east_lane_p3","position":[9.0,17.4]},{"id":"house_derb_p0","position":[0.7,40.1]},{"id":"house_derb_p1","position":[15.2,40.1]},{"id":"house_derb_p2","position":[15.2,35.8]}]},
+  "interior": [-51.55,-49.55,51.55,45.55],
+  "narrowest_way": {"id":"east_lane","width_m":1.8},
+  "open_rects": [
+    [-1.55,24.85,2.95,45.55],
+    [-1.55,24.85,11.25,29.35],
+    [6.75,0.25,11.25,29.35],
+    [-13.85,33.55,2.15,36.45],
+    [-13.85,-6.25,-10.95,36.45],
+    [-13.85,-6.25,0.75,-3.35],
+    [18.0,-7.5,29.2,-5.7],
+    [27.4,-7.5,29.2,18.3],
+    [8.1,16.5,29.2,18.3],
+    [-0.6,38.8,16.5,41.4],
+    [13.9,34.5,16.5,41.4],
+    [-0.7,-12.7,18.9,2.5]
+  ],
+  "plaza": {"fountain":[9.1,-5.1],"fountain_radius_m":1.6,"rect":[-0.7,-12.7,18.9,2.5]},
+  "schema_version": 1,
+  "slots": [
+    {"door_id":"door_e_x675_z250_0","door_position":[6.75,6.04],"facade_id":"facade_e_x675_z250_0","facing":[1,0],"footprint":[1.75,3.54,6.75,8.54],"kind":"shop"},
+    {"door_id":"door_s_zm1270_xm70_2","door_position":[11.55,-12.7],"facade_id":"facade_s_zm1270_xm70_2","facing":[0,1],"footprint":[6.55,-22.7,16.55,-12.7],"kind":"mosque"},
+    {"door_id":"door_s_z3450_x1390_0","door_position":[15.2,34.5],"facade_id":"facade_s_z3450_x1390_0","facing":[0,1],"footprint":[12.2,28.5,18.2,34.5],"kind":"house"}
+  ],
+  "spans": [
+    {"clear_height_m":2.508,"from":[-12.4,25.4],"id":"covered_passage_west_alley","prefab":"covered_passage","to":[-12.4,15.2]},
+    {"clear_height_m":2.64,"from":[-12.4,5.45],"id":"arch_west_alley_1_1","prefab":"medina_arch","to":[-12.4,4.75]},
+    {"clear_height_m":2.64,"from":[28.3,5.05],"id":"arch_east_lane_1_0","prefab":"medina_arch","to":[28.3,5.75]},
+    {"clear_height_m":2.64,"from":[18.95,17.4],"id":"arch_east_lane_2_0","prefab":"medina_arch","to":[18.25,17.4]},
+    {"clear_height_m":2.64,"from":[7.65,40.1],"id":"arch_house_derb_0_0","prefab":"medina_arch","to":[8.35,40.1]}
+  ],
+  "stats": {"busiest_cell_instances":203,"collision_shapes":583,"instances":583,"materials":11,"overlap_pairs_tested":5179,"triangles":74300},
+  "terrace_access": {"base":[0.3,0.0,-9.97],"facade_id":"facade_e_xm70_zm1270_0","parapet_top_m":3.6,"roof":[-2.8,3.0,-9.97]},
+  "ways": [
+    {"id":"main_street","points":[[0.7,46.0],[0.7,27.1],[9.0,27.1],[9.0,2.5]],"role":"main","width_m":4.5},
+    {"id":"west_alley","points":[[0.7,35.0],[-12.4,35.0],[-12.4,-4.8],[-0.7,-4.8]],"role":"alley","width_m":2.9},
+    {"id":"east_lane","points":[[18.9,-6.6],[28.3,-6.6],[28.3,17.4],[9.0,17.4]],"role":"narrow","width_m":1.8},
+    {"id":"house_derb","points":[[0.7,40.1],[15.2,40.1],[15.2,35.8]],"role":"alley","width_m":2.6}
+  ]
+}

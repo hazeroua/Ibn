@@ -24,6 +24,7 @@ Tous les fichiers vivent sous `Game/data/tunis/` :
 | `interactions.json` | Actions, textes et paramètres des objets interactifs. |
 | `audio.json` | Zones et sources sonores. |
 | `viewpoints.json` / `route_joueur.json` | Captures, vidéo et parcours automatiques reproductibles. |
+| `generation/medina*.json` | Description de la médina, retouches durables, plan généré et verrou (#53, voir [`medina-generation.md`](medina-generation.md)). Les cellules de rue, place et remparts sont produites par `Scripts/Pipeline/generer-medina.ps1`. |
 
 Le schéma courant est `1`. Les coordonnées sont en mètres Godot : Y vertical, X/Z horizontaux,
 origine dans `city.json`. Une cellule est calculée avec `floor((x - origin.x) / cell_size_m)` et

@@ -1,0 +1,5 @@
+{
+  "description": "Retouches durables des instances générées par la médina, appliquées après chaque génération. Chaque entrée : {\"id\": <instance générée>, \"set\": {position | rotation_y | scale | prefab_id | layer | properties}} ou {\"id\": ..., \"remove\": true}. Une retouche qui vise un identifiant disparu est une erreur (jamais ignorée en silence).",
+  "overrides": [],
+  "schema_version": 1
+}
