@@ -4,6 +4,7 @@ extends RefCounted
 
 const INSTANCE_ID_META: StringName = &"tunis_instance_id"
 const INSTANCE_LAYER_META: StringName = &"tunis_layer"
+const BLOCKING_LAYERS: Array[StringName] = [&"rampart", &"facade", &"block", &"arch", &"passage"]
 
 var _catalog: TunisCatalog
 
@@ -14,9 +15,7 @@ static func create(catalog: TunisCatalog) -> TunisCellBuilder:
 	return result
 
 
-func build(
-	logical_cell: Vector2i, cell_origin: Vector3, instances: Array[TunisInstanceData]
-) -> Node3D:
+func build(logical_cell: Vector2i, cell_origin: Vector3, instances: Array[TunisInstanceData]) -> Node3D:
 	var root := Node3D.new()
 	root.name = "TunisCell_%d_%d" % [logical_cell.x, logical_cell.y]
 	root.position = cell_origin
@@ -28,6 +27,10 @@ func build(
 		instance.name = String(data.id)
 		instance.set_meta(INSTANCE_ID_META, data.id)
 		instance.set_meta(INSTANCE_LAYER_META, data.layer)
+		# Les masses bâties ne sont pas des obstacles de franchissement : le joueur doit
+		# passer par les portes et les passages prévus par la médina.
+		if BLOCKING_LAYERS.has(data.layer):
+			instance.set_meta(&"franchissable", false)
 		instance.transform = Transform3D(data.transform.basis, data.transform.origin - cell_origin)
 		root.add_child(instance)
 	return root

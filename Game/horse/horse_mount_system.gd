@@ -8,7 +8,7 @@ extends Node3D
 ## plus de physique (il n'a pas de collision avec Barq) et son lecteur d'animation est piloté ici.
 ## Par image : quelques lectures de transformations, aucune allocation.
 
-enum State { ON_FOOT, APPROACH, MOUNTING, MOUNTED, DISMOUNTING }
+enum State { ON_FOOT, APPROACH, MOUNTING, MOUNTING_ATTACH, MOUNTED, DISMOUNTING }
 
 const SETTINGS_PATH: String = "res://data/horse/horse.json"
 const MOUNT_ACTION: StringName = &"mount_horse"
@@ -18,6 +18,7 @@ const SPRINT_ACTION: StringName = &"sprint"
 const PIPELINE_GROUP: StringName = &"horse_mount"
 ## Vitesse en dessous de laquelle on peut descendre (m/s).
 const DISMOUNT_MAX_SPEED: float = 0.3
+const MOUNT_ATTACH_TIME: float = 0.22
 
 var player: PlayerCharacter
 var camera_rig: ThirdPersonCamera
@@ -36,6 +37,7 @@ var _mount_side: float = 0.0
 var _seat_height: float = 0.0
 var _approach_time: float = 0.0
 var _mount_range: float = 0.0
+var _mount_attach_from := Transform3D.IDENTITY
 var _rider_blend: float = 0.0
 var _lean_gaits: Array[StringName] = []
 var _current_rider_clip: StringName = &""
@@ -93,6 +95,11 @@ func _physics_process(delta: float) -> void:
 		State.MOUNTING:
 			horse.set_input(Vector2.ZERO, false)
 			if _state_time >= _clip_length(PlayerAnimator.MOUNT_CLIP):
+				_mount_attach_from = _mount_point()
+				_enter(State.MOUNTING_ATTACH)
+		State.MOUNTING_ATTACH:
+			horse.set_input(Vector2.ZERO, false)
+			if _state_time >= MOUNT_ATTACH_TIME:
 				_enter(State.MOUNTED)
 				_current_rider_clip = &""
 		State.MOUNTED:
@@ -132,6 +139,9 @@ func _process(_delta: float) -> void:
 		State.MOUNTING, State.DISMOUNTING:
 			# Les animations de montée et de descente partent du point de montée (au sol, à gauche de la selle).
 			player.global_transform = _mount_point()
+		State.MOUNTING_ATTACH:
+			var weight := smoothstep(0.0, 1.0, _state_time / MOUNT_ATTACH_TIME)
+			player.global_transform = _mount_attach_from.interpolate_with(horse.seat_transform(), weight)
 		State.MOUNTED:
 			player.global_transform = horse.seat_transform()
 
@@ -285,6 +295,8 @@ func _spawn_horse() -> void:
 	audio.configure(_settings)
 	horse.add_child(audio)
 	horse.hoofstep.connect(_on_hoofstep)
+	horse.jump_started.connect(audio.jump_started)
+	horse.jump_landed.connect(audio.jump_landed)
 
 
 func _on_hoofstep(world_position: Vector3, speed: float, surface: StringName, collider: Object) -> void:

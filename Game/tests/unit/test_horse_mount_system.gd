@@ -25,6 +25,9 @@ func test_mount_system_spawns_barq_and_restores_player_camera() -> void:
 	assert_eq(system.horse.name, "Barq")
 	assert_lte(player.global_position.distance_to(system.horse.global_position), 5.0)
 	assert_false(system.mounted)
+	assert_not_null(system.audio._hoof_stream)
+	assert_not_null(system.audio._jump_stream)
+	assert_eq(system.audio._voices.size(), 4, "réserve audio bornée")
 
 	system.mount()
 	assert_true(system.mounted)

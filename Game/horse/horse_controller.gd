@@ -7,6 +7,8 @@ extends CharacterBody3D
 signal hoofstep(world_position: Vector3, speed: float, surface: StringName, collider: Object)
 signal gait_changed(gait: StringName)
 signal called
+signal jump_started(world_position: Vector3)
+signal jump_landed(world_position: Vector3)
 
 const SETTINGS_PATH: String = "res://data/horse/horse.json"
 const GROUND_LAYER: int = 1
@@ -256,7 +258,7 @@ func _call_move(delta: float) -> Vector2:
 		var reach: float = float(_call["waypoint_reach_m"])
 		while (
 			_waypoint < path.size() - 1
-			and Vector2(path[_waypoint].x - global_position.x, path[_waypoint].z - global_position.z).length() < reach
+			and ((Vector2(path[_waypoint].x - global_position.x, path[_waypoint].z - global_position.z).length()) < reach)
 		):
 			_waypoint += 1
 		aim = path[_waypoint] - global_position
@@ -307,6 +309,7 @@ func _physics_process(delta: float) -> void:
 	if _airborne and is_on_floor() and _vertical_speed <= 0.0:
 		_airborne = false
 		_jump_cooldown = _jump_rest
+		jump_landed.emit(global_position)
 	if heightfield != null:
 		var ground_y: float = heightfield.height_at(global_position.x, global_position.z)
 		if global_position.y < ground_y - 0.5:
@@ -351,7 +354,13 @@ func _safe_to_move(motion: Vector3) -> bool:
 	_probe.transform = Transform3D(Basis.IDENTITY, start)
 	_probe.motion = Vector3(ahead.x, ground_ahead + lift, ahead.z) - start
 	var result: PackedFloat32Array = get_world_3d().direct_space_state.cast_motion(_probe)
-	return result.is_empty() or result[0] >= 0.9999
+	if result.is_empty() or result[0] >= 0.9999:
+		return true
+	# La sonde regarde en avance pour les falaises, mais un mur aperçu dans cette
+	# marge ne doit pas arrêter Barq 7 à 15 m avant lui. Seul un impact pendant
+	# l'image courante est bloquant ; move_and_slide() résout ensuite le contact.
+	var probe_distance: float = _probe.motion.length() * result[0]
+	return probe_distance > motion.length() + safe_margin
 
 
 ## Enjambe une marche (rocher bas, muret, bord de séguia) : au plus quatre requêtes, seulement quand le
@@ -389,11 +398,12 @@ func request_jump() -> bool:
 		return false
 	_airborne = true
 	_vertical_speed = _jump_speed
+	jump_started.emit(global_position)
 	if _animation_player != null and _jump_clip != &"":
 		# Le clip de saut couvre l'appel, le vol et la réception : il dure le temps passé en l'air.
 		var air_time: float = 2.0 * _vertical_speed / _gravity
 		_animation_player.play(_jump_clip, _blend)
-		_animation_player.speed_scale = _animation_player.get_animation(_jump_clip).length / maxf(air_time, 0.1)
+		_animation_player.speed_scale = (_animation_player.get_animation(_jump_clip).length / maxf(air_time, 0.1))
 	return true
 
 
@@ -497,7 +507,7 @@ func _build_visual() -> void:
 			var bone_rest: Transform3D = to_skeleton * _visual.skeleton.get_bone_global_rest(_saddle_bone)
 			var offset: Array = JsonData.get_array(rider, "seat_offset_m", "horse.json > rider")
 			# Décalage compté depuis l'os de selle au repos, dans les axes de Barq.
-			_seat_local = bone_rest.origin + Vector3(float(offset[0]), float(offset[1]), float(offset[2]))
+			_seat_local = (bone_rest.origin + Vector3(float(offset[0]), float(offset[1]), float(offset[2])))
 			_bone_to_seat = bone_rest.affine_inverse() * Transform3D(Basis.IDENTITY, _seat_local)
 
 

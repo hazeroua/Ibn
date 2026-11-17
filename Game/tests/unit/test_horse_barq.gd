@@ -110,6 +110,7 @@ func test_barq_steps_over_low_walls() -> void:
 func test_barq_stops_at_high_walls() -> void:
 	var high: Dictionary = await _run_into_wall(1.4)
 	assert_lt(high["travelled"] as float, 9.0, "Barq doit s'arrêter devant un mur de 1,40 m")
+	assert_gt(high["travelled"] as float, 5.5, "Barq ne doit pas freiner plusieurs mètres avant le mur")
 
 
 func _run_into_wall(wall_height: float) -> Dictionary:

@@ -18,6 +18,8 @@ func test_provider_builds_twenty_five_cells_in_deterministic_order() -> void:
 			assert_eq(cell.name, "TunisCell_%d_%d" % [logical_cell.x, logical_cell.y])
 			assert_eq(cell.get_child_count(), 2)
 			assert_lt(String(cell.get_child(0).name), String(cell.get_child(1).name))
+			assert_true(cell.get_child(0).has_meta(&"franchissable"), "les remparts sont explicitement bloquants")
+			assert_false(bool(cell.get_child(0).get_meta(&"franchissable")))
 			assert_eq(
 				cell.position,
 				Vector3(float(logical_cell.x) * CELL_SIZE, 0.0, float(logical_cell.y) * CELL_SIZE)
@@ -222,7 +224,7 @@ func _instance(x: int, z: int, suffix: String) -> Dictionary:
 		[float(x) * CELL_SIZE + 2.0, 0.0, float(z) * CELL_SIZE + (2.0 if suffix == "a" else 4.0)],
 		"rotation_y": 0.0,
 		"scale": [1.0, 1.0, 1.0],
-		"layer": "structure",
+		"layer": "rampart" if suffix == "a" else "structure",
 		"properties": {}
 	}
 

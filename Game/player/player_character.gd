@@ -294,10 +294,21 @@ func _vault_gap(origin: Transform3D, direction: Vector3, look: float) -> float:
 	if normal.y > cos(floor_max_angle) or flat.length_squared() < 0.0001 or direction.dot(-flat.normalized()) < _settings.vault_min_facing:
 		return -1.0
 	var obstacle: Object = _step_collision.get_collider(0)
-	if obstacle != null and obstacle.has_meta(&"franchissable") and not bool(obstacle.get_meta(&"franchissable")):
+	if _is_forbidden_vault_obstacle(obstacle):
 		return -1.0
 	var gap: float = _step_collision.get_travel().length()
 	return gap if gap >= _settings.vault_min_gap else -1.0
+
+
+## Les collisionneurs des GLB sont des descendants de l'instance médina : on remonte
+## la hiérarchie pour récupérer le contrat « mur infranchissable » posé sur la racine.
+func _is_forbidden_vault_obstacle(obstacle: Object) -> bool:
+	var node := obstacle as Node
+	while node != null:
+		if node.has_meta(&"franchissable"):
+			return not bool(node.get_meta(&"franchissable"))
+		node = node.get_parent()
+	return false
 
 
 ## Altitude du dessus de l'obstacle (monter au-dessus de la hauteur maximale, avancer au-dessus du bord,
