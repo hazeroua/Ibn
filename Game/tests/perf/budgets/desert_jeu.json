@@ -1,0 +1,12 @@
+{
+  "description": "Budgets du désert jouable complet sur Intel Arc 140V, 1080p avec FSR 2 à 67 %. Ils incluent terrain, végétation, palmeraie, eau, faune, joueur, Barq, streaming et ambiance.",
+  "budgets": {
+    "frame_p99_ms": { "max": 16.6 },
+    "fps_1pct_low": { "min": 60.0 },
+    "gpu_p99_ms": { "max": 12.0 },
+    "draw_calls_max": { "max": 300 },
+    "primitives_max": { "max": 1500000 },
+    "video_mem_mb_max": { "max": 384.0 },
+    "static_mem_mb_max": { "max": 640.0 }
+  }
+}

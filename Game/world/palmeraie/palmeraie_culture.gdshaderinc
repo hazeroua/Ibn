@@ -53,7 +53,8 @@ void fragment() {
 	vec2 earth_uv = v_world.xz * earth_uv_scale;
 	vec3 earth = texture(earth_albedo, earth_uv).rgb;
 	float grain = dot(earth, vec3(0.333));
-	vec2 bump = texture(earth_normal, earth_uv).xy * 2.0 - 1.0;
+	// Le grain de l'albédo sert aussi au micro-relief : une lecture au lieu de deux par fragment.
+	vec2 bump = vec2(earth.r - earth.g, earth.g - earth.b) * 2.0;
 	float growth = clamp(max(season_crop_growth, v_tint.a), 0.0, 1.0);
 	float style = v_style.x;
 	float spacing = max(v_style.y, 0.01);

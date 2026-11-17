@@ -1,0 +1,19 @@
+{
+  "description": "Galop de charge de Barq sur le corridor de dunes au nord de la palmeraie, répété pendant environ dix minutes avec streaming continu.",
+  "carrier": "horse",
+  "start_position": [900.0, 40.0, 350.0],
+  "arrival_radius_m": 8.0,
+  "stall_time_s": 12.0,
+  "stall_min_progress_m": 0.5,
+  "max_duration_s": 900.0,
+  "waypoints": [
+    { "id": "dunes_nord_ouest_1", "position": [100.0, 288.5], "gait": "run" },
+    { "id": "crete_nord_ouest_1", "position": [100.0, 700.0], "gait": "run" },
+    { "id": "crete_nord_est_1", "position": [900.0, 700.0], "gait": "run" },
+    { "id": "dunes_nord_est_1", "position": [900.0, 350.0], "gait": "run" },
+    { "id": "dunes_nord_ouest_2", "position": [100.0, 288.5], "gait": "run" },
+    { "id": "crete_nord_ouest_2", "position": [100.0, 700.0], "gait": "run" },
+    { "id": "crete_nord_est_2", "position": [900.0, 700.0], "gait": "run" },
+    { "id": "dunes_nord_est_2", "position": [900.0, 350.0], "gait": "run" }
+  ]
+}

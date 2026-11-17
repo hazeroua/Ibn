@@ -41,11 +41,18 @@ void fragment() {
 #endif
 	vec3 w = triplanar_weights(world_normal);
 	vec3 p = world_position * earth_uv_scale;
-	vec3 albedo = texture(earth_albedo, p.zy).rgb * w.x + texture(earth_albedo, p.xz).rgb * w.y + texture(earth_albedo, p.xy).rgb * w.z;
-	float rough = texture(earth_roughness, p.zy).g * w.x + texture(earth_roughness, p.xz).g * w.y + texture(earth_roughness, p.xy).g * w.z;
-	vec2 nx = texture(earth_normal, p.zy).xy * 2.0 - 1.0;
-	vec2 ny = texture(earth_normal, p.xz).xy * 2.0 - 1.0;
-	vec2 nz = texture(earth_normal, p.xy).xy * 2.0 - 1.0;
+	// Trois lectures au total. Auparavant, les mêmes trois projections étaient relues pour
+	// l'albédo, la rugosité et la normale (neuf lectures par fragment).
+	vec3 sample_x = texture(earth_albedo, p.zy).rgb;
+	vec3 sample_y = texture(earth_albedo, p.xz).rgb;
+	vec3 sample_z = texture(earth_albedo, p.xy).rgb;
+	vec3 albedo = sample_x * w.x + sample_y * w.y + sample_z * w.z;
+	float grain = dot(albedo, vec3(0.333333));
+	float rough = clamp(1.02 - grain * 0.18, 0.82, 0.98);
+	// Les écarts entre canaux de l'albédo fournissent un micro-relief stable sans accès texture supplémentaire.
+	vec2 nx = vec2(sample_x.r - sample_x.g, sample_x.g - sample_x.b) * 2.0;
+	vec2 ny = vec2(sample_y.r - sample_y.g, sample_y.g - sample_y.b) * 2.0;
+	vec2 nz = vec2(sample_z.r - sample_z.g, sample_z.g - sample_z.b) * 2.0;
 	// Détail du relief : perturbation de la normale du monde dans le plan de chaque projection.
 	vec3 detail = vec3(0.0, nx.y, nx.x) * w.x + vec3(ny.x, 0.0, -ny.y) * w.y + vec3(nz.x, nz.y, 0.0) * w.z;
 	vec3 n = normalize(world_normal + detail * detail_normal_strength);

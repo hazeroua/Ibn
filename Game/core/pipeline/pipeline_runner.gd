@@ -11,8 +11,8 @@ extends Node
 ##                     --budgets=<res://…> [--warmup=3] [--no-budgets] [--budgets-advisory]
 ##   --mode=flythrough --scene=<res://…> --route=<res://…/route_joueur.json> [--duration=<maximum>]
 ##
-## Avec --route, le joueur (groupe « player ») marche le long du parcours, piloté par les actions
-## d'entrée (PlayerRouteDriver) ; la caméra de la scène n'est pas touchée (elle suit le joueur).
+## Avec --route, le porteur déclaré (groupe « player » ou « horse ») suit le parcours, piloté par les actions
+## d'entrée (PlayerRouteDriver) ; la caméra de la scène n'est pas touchée (elle suit le porteur).
 ## En mode walk, la mesure dure exactement le parcours ; en vidéo, --duration l'écourte s'il est donné.
 ##
 ## Codes de sortie : 0 succès, 2 arguments invalides, 3 budget dépassé, 4 erreur d'exécution.
@@ -60,7 +60,11 @@ func _ready() -> void:
 
 func _run() -> void:
 	var code: int = await _execute()
-	get_tree().quit(code)
+	var game_input: Node = get_node_or_null(^"/root/GameInput")
+	if game_input != null and game_input.has_method(&"quit_safely"):
+		await game_input.call(&"quit_safely", code)
+	else:
+		get_tree().quit(code)
 
 
 func _execute() -> int:
@@ -331,15 +335,32 @@ func _execute_route() -> int:
 ## flythrough : vidéo). Appelé après le chargement de la scène ; appelé directement par les tests.
 func run_route(route: PlayerRoute, scene_path: String) -> int:
 	var camera: Camera3D = get_viewport().get_camera_3d()
+	var camera_wait_frames: int = 0
+	while camera == null and camera_wait_frames < CAMERA_WAIT_FRAMES:
+		await get_tree().process_frame
+		camera = get_viewport().get_camera_3d()
+		camera_wait_frames += 1
 	if camera == null:
 		push_error("Pipeline : la scène %s ne contient aucune caméra active." % scene_path)
 		return EXIT_RUNTIME
-	var problem: String = PlayerRouteDriver.player_problem(get_tree())
+	var actor: Node3D = PlayerRouteDriver.find_actor(get_tree(), route.carrier)
+	var actor_wait_frames: int = 0
+	while actor == null and actor_wait_frames < CAMERA_WAIT_FRAMES:
+		await get_tree().process_frame
+		actor = PlayerRouteDriver.find_actor(get_tree(), route.carrier)
+		actor_wait_frames += 1
+	var problem: String = PlayerRouteDriver.actor_problem(get_tree(), route.carrier)
 	if not problem.is_empty():
 		push_error("Pipeline : %s (%s)." % [problem, scene_path])
 		return EXIT_RUNTIME
+	if route.carrier == PlayerRoute.CARRIER_HORSE:
+		var mount: HorseMountSystem = get_tree().get_first_node_in_group(HorseMountSystem.PIPELINE_GROUP) as HorseMountSystem
+		if mount == null:
+			push_error("Pipeline : système de monte de Barq absent (%s)." % scene_path)
+			return EXIT_RUNTIME
+		mount.mount()
 	var driver := PlayerRouteDriver.new()
-	driver.setup(route, PlayerRouteDriver.find_player(get_tree()))
+	driver.setup(route, actor)
 	add_child(driver)
 	driver.place_at_start()
 	var code: int = EXIT_RUNTIME

@@ -16,6 +16,12 @@ func before_each() -> void:
 	add_child_autofree(_wind)
 
 
+func after_each() -> void:
+	if _wind != null and _wind.get_audio() != null:
+		_wind.get_audio().shutdown()
+	await get_tree().create_timer(0.1).timeout
+
+
 func test_globals_are_declared_and_published() -> void:
 	var names: Array[StringName] = RenderingServer.global_shader_parameter_get_list()
 	for uniform: StringName in [&"wind_direction", &"wind_strength", &"wind_time"]:
@@ -48,6 +54,7 @@ func test_sand_follows_strength() -> void:
 
 
 func test_audio_is_louder_in_a_storm() -> void:
+	_wind.get_audio().start()
 	_wind.set_base_strength(0.0)
 	_wind.get_audio().apply_wind(0.0, 0.0)
 	var calm: float = _wind.get_audio().get_rumble_player().volume_db

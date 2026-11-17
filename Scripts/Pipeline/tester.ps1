@@ -41,6 +41,7 @@ function Test-Rejeu([string]$Script, [string]$Test, [string]$Rapport) {
 
 $journal = Join-Path $dossierRapport 'tests.log'
 $premierPassage = $true
+Remove-Item -Force -ErrorAction SilentlyContinue $junit, $journal
 try {
     $null = Invoke-Godot -Arguments $arguments -Journal $journal
 } catch {
@@ -62,7 +63,9 @@ if ($echecs -gt 0 -or -not $premierPassage) {
     $enEchec = @()
     foreach ($suite in $rapport.testsuites.testsuite) {
         foreach ($cas in $suite.testcase) {
-            if ($cas.failure) { $enEchec += [pscustomobject]@{ Script = 'res://' + [string]$suite.name; Test = [string]$cas.name } }
+            if ($null -ne $cas.SelectSingleNode('failure')) {
+                $enEchec += [pscustomobject]@{ Script = 'res://' + [string]$suite.name; Test = [string]$cas.name }
+            }
         }
     }
     if ($enEchec.Count -eq 0 -or $enEchec.Count -gt $maxRejoues) { throw "$echecs test(s) en échec sur $total." }
