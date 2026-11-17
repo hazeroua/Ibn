@@ -11,6 +11,8 @@ const CONTEXT: String = "palmeraie.json"
 const FLOATS_PER_INSTANCE: int = 12
 const TUFT_SEED_SALT: int = 7919
 const UP: Vector3 = Vector3.UP
+## Murets (boîtes de collision) par corps enfant : assez peu pour que l'entrée d'un corps reste sous le budget.
+const WALLS_PER_BODY: int = 24
 
 var layout: PalmeraieLayout
 
@@ -204,8 +206,13 @@ func add_decor(cell: Vector2i, body: Node3D) -> void:
 	var canal_faces := PackedVector3Array()
 	var walls: Dictionary = JsonData.get_dictionary(_settings, "walls", CONTEXT)
 	var basin: Dictionary = JsonData.get_dictionary(_settings, "basin", CONTEXT)
-	var collider: CollisionObject3D = body as CollisionObject3D
+	var cell_collider: CollisionObject3D = body as CollisionObject3D
+	var collider: CollisionObject3D = null
 	for i: int in data.walls.size() / PalmeraieLayout.WALL_STRIDE:
+		# Murets regroupés par WALLS_PER_BODY sur des corps enfants : le streaming les fait entrer dans l'arbre un
+		# par un sous son budget (289 formes d'un coup feraient un pic).
+		if cell_collider != null and i % WALLS_PER_BODY == 0:
+			collider = _child_body(cell_collider, "Murets_%d" % (i / WALLS_PER_BODY))
 		var k: int = i * PalmeraieLayout.WALL_STRIDE
 		var wall_kind: int = roundi(data.walls[k + 4])
 		var is_rim: bool = wall_kind == PalmeraieLayout.WALL_RIM
@@ -228,14 +235,15 @@ func add_decor(cell: Vector2i, body: Node3D) -> void:
 		_add_basin(water, Vector2(data.basins[k], data.basins[k + 1]), data.basins[k + 2], data.basins[k + 3])
 	for parcel: int in data.parcels:
 		_add_ground(ground, parcel)
-	if collider != null and not canal_faces.is_empty():
+	if cell_collider != null and not canal_faces.is_empty():
 		var shape := ConcavePolygonShape3D.new()
 		var origin: Vector3 = body.position
 		for i: int in canal_faces.size():
 			canal_faces[i] -= origin
 		shape.set_faces(canal_faces)
-		var owner_id: int = collider.create_shape_owner(collider)
-		collider.shape_owner_add_shape(owner_id, shape)
+		var canals: CollisionObject3D = _child_body(cell_collider, "Seguias")
+		var owner_id: int = canals.create_shape_owner(canals)
+		canals.shape_owner_add_shape(owner_id, shape)
 	var materials: Dictionary = JsonData.get_dictionary(_settings, "materials", CONTEXT)
 	var decor_end: float = JsonData.get_float(materials, "decor_visibility_range_end_m", CONTEXT)
 	var decor_margin: float = JsonData.get_float(materials, "decor_visibility_fade_margin_m", CONTEXT)
@@ -251,6 +259,16 @@ func add_decor(cell: Vector2i, body: Node3D) -> void:
 		JsonData.get_float(ground_settings, "visibility_fade_margin_m", CONTEXT)
 	)
 	_attach(body, water, _water_material, "palmeraie_eau", water_end, decor_margin)
+
+
+## Corps statique enfant de la cellule (même couche), à l'origine de la cellule : mêmes coordonnées locales.
+static func _child_body(cell_body: CollisionObject3D, node_name: String) -> StaticBody3D:
+	var child := StaticBody3D.new()
+	child.name = node_name
+	child.collision_layer = cell_body.collision_layer
+	child.collision_mask = 0
+	cell_body.add_child(child)
+	return child
 
 
 func _attach(body: Node3D, surface: Surface, material: Material, node_name: String, range_end: float, margin: float) -> void:
