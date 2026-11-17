@@ -13,6 +13,7 @@ const LOD_FADE_GUARD_M: float = 4.0
 const VEGETATION_PATH: String = "res://data/desert/vegetation.json"
 const GROUND_COVER_PATH: String = "res://data/desert/ground_cover.json"
 const TIME_PANEL_SCENE: String = "res://ui/time_panel/time_panel.tscn"
+const WORLD_MAP_SCENE: String = "res://ui/world_map/world_map.tscn"
 const SPAWN_WAIT_FRAMES_MAX: int = 1800
 
 var _streamer: WorldStreamer
@@ -100,11 +101,24 @@ func _ready() -> void:
 	var yaw: float = deg_to_rad(float(spawn.get("yaw_degrees", 0.0)))
 	_player = GameSession.spawn_player(self, position, yaw, "ibn_khaldoun_jeune")
 	_rig = GameSession.attach_camera(self, _player)
+	_add_world_map(data)
 	var wading := WaterWading.new()
 	wading.name = "WaterWading"
 	wading.setup(_player, field)
 	add_child(wading)
 	_add_horse(field)
+
+
+func _add_world_map(data: Dictionary) -> void:
+	var scene := load(WORLD_MAP_SCENE) as PackedScene
+	if scene == null:
+		push_error("DesertSession : scène de carte introuvable.")
+		return
+	var overlay := scene.instantiate()
+	add_child(overlay)
+	var map_control := overlay.get_node_or_null("Carte") as WorldMapOverlay
+	if map_control != null:
+		map_control.setup(_player, data)
 
 
 func _physics_process(_delta: float) -> void:
