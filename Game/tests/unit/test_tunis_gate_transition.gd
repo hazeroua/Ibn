@@ -480,3 +480,41 @@ func test_barq_behind_the_city_walks_around_it_to_the_hitch() -> void:
 	assert_false(entered, "Barq contourne la ville sans entrer dans la zone interdite")
 	assert_lt(horse.global_position.distance_to(gate.hitch_world_position()), radius + 0.5, "Barq rejoint le point d'attache")
 	assert_false(horse.is_called, "l'appel se termine")
+
+
+func test_game_started_inside_the_city_puts_barq_at_the_hitch() -> void:
+	var world := Node3D.new()
+	add_child_autofree(world)
+	var player := PlayerCharacter.new()
+	world.add_child(player)
+	var origin: Array = _config["world_origin_xz_m"]
+	var gate_local: Array = (_layout["gate"] as Dictionary)["position"]
+	player.global_position = Vector3(float(origin[0]) + float(gate_local[0]), 0.0, float(origin[1]) + float(gate_local[1]) - 6.0)
+	var mount := HorseMountSystem.new()
+	world.add_child(mount)
+	mount.setup(player, null, null)
+	var gate := TunisGateTransition.new()
+	world.add_child(gate)
+	assert_true(_inside_keep_out_raw(origin, mount.horse.global_position), "Barq apparaît d'abord à côté du joueur, dans la ville")
+	assert_true(gate.configure(_config, player, mount, null))
+	assert_almost_eq(
+		Vector2(mount.horse.global_position.x, mount.horse.global_position.z).distance_to(
+			Vector2(gate.hitch_world_position().x, gate.hitch_world_position().z)
+		),
+		0.0,
+		0.01,
+		"Barq attend au point d'attache"
+	)
+	assert_false(_inside_keep_out(gate, mount.horse.global_position))
+
+
+func _inside_keep_out_raw(origin: Array, position: Vector3) -> bool:
+	var enclosure: Array = _layout["enclosure"]
+	var local := Vector2(position.x - float(origin[0]), position.z - float(origin[1]))
+	return (
+		Rect2(
+			Vector2(float(enclosure[0]), float(enclosure[1])),
+			Vector2(float(enclosure[2]) - float(enclosure[0]), float(enclosure[3]) - float(enclosure[1]))
+		)
+		. has_point(local)
+	)

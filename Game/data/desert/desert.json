@@ -368,7 +368,7 @@
     "shadow_max_distance": 200.0
   },
   "player_spawn": {
-    "position": [260.0, -100.0],
+    "position": [1000.7, 788.0],
     "yaw_degrees": 0.0,
     "height_offset_m": 0.05
   },

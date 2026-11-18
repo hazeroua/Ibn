@@ -123,7 +123,21 @@ func configure(config: Dictionary, player: PlayerCharacter, mount: HorseMountSys
 	horse.called.connect(_on_horse_called)
 	mount.dismount_blocked.connect(_on_dismount_blocked)
 	add_to_group(PIPELINE_FOCUS_GROUP)
+	# Partie commencée dans la ville (point d'apparition dans la médina) : Barq apparaît à côté du joueur,
+	# donc dans l'enceinte ; il prend d'emblée sa place au point d'attache, avant la première image.
+	if _keep_out.has_point(_local(horse.global_position)):
+		_place_at_hitch(horse)
 	return true
+
+
+func _place_at_hitch(horse: HorseController) -> void:
+	var hitch: Vector3 = hitch_world_position()
+	if _mount.heightfield != null:
+		hitch.y = _mount.heightfield.height_at(hitch.x, hitch.z)
+	horse.global_position = hitch
+	var to_gate: Vector3 = gate_world_position() - hitch
+	horse.locomotion.yaw = atan2(-to_gate.x, -to_gate.z)
+	horse.rotation.y = horse.locomotion.yaw
 
 
 static func _gait_speed(horse: HorseController, gait: String) -> float:
