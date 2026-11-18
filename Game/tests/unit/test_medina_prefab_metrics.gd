@@ -44,6 +44,7 @@ func _check_opening(prefab_id: String) -> void:
 	var opening: float = float(metric["opening_half_width_m"])
 	var pillar: float = float(metric["pillar_outer_m"])
 	var clear: float = float(metric["clear_height_m"])
+	var rise: float = float(metric["arch_rise_m"])
 	for side: float in [-1.0, 1.0]:
 		assert_true(_passes(side * (opening - PROBE_MARGIN_M), LOW_PROBE_M), "%s : ouverture libre au sol" % prefab_id)
 		assert_true(_passes(side * (opening - PROBE_MARGIN_M), clear - PROBE_MARGIN_M), "%s : ouverture libre sous le linteau" % prefab_id)
@@ -51,7 +52,8 @@ func _check_opening(prefab_id: String) -> void:
 		assert_false(_passes(side * (pillar - PROBE_MARGIN_M), LOW_PROBE_M), "%s : pile jusqu'à son bord extérieur" % prefab_id)
 		assert_true(_passes(side * (pillar + PROBE_MARGIN_M), LOW_PROBE_M), "%s : rien au sol au-delà de la pile" % prefab_id)
 	assert_true(_passes(0.0, clear - PROBE_MARGIN_M), "%s : hauteur libre" % prefab_id)
-	assert_false(_passes(0.0, clear + PROBE_MARGIN_M), "%s : linteau au-dessus de la hauteur libre" % prefab_id)
+	assert_true(_passes(0.0, clear + rise * 0.5), "%s : voûte dégagée au centre" % prefab_id)
+	assert_false(_passes(0.0, clear + rise + PROBE_MARGIN_M), "%s : pierre au-dessus de la voûte" % prefab_id)
 
 
 func test_gate_opening() -> void:

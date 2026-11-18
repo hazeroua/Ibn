@@ -21,6 +21,7 @@ const LAYER_DOOR: String = "door"
 const LAYER_PARAPET: String = "parapet"
 const LAYER_FOUNTAIN: String = "fountain"
 const LAYER_PROP: String = "prop"
+const LAYER_LANDMARK: String = "landmark"
 const PREFAB_GATE: String = "city_gate"
 const PREFAB_RAMPART: String = "rampart_straight"
 const PREFAB_CORNER: String = "rampart_corner"
@@ -31,7 +32,9 @@ const PREFAB_PARAPET: String = "terrace_parapet"
 const PREFAB_FOUNTAIN: String = "plaza_fountain"
 const PREFAB_STALL: String = "market_stall"
 const PREFAB_HOUSE: String = "facade_house"
+const PREFAB_HOUSE_LOGGIA: String = "facade_house_loggia"
 const PREFAB_SHOP: String = "facade_shop"
+const PREFAB_MINARET: String = "mosque_minaret"
 const SLOT_KINDS: Array[String] = ["house", "shop", "mosque"]
 const PLAZA_ZONE: String = "plaza"
 const SCALE_STEP: float = 0.0001
@@ -578,15 +581,28 @@ func _emit_facades() -> void:
 		var reserved: String = String(_run_reserved.get(unit.run_index, ""))
 		if reserved == "terrace":
 			extra["terrace_access"] = true
+		var visual_prefab: String = unit.prefab
+		if unit.prefab == PREFAB_HOUSE and unit.reserved.is_empty():
+			var variant_rng: RandomNumberGenerator = description.rng("facade_variant:" + unit.id)
+			if variant_rng.randf() < 0.34:
+				visual_prefab = PREFAB_HOUSE_LOGGIA
 		_add(
 			unit.id,
-			unit.prefab,
+			visual_prefab,
 			position,
 			rotation,
 			Vector3(float(unit.width()) / float(_prefab_width(unit.prefab)), unit.scale_y, 1.0),
 			LAYER_FACADE,
 			extra
 		)
+		if unit.reserved == "mosque":
+			var normal: Vector2i = run.normal
+			var roof_point := Vector3i(
+				position.x - normal.x * 200, unit.top,
+				position.z - normal.y * 200
+			)
+			_add("mosque_minaret", PREFAB_MINARET, roof_point, rotation,
+				Vector3.ONE, LAYER_LANDMARK, {"role": "landmark"})
 		var generator: RandomNumberGenerator = description.rng("decor:" + unit.id)
 		var wants_door: bool = generator.randf() < door_frequency
 		var wants_parapet: bool = generator.randf() < parapet_frequency

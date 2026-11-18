@@ -65,9 +65,11 @@ Rien n'est écrit si une vérification échoue. Le jeu ne régénère jamais la 
 
 ## Limites connues
 
-- Le sol de la ville (pavage, pentes) n'existe pas encore : la ville est posée sur un terrain plat et
-  le contrôle de pente des tests porte sur ce sol plat. Le raccord au terrain du désert relève du
-  ticket #54.
-- Le kit d'architecture (#49) n'a pas de module de toit-terrasse : la masse des îlots utilise le
-  module de rempart (`block_mass_prefab`), d'où des toits couleur pisé. Un module dédié se branche en
-  changeant cette seule valeur.
+- Le pavage est visuel et reprend le niveau aplani du terrain du désert. Les collisions et la pente
+  viennent toujours du terrain ; les pierres n'ont pas de relief physique individuel.
+- Les îlots utilisent désormais un module de toit distinct du rempart. Leur masse intérieure reste
+  pleine : les cours des maisons et les intérieurs accessibles demandent une géométrie et un parcours
+  propres, en accord avec le plan généré.
+- Les modules de façades ont des baies en retrait, des encadrements, des galeries et des auvents en
+  volume. Ils sont réutilisés sur toute la ville ; les bâtiments remarquables autres que le minaret
+  de la mosquée ne sont pas encore individualisés.

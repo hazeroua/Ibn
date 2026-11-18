@@ -99,7 +99,7 @@
     "roof_below_facade_m": {"value": 0.6, "limits": [0.3, 1.2], "doc": "Le toit-terrasse d'un îlot est sous la plus basse de ses façades : les façades forment le parapet."},
     "inner_block_height_m": {"range": [5.6, 8.6], "limits": [3.5, 10.0], "doc": "Hauteur des toits intérieurs des îlots, tirée par parcelle (silhouette au-dessus du rempart)."},
     "inner_parcel_m": {"value": 7.0, "limits": [3.0, 20.0], "doc": "Côté des parcelles (maisons) qui découpent l'intérieur des îlots en toits de hauteurs différentes."},
-    "block_mass_prefab": {"value": "rampart_straight", "doc": "Module plein du catalogue utilisé comme masse intérieure des îlots (toits-terrasses)."},
+    "block_mass_prefab": {"value": "roof_mass", "doc": "Module plein du catalogue utilisé comme masse intérieure des îlots (toits-terrasses)."},
     "door_frequency": {"value": 0.35, "limits": [0.0, 1.0], "doc": "Probabilité qu'une façade de maison porte une porte décorative."},
     "parapet_frequency": {"value": 0.25, "limits": [0.0, 1.0], "doc": "Probabilité qu'une façade porte des parapets de terrasse."},
     "arch_spacing_m": {"value": 14.0, "limits": [6.0, 40.0], "doc": "Fréquence des arcs de décharge : au plus un arc tous les « arch_spacing_m » sur une voie de type ruelle."},
@@ -116,10 +116,11 @@
   },
   "prefab_metrics": {
     "doc": "Mesures des modules du kit (Scripts/Blender/generer_architecture_tunis.py), vérifiées par lancer de rayons dans test_medina_prefab_metrics.gd. Repère local Godot : X largeur, Z profondeur (face avant en +Z), origine au sol.",
-    "city_gate": {"opening_half_width_m": 2.43, "pillar_outer_m": 3.51, "clear_height_m": 4.62, "depth_m": 2.0},
-    "medina_arch": {"opening_half_width_m": 1.026, "pillar_outer_m": 1.482, "clear_height_m": 2.64, "height_m": 4.0, "width_m": 3.8},
-    "covered_passage": {"opening_half_width_m": 1.08, "pillar_outer_m": 1.56, "clear_height_m": 2.508, "height_m": 3.92, "width_m": 4.0, "roof_length_m": 25.0},
+    "city_gate": {"opening_half_width_m": 2.43, "pillar_outer_m": 3.51, "clear_height_m": 4.62, "arch_rise_m": 1.26, "depth_m": 2.0},
+    "medina_arch": {"opening_half_width_m": 1.026, "pillar_outer_m": 1.482, "clear_height_m": 2.64, "arch_rise_m": 0.5643, "height_m": 4.0, "width_m": 3.8},
+    "covered_passage": {"opening_half_width_m": 1.08, "pillar_outer_m": 1.56, "clear_height_m": 2.508, "arch_rise_m": 0.594, "height_m": 3.92, "width_m": 4.0, "roof_length_m": 25.0},
     "rampart_straight": {"length_m": 8.0, "thickness_m": 0.9, "height_m": 5.2},
+    "roof_mass": {"length_m": 8.0, "thickness_m": 0.9, "height_m": 5.2},
     "rampart_corner": {"arm_m": 4.0, "thickness_m": 0.9},
     "wooden_door": {"width_m": 1.1, "depth_m": 0.12},
     "terrace_parapet": {"length_m": 2.0, "depth_m": 0.35},
@@ -139,7 +140,8 @@
       ["arch", "facade"], ["arch", "block"],
       ["passage", "facade"], ["passage", "block"],
       ["door", "facade"], ["parapet", "facade"], ["parapet", "block"],
-      ["block", "rampart"], ["facade", "rampart"]
+      ["block", "rampart"], ["facade", "rampart"],
+      ["landmark", "block"]
     ]
   },
   "budgets": {
@@ -147,7 +149,7 @@
     "max_instances": 700,
     "max_instances_per_cell": 400,
     "max_triangles": 200000,
-    "max_materials": 14,
+    "max_materials": 15,
     "max_collision_shapes": 1600
   },
   "viewpoints": {
