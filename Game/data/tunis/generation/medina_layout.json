@@ -33,7 +33,7 @@
     {"clear_height_m":2.64,"from":[18.95,17.4],"id":"arch_east_lane_2_0","prefab":"medina_arch","to":[18.25,17.4]},
     {"clear_height_m":2.64,"from":[7.65,40.1],"id":"arch_house_derb_0_0","prefab":"medina_arch","to":[8.35,40.1]}
   ],
-  "stats": {"busiest_cell_instances":203,"collision_shapes":583,"instances":583,"materials":11,"overlap_pairs_tested":5179,"triangles":74300},
+  "stats": {"busiest_cell_instances":203,"collision_shapes":583,"instances":583,"materials":11,"overlap_pairs_tested":5179,"triangles":113276},
   "terrace_access": {"base":[0.3,0.0,-9.97],"facade_id":"facade_e_xm70_zm1270_0","parapet_top_m":3.6,"roof":[-2.8,3.0,-9.97]},
   "ways": [
     {"id":"main_street","points":[[0.7,46.0],[0.7,27.1],[9.0,27.1],[9.0,2.5]],"role":"main","width_m":4.5},

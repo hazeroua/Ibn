@@ -114,6 +114,7 @@ func configure(config: Dictionary, player: PlayerCharacter, mount: HorseMountSys
 	if mount.heightfield != null:
 		level = mount.heightfield.city_ground_level()
 	global_position = Vector3(float(origin[0]), level, float(origin[1]))
+	add_child(TunisPaving.create(_enclosure))
 	var horse: HorseController = mount.horse
 	horse.speed_guard = _horse_speed_limit
 	horse.guard_deceleration = _brake

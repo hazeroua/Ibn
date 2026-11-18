@@ -50,12 +50,17 @@ func _run() -> void:
 				return
 			world.add_child(cell)
 	_add_environment(world)
+	var layout: Dictionary = JsonData.load_dictionary(MedinaStore.LAYOUT_PATH)
+	var bounds: Array = JsonData.get_array(layout, "enclosure", MedinaStore.LAYOUT_PATH)
+	world.add_child(TunisPaving.create(Rect2(
+		Vector2(float(bounds[0]), float(bounds[1])),
+		Vector2(float(bounds[2]) - float(bounds[0]), float(bounds[3]) - float(bounds[1]))
+	)))
 	_camera = Camera3D.new()
 	_camera.fov = FOV_DEG
 	_camera.far = 2000.0
 	world.add_child(_camera)
 	_camera.make_current()
-	var layout: Dictionary = JsonData.load_dictionary(MedinaStore.LAYOUT_PATH)
 	for shot: Dictionary in _shots(layout):
 		_camera.global_transform = Transform3D.IDENTITY.looking_at(shot["target"] - shot["eye"], Vector3.UP).translated(shot["eye"])
 		for frame: int in SETTLE_FRAMES:
