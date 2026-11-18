@@ -48,6 +48,19 @@ var _slope_full: float = 1.0
 var _terre_margin: float = 1.0
 var _rock_threshold: float = 0.0
 var _rock_band: float = 1.0
+var _city_enabled: bool = false
+var _city_center: Vector2 = Vector2.ZERO
+var _city_half_size: Vector2 = Vector2.ZERO
+var _city_blend_width: float = 0.0
+var _city_level: float = 0.0
+var _road_start: Vector2 = Vector2.ZERO
+var _road_direction: Vector2 = Vector2.ZERO
+var _road_half_width: float = 0.0
+var _road_length: float = 0.0
+var _road_edge: float = 1.0
+var _road_fade: float = 1.0
+var _road_grade_blend: float = 1.0
+var _road_end_height: float = 0.0
 
 
 ## Charge desert.json (réglages par défaut). Renvoie null si les données sont invalides.
@@ -168,8 +181,105 @@ func _setup_surfaces(config: Dictionary, seed_value: int) -> bool:
 	return true
 
 
+## Raccord de Tunis (data/tunis/transition.json) : le relief est aplani au niveau de la ville sur son emprise,
+## rejoint les dunes sur une bande de raccord, et une piste de terre part de la porte vers le désert.
+## Renvoie faux (et signale l'erreur) si les données sont incomplètes ou si la ville sort du désert.
+func configure_city_transition(config: Dictionary) -> bool:
+	var context: String = "tunis/transition.json"
+	if JsonData.get_int(config, "schema_version", context) != 1:
+		push_error("%s : version de schéma inconnue." % context)
+		return false
+	var raw_center: Array = JsonData.get_array(config, "world_origin_xz_m", context)
+	var terrain: Dictionary = JsonData.get_dictionary(config, "terrain", context)
+	var road: Dictionary = JsonData.get_dictionary(config, "road", context)
+	var layout: Dictionary = JsonData.load_dictionary(JsonData.get_string(config, "layout_path", context))
+	var gate: Dictionary = JsonData.get_dictionary(layout, "gate", "medina_layout.json")
+	var raw_gate: Array = JsonData.get_array(gate, "position", "medina_layout.json > gate")
+	var raw_inward: Array = JsonData.get_array(gate, "inward", "medina_layout.json > gate")
+	if raw_center.size() != 2 or raw_gate.size() != 2 or raw_inward.size() != 2:
+		push_error("%s : origine de la ville ou porte du plan invalide." % context)
+		return false
+	var center := Vector2(float(raw_center[0]), float(raw_center[1]))
+	var half_x: float = JsonData.get_float(terrain, "half_extent_x_m", context)
+	var half_z: float = JsonData.get_float(terrain, "half_extent_z_m", context)
+	var blend: float = JsonData.get_float(terrain, "blend_width_m", context)
+	var road_half: float = JsonData.get_float(road, "half_width_m", context)
+	var road_length: float = JsonData.get_float(road, "length_m", context)
+	var road_edge: float = JsonData.get_float(road, "edge_m", context)
+	var road_fade: float = JsonData.get_float(road, "fade_m", context)
+	var road_grade_blend: float = JsonData.get_float(road, "grade_blend_m", context)
+	if (
+		half_x <= 0.0
+		or half_z <= 0.0
+		or blend <= 0.0
+		or absf(center.x) + half_x + blend >= half_extent
+		or absf(center.y) + half_z + blend >= half_extent
+	):
+		push_error("%s : emprise de Tunis invalide ou hors du désert." % context)
+		return false
+	if road_half <= 0.0 or road_length <= 0.0 or road_edge <= 0.0 or road_fade <= 0.0 or road_fade > road_length or road_grade_blend <= 0.0:
+		push_error("%s : piste de la porte invalide." % context)
+		return false
+	_city_center = center
+	_city_half_size = Vector2(half_x, half_z)
+	_city_blend_width = blend
+	_city_level = _raw_height_at(center.x, center.y)
+	_road_start = center + Vector2(float(raw_gate[0]), float(raw_gate[1]))
+	_road_direction = -Vector2(float(raw_inward[0]), float(raw_inward[1])).normalized()
+	_road_half_width = road_half
+	_road_length = road_length
+	_road_edge = road_edge
+	_road_fade = road_fade
+	_road_grade_blend = road_grade_blend
+	var road_end: Vector2 = _road_start + _road_direction * _road_length
+	_road_end_height = _raw_height_at(road_end.x, road_end.y)
+	_city_enabled = true
+	return true
+
+
+func city_ground_level() -> float:
+	return _city_level
+
+
+## Poids de la piste de terre (0 hors piste, 1 sur la piste), fondu sur le bord et à son extrémité. O(1).
+func _road_weight(x: float, z: float) -> float:
+	if not _city_enabled:
+		return 0.0
+	var offset := Vector2(x, z) - _road_start
+	var along: float = offset.dot(_road_direction)
+	if along < 0.0 or along > _road_length:
+		return 0.0
+	var across: float = absf(offset.cross(_road_direction))
+	var side: float = 1.0 - smoothstep(_road_half_width, _road_half_width + _road_edge, across)
+	return side * (1.0 - smoothstep(_road_length - _road_fade, _road_length, along))
+
+
+func _city_weight(x: float, z: float) -> float:
+	if not _city_enabled:
+		return 0.0
+	var outside: float = maxf(absf(x - _city_center.x) - _city_half_size.x, absf(z - _city_center.y) - _city_half_size.y)
+	return 1.0 - smoothstep(0.0, _city_blend_width, maxf(outside, 0.0))
+
+
 ## Altitude du sol (mètres) à la position (x, z) du monde. O(1).
 func height_at(x: float, z: float) -> float:
+	var raw: float = _raw_height_at(x, z)
+	var height: float = lerpf(raw, _city_level, _city_weight(x, z))
+	if not _city_enabled:
+		return height
+	# Piste : pente régulière de la porte à son extrémité, taillée dans les dunes (bords adoucis sur grade_blend_m).
+	var offset := Vector2(x, z) - _road_start
+	var along: float = offset.dot(_road_direction)
+	if along < 0.0 or along > _road_length:
+		return height
+	var across: float = absf(offset.cross(_road_direction))
+	var side: float = 1.0 - smoothstep(_road_half_width, _road_half_width + _road_grade_blend, across)
+	var end_fade: float = 1.0 - smoothstep(_road_length - _road_fade, _road_length, along)
+	var graded: float = lerpf(_city_level, _road_end_height, along / _road_length)
+	return lerpf(height, graded, side * end_fade)
+
+
+func _raw_height_at(x: float, z: float) -> float:
 	var along: float = (x * _wind_cos + z * _wind_sin) * _inverse_along
 	var across: float = (z * _wind_cos - x * _wind_sin) * _inverse_across
 	var ridge: float = pow(1.0 - clampf(absf(_dunes.get_noise_2d(along, across)) / _dune_range, 0.0, 1.0), _ridge_exponent)
@@ -206,7 +316,9 @@ func surface_mix(x: float, z: float, slope_tangent: float) -> Vector4:
 	var slope_term: float = smoothstep(_slope_start, _slope_full, slope_tangent)
 	var terre: float = maxf(features.shore_weight(x, z, _terre_margin), wadi.y * (1.0 - slope_term))
 	var pierre: float = maxf(slope_term, smoothstep(_rock_threshold, _rock_threshold + _rock_band, rock_noise))
-	return Vector4(pierre * (1.0 - terre), terre, wadi.x, wadi.z)
+	var city_weight: float = _city_weight(x, z)
+	var settled: float = maxf(city_weight, _road_weight(x, z))
+	return Vector4(pierre * (1.0 - terre) * (1.0 - settled), maxf(terre, settled), wadi.x * (1.0 - settled), wadi.z * (1.0 - settled))
 
 
 ## Tangente de la pente à (x, z) (mêmes différences centrées que normal_at).

@@ -1,5 +1,6 @@
 class_name HorseMountSystem
 extends Node3D
+signal dismount_blocked
 ## Monte de Barq : appel (sifflet), montée par la gauche, conduite, saut, descente, et caméra de monte.
 ##
 ## États : à pied → approche (le cavalier glisse vers le point de montée, à gauche de la selle) → montée (animation
@@ -114,6 +115,7 @@ func _physics_process(delta: float) -> void:
 					_dismount_requested = false
 					if not _mount_point_clear():
 						# Mur, rocher ou arbre contre le flanc gauche : on reste en selle.
+						dismount_blocked.emit()
 						_update_rider_pose()
 						return
 					_enter(State.DISMOUNTING)

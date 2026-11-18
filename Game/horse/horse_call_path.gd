@@ -7,6 +7,8 @@ extends RefCounted
 ## Une case est praticable si le relief y reste sous la pente maximale de Barq (écart d'altitude entre ses coins
 ## et son centre, ce qui attrape aussi les falaises plus étroites qu'une case) et si l'eau y est guéable.
 ## Les obstacles posés (rochers, murets) ne sont pas dans la grille : Barq les évite sur place (sonde, marches).
+## Les zones interdites déclarées par la scène (enceinte d'une ville, block_area) sont infranchissables : le
+## chemin les contourne au lieu de buter dessus.
 ##
 ## Pire cas : désert de 4 km de côté, cases de grid_cell_m (8 m : 500 × 500 = 250 000 cases, 251 001 altitudes
 ## lues une fois), appel depuis l'autre bout du monde. Un seul calcul à la fois ; un appel arrivé pendant un
@@ -33,6 +35,8 @@ var _pending_to := Vector3.ZERO
 var _result := PackedVector3Array()
 var _result_ready: bool = false
 var _cancelled: bool = false
+var _blocked: Array[Rect2] = []
+var _blocked_applied: int = 0
 
 
 ## Lance la construction de la grille (fil de travail). settings : horse.json entier.
@@ -55,6 +59,27 @@ func is_grid_ready() -> bool:
 	return _grid_ready
 
 
+## Rend infranchissable un rectangle horizontal du monde (x, z). Appliqué sur le fil principal, jamais pendant
+## un calcul de chemin ; valable pour tous les chemins demandés ensuite.
+func block_area(rect: Rect2) -> void:
+	_blocked.append(rect)
+	if _task < 0:
+		_apply_blocked()
+
+
+func _apply_blocked() -> void:
+	if not _grid_ready:
+		return
+	while _blocked_applied < _blocked.size():
+		var rect: Rect2 = _blocked[_blocked_applied]
+		_blocked_applied += 1
+		var low := Vector2i(floori((rect.position.x - _origin) / _cell), floori((rect.position.y - _origin) / _cell))
+		var high := Vector2i(floori((rect.end.x - _origin) / _cell), floori((rect.end.y - _origin) / _cell))
+		for row: int in range(maxi(low.y, 0), mini(high.y, _side - 1) + 1):
+			for column: int in range(maxi(low.x, 0), mini(high.x, _side - 1) + 1):
+				_grid.set_point_solid(Vector2i(column, row), true)
+
+
 ## Demande un chemin (le résultat arrive par poll()).
 func request(from: Vector3, to: Vector3) -> void:
 	_pending = true
@@ -75,6 +100,8 @@ func poll() -> bool:
 			path = _result
 			if not _pending:
 				return true
+	if _grid_ready and _blocked_applied < _blocked.size():
+		_apply_blocked()
 	if _pending and _grid_ready:
 		_pending = false
 		_task = WorkerThreadPool.add_task(_find_path.bind(_pending_from, _pending_to), false, "Barq : chemin")

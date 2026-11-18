@@ -40,8 +40,8 @@ var _lods: Array[Lod] = []
 
 
 ## Crée le fournisseur depuis desert.json (ou null si les données ou les textures sont invalides).
-static func from_data(data: Dictionary) -> DesertTerrainCell:
-	var field: DesertHeightfield = DesertHeightfield.from_data(data)
+static func from_data(data: Dictionary, configured_field: DesertHeightfield = null) -> DesertTerrainCell:
+	var field: DesertHeightfield = configured_field if configured_field != null else DesertHeightfield.from_data(data)
 	if field == null:
 		return null
 	var terrain: Dictionary = JsonData.get_dictionary(data, "terrain", DesertHeightfield.CONTEXT)

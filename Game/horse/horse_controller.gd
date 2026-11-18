@@ -12,6 +12,8 @@ signal jump_landed(world_position: Vector3)
 
 const SETTINGS_PATH: String = "res://data/horse/horse.json"
 const GROUND_LAYER: int = 1
+## Pas de la dichotomie qui réduit un virage refusé par la règle de vitesse de la scène.
+const GUARD_TURN_STEPS: int = 4
 
 var locomotion: HorseLocomotion
 var settings: Dictionary = {}
@@ -20,6 +22,16 @@ var mounted: bool = false
 var called_target: Vector3 = Vector3.ZERO
 var is_called: bool = false
 var last_step_usec: int = 0
+## Règles spatiales facultatives imposées par la scène (porte de ville) ; sans effet dans le désert ouvert.
+## speed_guard(position, cap) -> vitesse maximale (m/s) permise : freinage progressif devant un obstacle ;
+## guard_deceleration (m/s²) borne alors la perte de vitesse par image, et un virage qui exigerait un freinage
+## plus fort est limité (Barq ne se jette pas vers le mur).
+## movement_guard(position, déplacement) -> faux si le déplacement entre dans une zone interdite.
+## jump_guard(position) -> faux si le saut est interdit ici.
+var speed_guard: Callable = Callable()
+var guard_deceleration: float = 0.0
+var movement_guard: Callable = Callable()
+var jump_guard: Callable = Callable()
 var _call_target_node: Node3D = null
 
 var _visual: HorseVisual
@@ -189,6 +201,11 @@ func call_to_node(target: Node3D) -> void:
 	_start_call()
 
 
+## Zone (x, z du monde) que le chemin de l'appel ne traverse jamais (enceinte d'une ville).
+func block_call_area(rect: Rect2) -> void:
+	_call_path.block_area(rect)
+
+
 func cancel_call() -> void:
 	is_called = false
 	_call_target_node = null
@@ -280,7 +297,11 @@ func _physics_process(delta: float) -> void:
 	if is_called:
 		move = _call_move(delta)
 		sprint = false
+	var speed_before: float = locomotion.speed
+	var yaw_before: float = locomotion.yaw
 	locomotion.update(move, sprint, delta)
+	if speed_guard.is_valid():
+		_apply_speed_guard(speed_before, yaw_before, delta)
 	rotation.y = locomotion.yaw
 	var next_gait: StringName = locomotion.get_gait_name()
 	if next_gait != _last_gait:
@@ -322,12 +343,38 @@ func _physics_process(delta: float) -> void:
 	last_step_usec = Time.get_ticks_usec() - started
 
 
+## Règle de vitesse de la scène : au plus guard_deceleration·delta de vitesse perdue par image ; si le nouveau cap
+## exige davantage, le virage est réduit (dichotomie, 4 appels au plus) au cap le plus tourné encore tenable.
+func _apply_speed_guard(speed_before: float, yaw_before: float, delta: float) -> void:
+	var floor_speed: float = maxf(speed_before - guard_deceleration * delta, 0.0)
+	var limit: float = _guard_limit(locomotion.yaw)
+	if limit < floor_speed and absf(angle_difference(yaw_before, locomotion.yaw)) > 0.0001:
+		var wanted: float = locomotion.yaw
+		var low: float = 0.0
+		var high: float = 1.0
+		for step: int in GUARD_TURN_STEPS:
+			var middle: float = (low + high) * 0.5
+			if _guard_limit(lerp_angle(yaw_before, wanted, middle)) >= floor_speed:
+				low = middle
+			else:
+				high = middle
+		locomotion.yaw = lerp_angle(yaw_before, wanted, low)
+		limit = _guard_limit(locomotion.yaw)
+	locomotion.speed = minf(locomotion.speed, maxf(limit, floor_speed))
+
+
+func _guard_limit(yaw: float) -> float:
+	return float(speed_guard.call(global_position, Vector3(-sin(yaw), 0.0, -cos(yaw))))
+
+
 ## Barq refuse d'avancer vers une pente impraticable, un à-pic ou un obstacle plus haut qu'une marche.
 ## Relief : au plus ceil(look_ahead_max_m / sample_spacing_m) lectures de la heightfield ; obstacles : un seul
 ## balayage de sphère qui suit le relief (base au-dessus des marches). Aucune allocation.
 func _safe_to_move(motion: Vector3) -> bool:
 	if motion.length_squared() < 0.000001:
 		return true
+	if movement_guard.is_valid() and not bool(movement_guard.call(global_position, motion)):
+		return false
 	var direction: Vector3 = motion.normalized()
 	var origin: Vector3 = global_position
 	var ground_here: float = origin.y
@@ -395,6 +442,8 @@ func _try_step_up(motion: Vector3) -> bool:
 ## Saut demandé (monté) : seulement au sol, en mouvement et hors du temps de repos entre deux sauts.
 func request_jump() -> bool:
 	if _airborne or not is_on_floor() or _jump_cooldown > 0.0 or locomotion.speed < _jump_min_speed:
+		return false
+	if jump_guard.is_valid() and not bool(jump_guard.call(global_position)):
 		return false
 	_airborne = true
 	_vertical_speed = _jump_speed

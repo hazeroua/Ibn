@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "description": "Raccord sans changement de scène entre le désert et la première rue de Tunis (#54). Coordonnées locales relatives au centre de la médina ; la porte, son orientation et l'enceinte viennent du plan généré (layout_path). La même hauteur de terrain alimente le maillage du désert, ses collisions et la locomotion de Barq.",
+  "world_origin_xz_m": [1000.0, 750.0],
+  "layout_path": "res://data/tunis/generation/medina_layout.json",
+  "view_distance_m": 1500.0,
+  "terrain": {
+    "doc": "Le désert est aplani au niveau de la ville sur l'emprise (demi-côtés) puis rejoint ses dunes sur blend_width_m. max_grade_degrees : pente maximale admise dans la zone de raccord (test).",
+    "half_extent_x_m": 70.0,
+    "half_extent_z_m": 70.0,
+    "blend_width_m": 65.0,
+    "max_grade_degrees": 45.0
+  },
+  "road": {
+    "doc": "Piste de terre qui part de la porte vers le désert : demi-largeur, longueur, bord adouci de la terre (edge_m), fondu de l'extrémité. Son profil descend régulièrement du niveau de la ville à celui du désert à son extrémité, taillé dans les dunes avec des talus adoucis sur grade_blend_m : la porte reste en vue depuis la piste.",
+    "half_width_m": 2.6,
+    "length_m": 240.0,
+    "edge_m": 1.6,
+    "fade_m": 60.0,
+    "grade_blend_m": 14.0
+  },
+  "horse": {
+    "doc": "Barq ralentit au plus à brake_deceleration_mps2 pour s'arrêter à stop_before_wall_m de l'enceinte quel que soit son cap ; il ne peut ni y entrer ni sauter à moins de no_jump_m. Une fois le cavalier descendu près de la porte, il va attendre au point d'attache. Appelé vers le seuil de la porte, il s'arrête à call_stop_at_edge_m du bord de la zone interdite ; ses chemins d'appel contournent la ville.",
+    "brake_deceleration_mps2": 3.5,
+    "stop_before_wall_m": 5.0,
+    "no_jump_m": 24.0,
+    "warning_m": 34.0,
+    "hitch_local_xz_m": [-8.0, 60.0],
+    "hitch_arrival_radius_m": 2.6,
+    "call_stop_at_edge_m": 1.0,
+    "message_duration_s": 3.0
+  },
+  "hint": {
+    "doc": "Indication discrète en bas de l'écran.",
+    "canvas_layer": 20,
+    "bottom_margin_px": 38.0,
+    "height_px": 46.0,
+    "font_color": "#f5deae",
+    "shadow_color": "#140f0a",
+    "shadow_offset_px": [1, 2]
+  },
+  "messages": {
+    "approach": "Laisse Barq près de la porte pour entrer dans la médina.",
+    "dismount_blocked": "Pas assez de place pour descendre ici. Éloigne Barq du mur.",
+    "whistle_inside": "Barq t'attend à la porte.",
+    "ready": "Barq t'attend. Tu peux remonter."
+  }
+}
