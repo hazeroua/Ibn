@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "intent": "open_semi_arid_crossing_with_readable_horizon",
+  "reference_status": "art_direction_from_user_supplied_montage",
+  "gameplay": {
+    "clear_route_half_width_m": 5.0,
+    "route_axis": "z",
+    "minimum_primary_landmark_spacing_m": 18.0,
+    "minimum_rock_spacing_m": 8.0,
+    "oasis_must_contrast_with_steppe": true,
+    "small_assets_must_not_mask_horizon": true
+  },
+  "composition": {
+    "grass_instances": 650,
+    "pebble_instances": 120,
+    "rock_instances": 24,
+    "patch_noise_frequency": 0.055,
+    "grass_patch_threshold": 0.05,
+    "pebble_patch_threshold": -0.25,
+    "rock_scale_min": 0.6,
+    "rock_scale_max": 1.0
+  },
+  "stress_test": {
+    "grass_instances": 1000,
+    "pebble_instances": 200,
+    "rock_instances": 50,
+    "expected_instances": 1250
+  },
+  "ultimate_complement": {
+    "normal_palm_instances": 5,
+    "normal_dark_rock_landmarks": 1,
+    "normal_expected_instances_with_base": 800,
+    "stress_palm_instances": 10,
+    "stress_dark_rock_landmarks": 2,
+    "stress_expected_instances_with_base": 1262
+  },
+  "lighting": {
+    "dawn": {
+      "sky_top": "#596B88",
+      "sky_horizon": "#D8B18D",
+      "ambient": "#C7A27D",
+      "ambient_energy": 0.68,
+      "sun": "#FFD1A0",
+      "sun_energy": 1.0,
+      "sun_rotation_degrees": [-16.0, -95.0, 0.0],
+      "ground": "#8E4F2D",
+      "fog_density": 0.0015
+    },
+    "day": {
+      "sky_top": "#4C9ED3",
+      "sky_horizon": "#8FC6DE",
+      "ambient": "#D9BF95",
+      "ambient_energy": 0.5,
+      "sun": "#FFF0C8",
+      "sun_energy": 0.88,
+      "sun_rotation_degrees": [-48.0, -32.0, 0.0],
+      "ground": "#8E5C34",
+      "fog_density": 0.0003
+    },
+    "sunset": {
+      "sky_top": "#493247",
+      "sky_horizon": "#E17A50",
+      "ambient": "#9E6C5B",
+      "ambient_energy": 0.72,
+      "sun": "#FFB070",
+      "sun_energy": 1.2,
+      "sun_rotation_degrees": [-8.0, 82.0, 0.0],
+      "ground": "#A5532D",
+      "fog_density": 0.0008
+    }
+  },
+  "asset_filters": {
+    "required_complements": [
+      "date_palm_with_readable_crown",
+      "low_riparian_reeds_or_grasses",
+      "one_dark_rock_landmark_family"
+    ],
+    "reject": [
+      "temperate_tree_outside_oasis",
+      "lush_meadow_ground_cover",
+      "saturated_fantasy_flower",
+      "duplicate_grass_without_gameplay_or_silhouette_gain"
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 # Décision de licence — packs Quaternius
 
-État observé le 21 novembre 2026 pour le ticket [#73](https://github.com/hazeroua/Ibn/issues/73). Cette analyse ne remplace pas un avis juridique et ne vaut pas acquisition : aucun pack ni fichier d'asset n'a été téléchargé.
+État observé le 21 novembre 2026 pour le ticket [#73](https://github.com/hazeroua/Ibn/issues/73), complété après les acquisitions autorisées des tickets #76 et #77. Cette analyse ne remplace pas un avis juridique. Les deux packs Nature ont été téléchargés et inspectés ; les cinq autres packs restent non acquis.
 
 ## Constat contradictoire
 
@@ -12,15 +12,15 @@ Ces pages ne permettent pas de démontrer avec certitude si chaque archive gratu
 
 ## Décision conservatrice
 
-Pour chacun des sept packs, la décision est identique et explicite :
+La règle juridique est commune, mais l'état d'acquisition diffère :
 
-1. le pack reste un **candidat non acquis** ;
-2. toute acquisition nouvelle est traitée comme **QAL v1.0** tant que l'archive obtenue ne contient pas une preuve CC0 explicite et rattachable à ses fichiers ;
+1. les deux packs Nature ont été acquis avec autorisation et restent traités comme **QAL v1.0** par prudence ;
+2. les cinq autres packs restent des **candidats non acquis** ; toute acquisition nouvelle sera elle aussi traitée comme QAL v1.0 tant que l'archive obtenue ne contient pas une preuve CC0 explicite et rattachable à ses fichiers ;
 3. sous QAL, les sources originales ou modifiées restent hors du dépôt public, y compris les GLB, FBX, OBJ, Blend, textures et animations dérivées ;
 4. un jeu fini peut incorporer les assets et être distribué, mais le dépôt et le build ne doivent jamais les présenter comme un pack ou des fichiers autonomes réutilisables ;
 5. les collaborateurs et prestataires peuvent recevoir les fichiers uniquement pour travailler sur ce produit et sous les mêmes restrictions ;
 6. aucune attribution n'est exigée par QAL, mais la provenance reste obligatoire dans le manifeste interne du projet ;
-7. l'acquisition ne sera autorisée qu'après enregistrement du nom exact de l'archive, de sa taille, de son SHA-256 et de la licence incluse.
+7. toute acquisition future ne sera autorisée qu'après préparation de l'enregistrement du nom exact de l'archive, de sa taille, de son SHA-256 et de la licence incluse ; pour les deux packs acquis, ces métadonnées sont déjà consignées dans leurs profils d'évaluation.
 
 Si une archive autorisée contient une licence CC0 explicite, la décision pourra être révisée pour **cette archive précise seulement**, après conservation de la preuve et de son empreinte. La FAQ ou la fiche web, seules, ne suffisent pas à appliquer CC0 à un téléchargement futur en présence de la contradiction actuelle.
 
@@ -29,7 +29,7 @@ Si une archive autorisée contient une licence CC0 explicite, la décision pourr
 | Pack | Date affichée | Licence affichée sur la fiche | Formats affichés | Décision dépôt public |
 |---|---|---|---|---|
 | [Stylized Nature MegaKit](https://quaternius.com/packs/stylizednaturemegakit.html) | juillet 2024 | CC0 | FBX, OBJ, Blend, glTF | Sources hors Git ; QAL par défaut jusqu'à preuve CC0 de l'archive |
-| [Ultimate Stylized Nature Pack](https://quaternius.com/packs/ultimatestylizednature.html) | mai 2022 | CC0 | FBX, OBJ, Blend, glTF | Sources hors Git ; QAL par défaut jusqu'à preuve CC0 de l'archive |
+| [Ultimate Stylized Nature Pack](https://quaternius.com/packs/ultimatestylizednature.html) | mai 2022 | CC0 ; `License.txt` visible à la racine officielle mais absent des ZIP de formats | FBX, OBJ, Blend, glTF | Acquis avec autorisation ; sources hors Git, QAL par défaut jusqu'à archivage de la preuve interne |
 | [Fantasy Props MegaKit](https://quaternius.com/packs/fantasypropsmegakit.html) | juin 2025 | CC0 | FBX, OBJ, Blend, glTF | Sources hors Git ; QAL par défaut jusqu'à preuve CC0 de l'archive |
 | [Medieval Village MegaKit](https://quaternius.com/packs/medievalvillagemegakit.html) | janvier 2025 | CC0 | FBX, OBJ, Blend, glTF | Sources hors Git ; QAL par défaut jusqu'à preuve CC0 de l'archive |
 | [Universal Base Characters](https://quaternius.com/packs/universalbasecharacters.html) | août 2025 | CC0 | en-tête : FBX, OBJ, Blend, glTF ; fonctionnalités : FBX et glTF | Sources hors Git ; QAL par défaut jusqu'à preuve CC0 de l'archive |
