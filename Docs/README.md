@@ -28,6 +28,7 @@ Ces documents décrivent la vision du jeu final. Ils restent valables pendant le
 
 | Document | Rôle |
 |---|---|
+| [catalogue-assets-3d-reboot.md](catalogue-assets-3d-reboot.md) | Candidats 3D, licences, sécurité et ordre d'évaluation |
 | [ressources-a-telecharger.md](ressources-a-telecharger.md) | Ressources nécessitant une intervention ou un compte |
 | [CLAUDE.md](../CLAUDE.md) | Règles de travail de l'agent |
 
