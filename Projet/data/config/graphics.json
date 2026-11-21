@@ -1,0 +1,13 @@
+{
+  "window": {
+    "width": 1920,
+    "height": 1080,
+    "mode": "windowed"
+  },
+  "scaling_3d": {
+    "mode": "fsr2",
+    "scale": 0.67
+  },
+  "vsync": "enabled",
+  "max_fps": 0
+}

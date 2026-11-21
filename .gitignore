@@ -81,3 +81,9 @@ __pycache__/
 # Espace de travail local Codex (rapports, scripts et worktrees temporaires)
 /.codex/
 /Game/world/desert/desert.tscn
+
+# Socle du reboot (Projet/) : dépendances installées, cache, exports et rapports
+/Projet/.godot/
+/Projet/addons/
+/Projet/build/
+/Projet/rapports/

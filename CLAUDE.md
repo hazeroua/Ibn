@@ -14,7 +14,7 @@ Jeu d'action-aventure en monde ouvert sous **Godot 4.7** sur la vie d'Ibn Khaldo
 
 ## ⛔ Règle absolue n° 2 : le porteur du projet ne manipule rien
 - Ne jamais lui demander d'ouvrir l'éditeur Godot, de cliquer, de régler une valeur ou de créer un fichier.
-- **Les scripts et données versionnés sont la source de vérité** : scènes complexes générées de manière reproductible, sans réglage manuel dans l'éditeur. Le ticket #63 fixe la structure définitive du nouveau projet.
+- **Les scripts et données versionnés sont la source de vérité** : scènes complexes construites par script à partir de `Projet/data/`, sans réglage manuel dans l'éditeur.
 - Ressources libres téléchargées par script ; seules celles derrière un compte vont dans `Docs/ressources-a-telecharger.md`, puis `Import/`.
 - **Vérifie toi-même** : tests GUT, mesures, captures relues avec Read.
 
@@ -24,16 +24,18 @@ Toujours via les scripts (Windows : `powershell -NoProfile -ExecutionPolicy Bypa
 | Besoin | Commande |
 |---|---|
 | Installer / vérifier les outils | `Tools/installer.ps1` (versions figées : `Tools/versions.json`, chemins : `Tools/outils.json`) |
-| Valider rapidement Terrain3D sous Vulkan | `Reboot/Terrain3DValidation/run-validation.ps1 -Renderer vulkan -DurationSeconds 30 -ToolchainRoot C:\Projets\IbnKhaldoun` |
-| Valider rapidement Terrain3D sous D3D12 | `Reboot/Terrain3DValidation/run-validation.ps1 -Renderer d3d12 -DurationSeconds 30 -ToolchainRoot C:\Projets\IbnKhaldoun` |
-| Session longue (facultative) | mêmes commandes sans `-DurationSeconds` : 30 minutes par moteur |
+| **Tout valider** (dépendances, gdlint/gdformat, import, tests GUT, export Windows, mesure, capture, budget) | `Projet/valider.bat` ou `Projet/outils/valider.ps1 [-Scene <id>] [-Renderer vulkan\|d3d12] [-DurationSeconds 30] [-SansMesure]` |
+| Lancer le dernier export | `Projet/lancer.bat` |
+
+Rapports, journaux et captures : `Projet/rapports/<scène>/<date>-<moteur>/` ; compte rendu de la dernière validation : `Projet/rapports/derniere-validation.txt`.
 
 Les commandes de `Scripts/Pipeline/` concernent l'ancien projet et ne valident pas le reboot.
 
 ## Où se trouvent les choses
 - `Docs/` : sources de vérité actives ; `Docs/archive/` : ancien projet, non contractuel.
 - `Docs/06-roadmap-mvp.md` : **ne travailler que sur le premier ticket non bloqué**.
-- `Reboot/Terrain3DValidation/` : prototype actif du ticket #62.
+- `Projet/` : **le jeu** (socle créé par #63). `core/` (démarrage, données JSON, configuration, commandes, journal, mesure), `world/<scène>/` (scènes construites par script), `data/` (toutes les données, dont `data/budgets/<scène>.json`), `tests/unit/` (GUT), `outils/` (pipeline). Détails : `Projet/README.md`.
+- `Reboot/Terrain3DValidation/` : prototype du ticket #62, conservé comme référence de mesure.
 - `Game/`, `Extensions/`, `Scripts/Pipeline/` : ancien projet conservé pour consultation, sans réutilisation automatique.
 - `Tools/` : outils et versions figées partagés.
 
@@ -56,7 +58,7 @@ Les commandes de `Scripts/Pipeline/` concernent l'ancien projet et ne valident p
 - Version de Godot et des dépendances **figées** (`Tools/versions.json`) : ne rien changer sans le demander.
 
 ## Performance (non négociable)
-**60 i/s en 1080p (FSR 2) sur la puce Intel Arc intégrée, dans le pire cas.** Les budgets actifs du ticket #62 sont dans `Reboot/Terrain3DValidation/README.md` et `Docs/05-technologies.md`. Le ticket #63 devra établir l'emplacement définitif des budgets du nouveau projet. Ne jamais assouplir un budget sans l'accord du porteur du projet ; signaler immédiatement tout dépassement.
+**60 i/s en 1080p (FSR 2) sur la puce Intel Arc intégrée, dans le pire cas.** Budgets par scène dans `Projet/data/budgets/`. Ne jamais assouplir un budget sans l'accord du porteur du projet ; signaler immédiatement tout dépassement.
 
 ## Fin de chaque tâche
 Rapport en français simple : ce qui a changé ; pires cas traités et mesures ; **la commande unique pour essayer** ; ressources à télécharger éventuelles. Un ticket = une branche Git = un ou plusieurs commits clairs.

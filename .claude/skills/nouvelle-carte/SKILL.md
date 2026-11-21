@@ -1,12 +1,12 @@
 ---
 name: nouvelle-carte
-description: Crée une nouvelle carte dans le socle Terrain3D après le ticket #63, avec données, génération, points de vue, budgets et tests.
+description: Crée une nouvelle carte dans `Projet/`, avec données, génération, points de vue, budgets et tests.
 ---
 # Créer une carte `<carte>`
 
-Cette skill ne doit pas être utilisée avant la fermeture de #63. Les chemins définitifs du nouveau socle doivent alors être inscrits dans `Docs/05-technologies.md`; ne jamais reprendre ceux de l'ancien dossier `Game/` par défaut.
+Emplacements : scène et script dans `Projet/world/<carte>/`, données dans `Projet/data/<carte>/`, budget dans `Projet/data/budgets/<carte>.json`, entrée dans le catalogue `Projet/data/config/boot.json`, tests dans `Projet/tests/unit/`. Modèle : `world/terrain_test/`. Ne jamais reprendre les chemins de l'ancien dossier `Game/`.
 
-Nom en minuscules, chiffres et `_`. La carte doit posséder des données sources, un générateur déterministe, au moins trois points de vue, un budget et des tests dans les emplacements définis par #63.
+Nom en minuscules, chiffres et `_`. La carte doit posséder des données sources, un générateur déterministe, au moins trois points de vue, un budget et des tests.
 
 ## Règles
 - Ressources partagées : un maillage par forme et taille, un matériau par apparence ; répétitions en `MultiMeshInstance3D`.

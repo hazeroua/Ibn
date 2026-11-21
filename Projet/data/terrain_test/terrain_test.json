@@ -1,0 +1,53 @@
+{
+  "terrain": {
+    "map_size_meters": 4096,
+    "vertex_spacing_meters": 2.0,
+    "region_size": 512,
+    "height_meters": 95.0,
+    "noise": {
+      "seed": 1332,
+      "frequency": 0.00065,
+      "octaves": 5,
+      "lacunarity": 2.0,
+      "gain": 0.48
+    },
+    "collision": {
+      "radius": 128,
+      "shape_size": 32
+    },
+    "ground_color": "#ab6e33",
+    "ground_roughness": 0.88,
+    "uv_scale": 0.08
+  },
+  "environment": {
+    "sky_color": "#6ba3d1",
+    "ambient_color": "#b8bfc7",
+    "ambient_energy": 0.65,
+    "sun": {
+      "rotation_degrees": [-52.0, -28.0, 0.0],
+      "energy": 1.15,
+      "shadow_bias": 0.12,
+      "shadow_normal_bias": 1.8
+    }
+  },
+  "camera": {
+    "far": 6000.0,
+    "spawn": [0.0, 0.0, 0.0],
+    "spawn_height_above_ground": 12.0,
+    "look_at": [150.0, 0.0, -150.0],
+    "free": {
+      "walk_speed": 12.0,
+      "sprint_speed": 70.0,
+      "mouse_sensitivity": 0.0025,
+      "stick_sensitivity": 2.5,
+      "min_height_above_ground": 1.8
+    }
+  },
+  "measure_route": {
+    "radius_meters": 1750.0,
+    "speed_meters_per_second": 70.0,
+    "height_above_ground_meters": 12.0,
+    "look_ahead_meters": 120.0
+  },
+  "help_text": "Scène de test du terrain\nZQSD ou flèches : se déplacer   Souris : regarder   Maj : très vite\nE / Espace : monter   A / Ctrl : descendre   Échap : libérer la souris"
+}

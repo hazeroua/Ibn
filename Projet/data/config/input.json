@@ -1,0 +1,82 @@
+{
+  "actions": {
+    "move_forward": {
+      "deadzone": 0.2,
+      "events": [
+        { "type": "key", "key": "W" },
+        { "type": "key", "key": "Up" },
+        { "type": "joypad_axis", "axis": 1, "direction": -1 }
+      ]
+    },
+    "move_back": {
+      "deadzone": 0.2,
+      "events": [
+        { "type": "key", "key": "S" },
+        { "type": "key", "key": "Down" },
+        { "type": "joypad_axis", "axis": 1, "direction": 1 }
+      ]
+    },
+    "move_left": {
+      "deadzone": 0.2,
+      "events": [
+        { "type": "key", "key": "A" },
+        { "type": "key", "key": "Left" },
+        { "type": "joypad_axis", "axis": 0, "direction": -1 }
+      ]
+    },
+    "move_right": {
+      "deadzone": 0.2,
+      "events": [
+        { "type": "key", "key": "D" },
+        { "type": "key", "key": "Right" },
+        { "type": "joypad_axis", "axis": 0, "direction": 1 }
+      ]
+    },
+    "look_left": {
+      "deadzone": 0.15,
+      "events": [{ "type": "joypad_axis", "axis": 2, "direction": -1 }]
+    },
+    "look_right": {
+      "deadzone": 0.15,
+      "events": [{ "type": "joypad_axis", "axis": 2, "direction": 1 }]
+    },
+    "look_up": {
+      "deadzone": 0.15,
+      "events": [{ "type": "joypad_axis", "axis": 3, "direction": -1 }]
+    },
+    "look_down": {
+      "deadzone": 0.15,
+      "events": [{ "type": "joypad_axis", "axis": 3, "direction": 1 }]
+    },
+    "ascend": {
+      "deadzone": 0.2,
+      "events": [
+        { "type": "key", "key": "E" },
+        { "type": "key", "key": "Space" },
+        { "type": "joypad_axis", "axis": 5, "direction": 1 }
+      ]
+    },
+    "descend": {
+      "deadzone": 0.2,
+      "events": [
+        { "type": "key", "key": "Q" },
+        { "type": "key", "key": "Ctrl" },
+        { "type": "joypad_axis", "axis": 4, "direction": 1 }
+      ]
+    },
+    "sprint": {
+      "deadzone": 0.5,
+      "events": [
+        { "type": "key", "key": "Shift" },
+        { "type": "joypad_button", "button": 7 }
+      ]
+    },
+    "toggle_mouse_capture": {
+      "deadzone": 0.5,
+      "events": [
+        { "type": "key", "key": "Escape" },
+        { "type": "joypad_button", "button": 6 }
+      ]
+    }
+  }
+}

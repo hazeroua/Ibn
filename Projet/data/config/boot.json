@@ -1,0 +1,9 @@
+{
+  "default_scene": "terrain_test",
+  "scenes": {
+    "terrain_test": {
+      "path": "res://world/terrain_test/terrain_test.tscn",
+      "budget": "res://data/budgets/terrain_test.json"
+    }
+  }
+}

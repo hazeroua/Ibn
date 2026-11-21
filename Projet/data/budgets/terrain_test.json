@@ -1,0 +1,13 @@
+{
+  "scene": "terrain_test",
+  "limits": {
+    "p99_frame_ms": { "max": 16.6 },
+    "max_frame_ms": { "max": 50.0 },
+    "peak_draw_calls": { "max": 300 },
+    "peak_video_memory_mib": { "max": 512 },
+    "startup_ms": { "max": 5000 },
+    "collision_failures": { "max": 0 },
+    "collision_checks": { "min": 1 },
+    "frame_count": { "min": 1 }
+  }
+}
