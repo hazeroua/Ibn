@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "pack": "Quaternius Ultimate Stylized Nature Pack",
+  "distribution": "metadata_only_sources_excluded_from_git",
+  "official_page": "https://quaternius.com/packs/ultimatestylizednature.html",
+  "license": {
+    "displayed": "CC0",
+    "root_license_file_observed": "License.txt (374 bytes)",
+    "archive_contains_license": false,
+    "repository_policy": "QAL_sources_and_derivatives_outside_git"
+  },
+  "archives": {
+    "fbx": {
+      "sha256": "3f696cc76f2e70277761e98abeb5552aa39c10a97d015fd65628fc8ab51d32e0",
+      "size_bytes": 5150307,
+      "entries": 63,
+      "declared_uncompressed_bytes": 6012804,
+      "quarantine_decision": "accepted"
+    },
+    "gltf": {
+      "sha256": "56315d74ae732ffdb988604c4464946db76da014912439a1e60eaa9a8e89033e",
+      "size_bytes": 102404179,
+      "entries": 93,
+      "quarantine_decision": "accepted",
+      "note": "36 modeles seulement; textures de palmier et rocher reutilisees avec les FBX"
+    }
+  },
+  "selected_models": {
+    "adult_date_palm_landmarks": {
+      "models": ["PalmTree_1", "PalmTree_3"],
+      "decision": "adapt",
+      "triangles": [472, 344],
+      "height_m": [5.103, 4.666],
+      "adaptations": [
+        "two_material_overrides",
+        "desaturated_leaf_tint",
+        "trunk_normal_map",
+        "alpha_scissor_leaves",
+        "gpu_multimesh",
+        "oasis_landmark_only"
+      ],
+      "normal_instances": 5,
+      "collision": "one_simple_capsule_per_near_trunk",
+      "historical_status": "generic_date_palm_proxy_not_authenticity_evidence"
+    },
+    "secondary_adult_palms": {
+      "models": ["PalmTree_2", "PalmTree_4"],
+      "decision": "adapt",
+      "triangles": [368, 472],
+      "height_m": [5.28, 3.65],
+      "usage": "stress_test_and_secondary_leaning_silhouettes"
+    },
+    "juvenile_palm": {
+      "models": ["PalmTree_5"],
+      "decision": "adapt",
+      "triangles": [264],
+      "height_m": [1.796],
+      "usage": "juvenile_only_never_primary_landmark"
+    },
+    "dark_rock_landmark": {
+      "models": ["Rock_4"],
+      "decision": "adapt",
+      "triangles": [456],
+      "height_m": [2.153],
+      "adaptations": [
+        "dark_ochre_tint",
+        "scale_2_8_to_3_15",
+        "distant_landmark_only",
+        "no_shadow"
+      ],
+      "normal_instances": 1,
+      "collision": "none_at_landmark_distance"
+    }
+  },
+  "rejected_or_duplicate_models": {
+    "Rock_1": "duplicate_of_existing_medium_rocks",
+    "Rock_2": "duplicate_of_existing_medium_rocks",
+    "Rock_3": "higher_triangle_duplicate_without_silhouette_gain",
+    "Rock_5": "higher_triangle_duplicate_without_landmark_gain",
+    "temperate_trees_bushes_flowers_grasses": "outside_sahara_game_design_or_duplicate_of_ticket_76_selection"
+  },
+  "performance_budget": {
+    "normal_total_instances": 800,
+    "stress_total_instances": 1262,
+    "max_draw_calls": 60,
+    "target_frame_ms": 16.6,
+    "intel_arc_validation_required": true
+  }
+}

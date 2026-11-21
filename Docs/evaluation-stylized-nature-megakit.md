@@ -64,7 +64,7 @@ Les plafonds initiaux du micro-biome sont 45 rochers, 240 galets, 1 800 touffes 
 
 ## Lacunes et suite
 
-Le dattier (`Phoenix dactylifera`) et la végétation de rive restent obligatoires selon le [guide de l'oasis du Zab](oasis-zab-guide-historique.md). Le ticket suivant doit donc évaluer l'Ultimate Stylized Nature Pack, sans réintroduire les familles déjà refusées. Les personnages ne sont pas concernés par ce pack : leurs rigs, tenues et performances sont traités dans les tickets dédiés afin de ne pas mélanger licences, validation historique et squelettes.
+Le dattier (`Phoenix dactylifera`) et la végétation de rive restent obligatoires selon le [guide de l'oasis du Zab](oasis-zab-guide-historique.md). L'[évaluation du pack Ultimate](evaluation-ultimate-stylized-nature.md) fournit désormais des proxies de dattier sans réintroduire les familles déjà refusées ; la végétation de rive reste manquante. Les personnages ne sont pas concernés par ces packs : leurs rigs, tenues et performances sont traités dans les tickets dédiés afin de ne pas mélanger licences, validation historique et squelettes.
 
 ## Reproduire sans publier les sources
 
