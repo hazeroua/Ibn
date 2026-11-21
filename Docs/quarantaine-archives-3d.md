@@ -40,6 +40,11 @@ Une décision « accepté » signifie seulement que les contrôles automatiques 
 
 Acceptés automatiquement : GLB/glTF et BIN, FBX, OBJ/MTL, images usuelles, KTX/DDS, documents de licence et métadonnées texte/JSON/XML/YAML.
 
+Cas spécial : un `desktop.ini` est accepté uniquement s'il fait au plus 64 Kio et contient exclusivement une section
+`[LocalizedFileNames]` associant des noms simples de modèles 3D à leurs libellés. Tout autre fichier INI, toute section active
+de l'Explorateur Windows, tout chemin, URL ou référence de bibliothèque reste refusé. Le fichier n'est jamais exécuté et n'est
+copié que dans le dossier temporaire supprimé à la fin de l'inspection.
+
 Placés en quarantaine : Blend, PDF, fichiers d'édition complexes (PSD, KRA, XCF) et archives imbriquées.
 
 Refusés : scripts, exécutables, bibliothèques natives, raccourcis, installateurs, projets moteur et toute extension inconnue. Une archive autre que ZIP est refusée : ajouter un extracteur n'est autorisé qu'après une revue de sécurité séparée.
@@ -60,4 +65,7 @@ Ces limites sont des plafonds de sécurité, pas des budgets de performance ou d
 pwsh -NoProfile -File Tools/tests/test-asset-quarantine.ps1
 ```
 
-Les archives sont créées synthétiquement dans le dossier temporaire du système puis supprimées. Les cas couvrent archive saine, limite de taille avant ouverture, traversée et chemin absolu, nom Windows réservé, lien symbolique, script inattendu, extension inconnue, PDF, fichier Blend et collision de casse. Deux tests supplémentaires exécutent la commande publique et vérifient ses codes de sortie.
+Les archives sont créées synthétiquement dans le dossier temporaire du système puis supprimées. Les cas couvrent archive saine,
+limite de taille avant ouverture, traversée et chemin absolu, nom Windows réservé, lien symbolique, script inattendu, extension
+inconnue, PDF, fichier Blend, collision de casse, métadonnée `desktop.ini` strictement passive et variante active refusée. Deux
+tests supplémentaires exécutent la commande publique et vérifient ses codes de sortie.

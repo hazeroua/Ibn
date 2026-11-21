@@ -114,6 +114,31 @@ try {
             expectedCode = 'blocked_file'
         },
         [pscustomobject]@{
+            name = 'desktop ini localisations sûres'
+            expected = 'accepted'
+            entries = @(
+                [pscustomobject]@{
+                    path = 'glTF/desktop.ini'
+                    content = "[LocalizedFileNames]`r`nRock_1.gltf=@Rock_1,0`r`n"
+                    symlink = $false
+                },
+                [pscustomobject]@{ path = 'glTF/Rock_1.gltf'; content = '{}'; symlink = $false }
+            )
+            expectedCode = 'safe_os_metadata'
+        },
+        [pscustomobject]@{
+            name = 'desktop ini actif refusé'
+            expected = 'rejected'
+            entries = @(
+                [pscustomobject]@{
+                    path = 'glTF/desktop.ini'
+                    content = "[.ShellClassInfo]`r`nIconResource=\\\\server\\share\\icon.dll,0`r`n"
+                    symlink = $false
+                }
+            )
+            expectedCode = 'blocked_file'
+        },
+        [pscustomobject]@{
             name = 'nom Windows réservé'
             expected = 'rejected'
             entries = @([pscustomobject]@{ path = 'Models/CON.glb'; content = 'blocked'; symlink = $false })
@@ -137,7 +162,7 @@ try {
         Assert-True ($saved.archive.sha256 -match '^[0-9a-f]{64}$') "$($case.name) : SHA-256 archive absent"
 
         if ($case.expected -eq 'accepted') {
-            Assert-Equal @($saved.inventory).Count 3 "$($case.name) : inventaire incomplet"
+            Assert-Equal @($saved.inventory).Count @($case.entries).Count "$($case.name) : inventaire incomplet"
             Assert-True (@($saved.inventory | Where-Object { $_.sha256 -notmatch '^[0-9a-f]{64}$' }).Count -eq 0) "$($case.name) : empreinte fichier absente"
         }
         if ($case.expected -eq 'rejected') {

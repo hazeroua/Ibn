@@ -74,6 +74,47 @@ function Get-EntryClassification {
     return [pscustomobject]@{ category = 'unexpected_extension'; disposition = 'rejected' }
 }
 
+function Test-SafeDesktopMetadataEntry {
+    param(
+        [Parameter(Mandatory)][IO.Compression.ZipArchiveEntry]$Entry,
+        [Parameter(Mandatory)][string]$NormalizedPath
+    )
+
+    if ([IO.Path]::GetFileName($NormalizedPath) -ine 'desktop.ini' -or $Entry.Length -le 0 -or $Entry.Length -gt 64KB) {
+        return $false
+    }
+
+    $stream = $null
+    try {
+        $stream = $Entry.Open()
+        $bytes = New-Object byte[] ([int]$Entry.Length)
+        $offset = 0
+        while ($offset -lt $bytes.Length) {
+            $read = $stream.Read($bytes, $offset, $bytes.Length - $offset)
+            if ($read -le 0) { return $false }
+            $offset += $read
+        }
+        if ($stream.ReadByte() -ne -1) { return $false }
+
+        $encoding = New-Object Text.UTF8Encoding($false, $true)
+        $text = $encoding.GetString($bytes)
+        $lines = @($text -split '\r?\n' | Where-Object { $_ -ne '' })
+        if ($lines.Count -lt 2 -or $lines[0] -cne '[LocalizedFileNames]') { return $false }
+        foreach ($line in $lines[1..($lines.Count - 1)]) {
+            if ($line -cnotmatch '^[A-Za-z0-9 _().-]+\.(?:fbx|glb|gltf|obj)=@[A-Za-z0-9 _().-]+,0$') {
+                return $false
+            }
+        }
+        return $true
+    }
+    catch {
+        return $false
+    }
+    finally {
+        if ($stream) { $stream.Dispose() }
+    }
+}
+
 function Test-SymbolicLinkEntry {
     param([Parameter(Mandatory)][IO.Compression.ZipArchiveEntry]$Entry)
 
@@ -320,6 +361,15 @@ function Test-AssetArchive {
                 }
 
                 $classification = Get-EntryClassification $normalized.path
+                if (
+                    $classification.disposition -eq 'rejected' -and
+                    (Test-SafeDesktopMetadataEntry -Entry $entry -NormalizedPath $normalized.path)
+                ) {
+                    $classification = [pscustomobject]@{ category = 'os_metadata'; disposition = 'accepted' }
+                    $findings.Add((New-Finding info safe_os_metadata `
+                        'Métadonnée Windows bornée contenant uniquement des noms localisés de modèles ; jamais exécutée.' `
+                        $normalized.path))
+                }
                 switch ($classification.disposition) {
                     'rejected' {
                         $findings.Add((New-Finding reject blocked_file 'Extension exécutable, script, projet moteur ou extension inattendue.' $normalized.path))
