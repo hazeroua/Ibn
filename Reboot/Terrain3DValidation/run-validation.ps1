@@ -73,4 +73,3 @@ $ForbiddenLogLines = Select-String -Path $LogPath -Pattern '(^|\s)(ERROR:|SCRIPT
 if ($ForbiddenLogLines) {
     throw "Le journal contient une erreur : $($ForbiddenLogLines[0].Line)"
 }
-
