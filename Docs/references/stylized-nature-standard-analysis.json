@@ -1,0 +1,2617 @@
+{
+  "schema_version": 1,
+  "generated_utc": "2026-11-21T19:25:43.9746230Z",
+  "archive_sha256": "298f6732b872e4cf7b30e6e7abf9641c7f6dc6b326df37ac089533ed7e3d58c9",
+  "format": "glTF 2.0",
+  "coordinate_assumption": "right-handed, Y-up, metres according to glTF 2.0; dimensions verified from accessors",
+  "source_directory_name": "glTF",
+  "totals": {
+    "models": 68,
+    "vertices": 216582,
+    "triangles": 148947,
+    "primitives": 88,
+    "unique_referenced_files": 83
+  },
+  "textures": [
+    {
+      "file": "Bark_DeadTree_Normal.png",
+      "bytes": 5728199,
+      "width": 2048,
+      "height": 2048
+    },
+    {
+      "file": "Bark_DeadTree.png",
+      "bytes": 4228870,
+      "width": 2048,
+      "height": 2048
+    },
+    {
+      "file": "Bark_NormalTree_Normal.png",
+      "bytes": 4384496,
+      "width": 2048,
+      "height": 2048
+    },
+    {
+      "file": "Bark_NormalTree.png",
+      "bytes": 3894788,
+      "width": 2048,
+      "height": 2048
+    },
+    {
+      "file": "Bark_TwistedTree_Normal.png",
+      "bytes": 5728199,
+      "width": 2048,
+      "height": 2048
+    },
+    {
+      "file": "Bark_TwistedTree.png",
+      "bytes": 4630805,
+      "width": 2048,
+      "height": 2048
+    },
+    {
+      "file": "Flowers.png",
+      "bytes": 444609,
+      "width": 1008,
+      "height": 981
+    },
+    {
+      "file": "Grass.png",
+      "bytes": 33605,
+      "width": 512,
+      "height": 512
+    },
+    {
+      "file": "Leaf_Pine_C.png",
+      "bytes": 70055,
+      "width": 2048,
+      "height": 2048
+    },
+    {
+      "file": "Leaves_NormalTree_C.png",
+      "bytes": 158796,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "file": "Leaves_TwistedTree_C.png",
+      "bytes": 70353,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "file": "Leaves.png",
+      "bytes": 2586432,
+      "width": 2048,
+      "height": 2048
+    },
+    {
+      "file": "Mushrooms.png",
+      "bytes": 1208660,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "file": "PathRocks_Diffuse.png",
+      "bytes": 811732,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "file": "Rocks_Diffuse.png",
+      "bytes": 2517398,
+      "width": 2048,
+      "height": 2048
+    }
+  ],
+  "models": [
+    {
+      "id": "Bush_Common_Flowers",
+      "category": "bush",
+      "gltf_file": "Bush_Common_Flowers.gltf",
+      "vertices": 2515,
+      "triangles": 1368,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Leaves_NormalTree",
+        "Flowers"
+      ],
+      "referenced_files": [
+        "Bush_Common_Flowers.bin",
+        "Flowers.png",
+        "Leaves_NormalTree_C.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.9234761595726013,
+        -0.234694704413414,
+        -0.9743891954421997
+      ],
+      "bounds_max": [
+        0.9913685917854309,
+        1.3470909595489502,
+        0.9907516837120056
+      ],
+      "dimensions_m": [
+        1.9148447513580322,
+        1.5817856639623642,
+        1.9651408791542053
+      ],
+      "pivot_min_y_m": -0.234694704413414,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.234694704413414
+    },
+    {
+      "id": "Bush_Common",
+      "category": "bush",
+      "gltf_file": "Bush_Common.gltf",
+      "vertices": 1800,
+      "triangles": 900,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Leaves_TwistedTree"
+      ],
+      "referenced_files": [
+        "Bush_Common.bin",
+        "Leaves_TwistedTree_C.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.9234761595726013,
+        -0.234694704413414,
+        -0.9743891954421997
+      ],
+      "bounds_max": [
+        0.9913685917854309,
+        1.3470909595489502,
+        0.9907516837120056
+      ],
+      "dimensions_m": [
+        1.9148447513580322,
+        1.5817856639623642,
+        1.9651408791542053
+      ],
+      "pivot_min_y_m": -0.234694704413414,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.234694704413414
+    },
+    {
+      "id": "Clover_1",
+      "category": "ground_plant",
+      "gltf_file": "Clover_1.gltf",
+      "vertices": 267,
+      "triangles": 379,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Leaves"
+      ],
+      "referenced_files": [
+        "Clover_1.bin",
+        "Leaves.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.5022982358932495,
+        -0.012792191468179226,
+        -0.39956197142601013
+      ],
+      "bounds_max": [
+        0.2939910888671875,
+        1.131940245628357,
+        0.36432379484176636
+      ],
+      "dimensions_m": [
+        0.796289324760437,
+        1.1447324370965362,
+        0.7638857662677765
+      ],
+      "pivot_min_y_m": -0.012792191468179226,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.012792191468179226
+    },
+    {
+      "id": "Clover_2",
+      "category": "ground_plant",
+      "gltf_file": "Clover_2.gltf",
+      "vertices": 433,
+      "triangles": 615,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Leaves"
+      ],
+      "referenced_files": [
+        "Clover_2.bin",
+        "Leaves.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.5022982358932495,
+        -0.0023507503792643547,
+        -0.47231054306030273
+      ],
+      "bounds_max": [
+        0.34883004426956177,
+        1.261434555053711,
+        0.36432382464408875
+      ],
+      "dimensions_m": [
+        0.8511282801628113,
+        1.2637853054329753,
+        0.8366343677043915
+      ],
+      "pivot_min_y_m": -0.0023507503792643547,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.0023507503792643547
+    },
+    {
+      "id": "CommonTree_1",
+      "category": "tree",
+      "gltf_file": "CommonTree_1.gltf",
+      "vertices": 9458,
+      "triangles": 6265,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Bark_NormalTree",
+        "Leaves_NormalTree"
+      ],
+      "referenced_files": [
+        "Bark_NormalTree_Normal.png",
+        "Bark_NormalTree.png",
+        "CommonTree_1.bin",
+        "Leaves_NormalTree_C.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -2.1944587230682373,
+        -0.24277201294898987,
+        -2.2245190143585205
+      ],
+      "bounds_max": [
+        2.116964101791382,
+        7.022013187408447,
+        2.3531949520111084
+      ],
+      "dimensions_m": [
+        4.311422824859619,
+        7.264785200357437,
+        4.577713966369629
+      ],
+      "pivot_min_y_m": -0.24277201294898987,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.24277201294898987
+    },
+    {
+      "id": "CommonTree_2",
+      "category": "tree",
+      "gltf_file": "CommonTree_2.gltf",
+      "vertices": 8107,
+      "triangles": 5648,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Bark_NormalTree",
+        "Leaves_NormalTree"
+      ],
+      "referenced_files": [
+        "Bark_NormalTree_Normal.png",
+        "Bark_NormalTree.png",
+        "CommonTree_2.bin",
+        "Leaves_NormalTree_C.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -2.2230136394500732,
+        -0.24277201294898987,
+        -1.8514697551727295
+      ],
+      "bounds_max": [
+        2.24128794670105,
+        7.400223731994629,
+        2.4243826866149902
+      ],
+      "dimensions_m": [
+        4.464301586151123,
+        7.642995744943619,
+        4.27585244178772
+      ],
+      "pivot_min_y_m": -0.24277201294898987,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.24277201294898987
+    },
+    {
+      "id": "CommonTree_3",
+      "category": "tree",
+      "gltf_file": "CommonTree_3.gltf",
+      "vertices": 5749,
+      "triangles": 3505,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Bark_NormalTree",
+        "Leaves_NormalTree"
+      ],
+      "referenced_files": [
+        "Bark_NormalTree_Normal.png",
+        "Bark_NormalTree.png",
+        "CommonTree_3.bin",
+        "Leaves_NormalTree_C.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -1.9864652156829834,
+        -0.24277201294898987,
+        -2.0609655380249023
+      ],
+      "bounds_max": [
+        2.076380968093872,
+        9.182417869567871,
+        2.1801114082336426
+      ],
+      "dimensions_m": [
+        4.0628461837768555,
+        9.425189882516861,
+        4.241076946258545
+      ],
+      "pivot_min_y_m": -0.24277201294898987,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.24277201294898987
+    },
+    {
+      "id": "CommonTree_4",
+      "category": "tree",
+      "gltf_file": "CommonTree_4.gltf",
+      "vertices": 5900,
+      "triangles": 4066,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Bark_NormalTree",
+        "Leaves_NormalTree"
+      ],
+      "referenced_files": [
+        "Bark_NormalTree_Normal.png",
+        "Bark_NormalTree.png",
+        "CommonTree_4.bin",
+        "Leaves_NormalTree_C.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -1.7970952987670898,
+        -0.24277201294898987,
+        -2.0796103477478027
+      ],
+      "bounds_max": [
+        2.028430461883545,
+        9.195609092712402,
+        1.6757631301879883
+      ],
+      "dimensions_m": [
+        3.8255257606506348,
+        9.438381105661392,
+        3.755373477935791
+      ],
+      "pivot_min_y_m": -0.24277201294898987,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.24277201294898987
+    },
+    {
+      "id": "CommonTree_5",
+      "category": "tree",
+      "gltf_file": "CommonTree_5.gltf",
+      "vertices": 4873,
+      "triangles": 3182,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Bark_NormalTree",
+        "Leaves_NormalTree"
+      ],
+      "referenced_files": [
+        "Bark_NormalTree_Normal.png",
+        "Bark_NormalTree.png",
+        "CommonTree_5.bin",
+        "Leaves_NormalTree_C.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -1.912354588508606,
+        -0.24277201294898987,
+        -2.162447929382324
+      ],
+      "bounds_max": [
+        1.7588107585906982,
+        6.763467788696289,
+        2.057202100753784
+      ],
+      "dimensions_m": [
+        3.671165347099304,
+        7.006239801645279,
+        4.219650030136108
+      ],
+      "pivot_min_y_m": -0.24277201294898987,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.24277201294898987
+    },
+    {
+      "id": "DeadTree_1",
+      "category": "tree",
+      "gltf_file": "DeadTree_1.gltf",
+      "vertices": 8036,
+      "triangles": 6169,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Bark_DeadTree"
+      ],
+      "referenced_files": [
+        "Bark_DeadTree_Normal.png",
+        "Bark_DeadTree.png",
+        "DeadTree_1.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -2.5923237800598145,
+        -0.3355545997619629,
+        -2.9034998416900635
+      ],
+      "bounds_max": [
+        3.556612253189087,
+        9.15992259979248,
+        2.845168113708496
+      ],
+      "dimensions_m": [
+        6.148936033248901,
+        9.495477199554443,
+        5.74866795539856
+      ],
+      "pivot_min_y_m": -0.3355545997619629,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.3355545997619629
+    },
+    {
+      "id": "DeadTree_2",
+      "category": "tree",
+      "gltf_file": "DeadTree_2.gltf",
+      "vertices": 8635,
+      "triangles": 6557,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Bark_DeadTree"
+      ],
+      "referenced_files": [
+        "Bark_DeadTree_Normal.png",
+        "Bark_DeadTree.png",
+        "DeadTree_2.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -2.332343816757202,
+        -0.3355545997619629,
+        -2.522876024246216
+      ],
+      "bounds_max": [
+        4.397274017333984,
+        11.152676582336426,
+        3.8556599617004395
+      ],
+      "dimensions_m": [
+        6.7296178340911865,
+        11.488231182098389,
+        6.378535985946655
+      ],
+      "pivot_min_y_m": -0.3355545997619629,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.3355545997619629
+    },
+    {
+      "id": "DeadTree_3",
+      "category": "tree",
+      "gltf_file": "DeadTree_3.gltf",
+      "vertices": 7936,
+      "triangles": 5802,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Bark_DeadTree"
+      ],
+      "referenced_files": [
+        "Bark_DeadTree_Normal.png",
+        "Bark_DeadTree.png",
+        "DeadTree_3.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -3.847569704055786,
+        -0.3355545997619629,
+        -3.3867006301879883
+      ],
+      "bounds_max": [
+        2.540004014968872,
+        12.944830894470215,
+        3.043358564376831
+      ],
+      "dimensions_m": [
+        6.387573719024658,
+        13.280385494232178,
+        6.430059194564819
+      ],
+      "pivot_min_y_m": -0.3355545997619629,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.3355545997619629
+    },
+    {
+      "id": "DeadTree_4",
+      "category": "tree",
+      "gltf_file": "DeadTree_4.gltf",
+      "vertices": 7653,
+      "triangles": 5702,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Bark_DeadTree"
+      ],
+      "referenced_files": [
+        "Bark_DeadTree_Normal.png",
+        "Bark_DeadTree.png",
+        "DeadTree_4.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -3.3627684116363525,
+        -0.3355545997619629,
+        -3.5989503860473633
+      ],
+      "bounds_max": [
+        4.59817361831665,
+        12.435422897338867,
+        4.133494853973389
+      ],
+      "dimensions_m": [
+        7.960942029953003,
+        12.77097749710083,
+        7.732445240020752
+      ],
+      "pivot_min_y_m": -0.3355545997619629,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.3355545997619629
+    },
+    {
+      "id": "DeadTree_5",
+      "category": "tree",
+      "gltf_file": "DeadTree_5.gltf",
+      "vertices": 7499,
+      "triangles": 5648,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Bark_DeadTree"
+      ],
+      "referenced_files": [
+        "Bark_DeadTree_Normal.png",
+        "Bark_DeadTree.png",
+        "DeadTree_5.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -3.9705328941345215,
+        -0.3355545997619629,
+        -4.7972307205200195
+      ],
+      "bounds_max": [
+        4.385861396789551,
+        16.10182762145996,
+        3.616036891937256
+      ],
+      "dimensions_m": [
+        8.356394290924072,
+        16.437382221221924,
+        8.413267612457275
+      ],
+      "pivot_min_y_m": -0.3355545997619629,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.3355545997619629
+    },
+    {
+      "id": "Fern_1",
+      "category": "ground_plant",
+      "gltf_file": "Fern_1.gltf",
+      "vertices": 243,
+      "triangles": 288,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Leaves"
+      ],
+      "referenced_files": [
+        "Fern_1.bin",
+        "Leaves.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -4.419975280761719,
+        -0.2474701851606369,
+        -4.091315746307373
+      ],
+      "bounds_max": [
+        4.626213073730469,
+        2.4413082599639893,
+        4.396108150482178
+      ],
+      "dimensions_m": [
+        9.046188354492188,
+        2.688778445124626,
+        8.48742389678955
+      ],
+      "pivot_min_y_m": -0.2474701851606369,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.2474701851606369
+    },
+    {
+      "id": "Flower_3_Group",
+      "category": "ground_plant",
+      "gltf_file": "Flower_3_Group.gltf",
+      "vertices": 581,
+      "triangles": 755,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Leaves",
+        "Flowers"
+      ],
+      "referenced_files": [
+        "Flower_3_Group.bin",
+        "Flowers.png",
+        "Leaves.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.6136013269424438,
+        -0.03458359092473984,
+        -0.8017617464065552
+      ],
+      "bounds_max": [
+        0.8748752474784851,
+        2.020251512527466,
+        0.789365291595459
+      ],
+      "dimensions_m": [
+        1.488476574420929,
+        2.0548351034522057,
+        1.5911270380020142
+      ],
+      "pivot_min_y_m": -0.03458359092473984,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.03458359092473984
+    },
+    {
+      "id": "Flower_3_Single",
+      "category": "ground_plant",
+      "gltf_file": "Flower_3_Single.gltf",
+      "vertices": 227,
+      "triangles": 285,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Leaves",
+        "Flowers"
+      ],
+      "referenced_files": [
+        "Flower_3_Single.bin",
+        "Flowers.png",
+        "Leaves.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.48073863983154297,
+        -0.018326954916119576,
+        -0.520720362663269
+      ],
+      "bounds_max": [
+        0.42587125301361084,
+        2.0498666763305664,
+        0.3568156957626343
+      ],
+      "dimensions_m": [
+        0.9066098928451538,
+        2.068193631246686,
+        0.8775360584259033
+      ],
+      "pivot_min_y_m": -0.018326954916119576,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.018326954916119576
+    },
+    {
+      "id": "Flower_4_Group",
+      "category": "ground_plant",
+      "gltf_file": "Flower_4_Group.gltf",
+      "vertices": 1302,
+      "triangles": 1690,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Leaves",
+        "Flowers"
+      ],
+      "referenced_files": [
+        "Flower_4_Group.bin",
+        "Flowers.png",
+        "Leaves.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.9313857555389404,
+        -0.05699761211872101,
+        -0.6361504197120667
+      ],
+      "bounds_max": [
+        0.8491399884223938,
+        2.4297707080841064,
+        0.7313783168792725
+      ],
+      "dimensions_m": [
+        1.7805257439613342,
+        2.4867683202028275,
+        1.3675287365913391
+      ],
+      "pivot_min_y_m": -0.05699761211872101,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.05699761211872101
+    },
+    {
+      "id": "Flower_4_Single",
+      "category": "ground_plant",
+      "gltf_file": "Flower_4_Single.gltf",
+      "vertices": 499,
+      "triangles": 642,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Leaves",
+        "Flowers"
+      ],
+      "referenced_files": [
+        "Flower_4_Single.bin",
+        "Flowers.png",
+        "Leaves.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.5050064325332642,
+        -0.03043048270046711,
+        -0.40180256962776184
+      ],
+      "bounds_max": [
+        0.56728196144104,
+        2.388728618621826,
+        0.37106218934059143
+      ],
+      "dimensions_m": [
+        1.0722883939743042,
+        2.4191591013222933,
+        0.7728647589683533
+      ],
+      "pivot_min_y_m": -0.03043048270046711,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.03043048270046711
+    },
+    {
+      "id": "Grass_Common_Short",
+      "category": "grass",
+      "gltf_file": "Grass_Common_Short.gltf",
+      "vertices": 153,
+      "triangles": 155,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Grass"
+      ],
+      "referenced_files": [
+        "Grass_Common_Short.bin",
+        "Grass.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.3556424081325531,
+        -0.022385215386748314,
+        -0.47937828302383423
+      ],
+      "bounds_max": [
+        0.2832280695438385,
+        1.311718225479126,
+        0.25788721442222595
+      ],
+      "dimensions_m": [
+        0.6388704776763916,
+        1.3341034408658743,
+        0.7372654974460602
+      ],
+      "pivot_min_y_m": -0.022385215386748314,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.022385215386748314
+    },
+    {
+      "id": "Grass_Common_Tall",
+      "category": "grass",
+      "gltf_file": "Grass_Common_Tall.gltf",
+      "vertices": 303,
+      "triangles": 326,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Grass"
+      ],
+      "referenced_files": [
+        "Grass_Common_Tall.bin",
+        "Grass.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.40356767177581787,
+        -0.031362250447273254,
+        -0.47903335094451904
+      ],
+      "bounds_max": [
+        0.49152159690856934,
+        1.841333031654358,
+        0.5140784978866577
+      ],
+      "dimensions_m": [
+        0.8950892686843872,
+        1.8726952821016312,
+        0.9931118488311768
+      ],
+      "pivot_min_y_m": -0.031362250447273254,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.031362250447273254
+    },
+    {
+      "id": "Grass_Wispy_Short",
+      "category": "grass",
+      "gltf_file": "Grass_Wispy_Short.gltf",
+      "vertices": 559,
+      "triangles": 494,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Grass"
+      ],
+      "referenced_files": [
+        "Grass_Wispy_Short.bin",
+        "Grass.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.7280435562133789,
+        -0.08575008809566498,
+        -0.5828109979629517
+      ],
+      "bounds_max": [
+        0.5941424369812012,
+        0.9860967993736267,
+        0.6269333362579346
+      ],
+      "dimensions_m": [
+        1.32218599319458,
+        1.0718468874692917,
+        1.2097443342208862
+      ],
+      "pivot_min_y_m": -0.08575008809566498,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.08575008809566498
+    },
+    {
+      "id": "Grass_Wispy_Tall",
+      "category": "grass",
+      "gltf_file": "Grass_Wispy_Tall.gltf",
+      "vertices": 644,
+      "triangles": 622,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Grass"
+      ],
+      "referenced_files": [
+        "Grass_Wispy_Tall.bin",
+        "Grass.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.7392446994781494,
+        -0.03605181723833084,
+        -0.8185906410217285
+      ],
+      "bounds_max": [
+        0.8008279800415039,
+        1.6357505321502686,
+        0.7751253247261047
+      ],
+      "dimensions_m": [
+        1.5400726795196533,
+        1.6718023493885994,
+        1.5937159657478333
+      ],
+      "pivot_min_y_m": -0.03605181723833084,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.03605181723833084
+    },
+    {
+      "id": "Mushroom_Common",
+      "category": "ground_plant",
+      "gltf_file": "Mushroom_Common.gltf",
+      "vertices": 555,
+      "triangles": 880,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Mushrooms"
+      ],
+      "referenced_files": [
+        "Mushroom_Common.bin",
+        "Mushrooms.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.33337587118148804,
+        -0.017470968887209892,
+        -0.44521069526672363
+      ],
+      "bounds_max": [
+        0.23032501339912415,
+        0.4460097551345825,
+        0.3339020013809204
+      ],
+      "dimensions_m": [
+        0.5637008845806122,
+        0.4634807240217924,
+        0.779112696647644
+      ],
+      "pivot_min_y_m": -0.017470968887209892,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.017470968887209892
+    },
+    {
+      "id": "Mushroom_Laetiporus",
+      "category": "ground_plant",
+      "gltf_file": "Mushroom_Laetiporus.gltf",
+      "vertices": 1806,
+      "triangles": 3216,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Mushrooms"
+      ],
+      "referenced_files": [
+        "Mushroom_Laetiporus.bin",
+        "Mushrooms.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.6498190760612488,
+        -0.16022536158561707,
+        -0.32830116152763367
+      ],
+      "bounds_max": [
+        0.716213583946228,
+        0.606732964515686,
+        0.7748813629150391
+      ],
+      "dimensions_m": [
+        1.3660326600074768,
+        0.7669583261013031,
+        1.1031825244426727
+      ],
+      "pivot_min_y_m": -0.16022536158561707,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.16022536158561707
+    },
+    {
+      "id": "Pebble_Round_1",
+      "category": "round_pebble",
+      "gltf_file": "Pebble_Round_1.gltf",
+      "vertices": 292,
+      "triangles": 136,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "Pebble_Round_1.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.21980905532836914,
+        -0.0077979713678359985,
+        -0.15961268544197083
+      ],
+      "bounds_max": [
+        0.28022968769073486,
+        0.08767858147621155,
+        0.20741015672683716
+      ],
+      "dimensions_m": [
+        0.500038743019104,
+        0.09547655284404755,
+        0.367022842168808
+      ],
+      "pivot_min_y_m": -0.0077979713678359985,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.0077979713678359985
+    },
+    {
+      "id": "Pebble_Round_2",
+      "category": "round_pebble",
+      "gltf_file": "Pebble_Round_2.gltf",
+      "vertices": 212,
+      "triangles": 114,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "Pebble_Round_2.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.21520347893238068,
+        -0.0029801998753100634,
+        -0.22227312624454498
+      ],
+      "bounds_max": [
+        0.23427341878414154,
+        0.09124953299760818,
+        0.1887856125831604
+      ],
+      "dimensions_m": [
+        0.4494768977165222,
+        0.09422973287291825,
+        0.4110587388277054
+      ],
+      "pivot_min_y_m": -0.0029801998753100634,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.0029801998753100634
+    },
+    {
+      "id": "Pebble_Round_3",
+      "category": "round_pebble",
+      "gltf_file": "Pebble_Round_3.gltf",
+      "vertices": 244,
+      "triangles": 128,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "Pebble_Round_3.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.22709830105304718,
+        -0.0017530163750052452,
+        -0.22148603200912476
+      ],
+      "bounds_max": [
+        0.22259299457073212,
+        0.09686936438083649,
+        0.2633242607116699
+      ],
+      "dimensions_m": [
+        0.4496912956237793,
+        0.09862238075584173,
+        0.4848102927207947
+      ],
+      "pivot_min_y_m": -0.0017530163750052452,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.0017530163750052452
+    },
+    {
+      "id": "Pebble_Round_4",
+      "category": "round_pebble",
+      "gltf_file": "Pebble_Round_4.gltf",
+      "vertices": 266,
+      "triangles": 126,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "Pebble_Round_4.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.2105470895767212,
+        -0.00563192879781127,
+        -0.23073677718639374
+      ],
+      "bounds_max": [
+        0.19573403894901276,
+        0.0937667116522789,
+        0.22166091203689575
+      ],
+      "dimensions_m": [
+        0.40628112852573395,
+        0.09939864045009017,
+        0.4523976892232895
+      ],
+      "pivot_min_y_m": -0.00563192879781127,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.00563192879781127
+    },
+    {
+      "id": "Pebble_Round_5",
+      "category": "round_pebble",
+      "gltf_file": "Pebble_Round_5.gltf",
+      "vertices": 254,
+      "triangles": 124,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "Pebble_Round_5.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.21657367050647736,
+        -0.00414585554972291,
+        -0.20099897682666779
+      ],
+      "bounds_max": [
+        0.20201954245567322,
+        0.09668100625276566,
+        0.1452593356370926
+      ],
+      "dimensions_m": [
+        0.4185932129621506,
+        0.10082686180248857,
+        0.3462583124637604
+      ],
+      "pivot_min_y_m": -0.00414585554972291,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.00414585554972291
+    },
+    {
+      "id": "Pebble_Square_1",
+      "category": "square_pebble",
+      "gltf_file": "Pebble_Square_1.gltf",
+      "vertices": 216,
+      "triangles": 104,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "Pebble_Square_1.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.23334957659244537,
+        -0.0022022530902177095,
+        -0.20187555253505707
+      ],
+      "bounds_max": [
+        0.20128773152828217,
+        0.1277286410331726,
+        0.23776745796203613
+      ],
+      "dimensions_m": [
+        0.43463730812072754,
+        0.12993089412339032,
+        0.4396430104970932
+      ],
+      "pivot_min_y_m": -0.0022022530902177095,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.0022022530902177095
+    },
+    {
+      "id": "Pebble_Square_2",
+      "category": "square_pebble",
+      "gltf_file": "Pebble_Square_2.gltf",
+      "vertices": 162,
+      "triangles": 78,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "Pebble_Square_2.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.2006315439939499,
+        -0.005164282396435738,
+        -0.11938932538032532
+      ],
+      "bounds_max": [
+        0.19046445190906525,
+        0.13527964055538177,
+        0.160864919424057
+      ],
+      "dimensions_m": [
+        0.39109599590301514,
+        0.1404439229518175,
+        0.2802542448043823
+      ],
+      "pivot_min_y_m": -0.005164282396435738,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.005164282396435738
+    },
+    {
+      "id": "Pebble_Square_3",
+      "category": "square_pebble",
+      "gltf_file": "Pebble_Square_3.gltf",
+      "vertices": 108,
+      "triangles": 52,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "Pebble_Square_3.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.18665164709091187,
+        -0.00811817031353712,
+        -0.16649161279201508
+      ],
+      "bounds_max": [
+        0.18668454885482788,
+        0.1508151739835739,
+        0.15225757658481598
+      ],
+      "dimensions_m": [
+        0.37333619594573975,
+        0.15893334429711103,
+        0.31874918937683105
+      ],
+      "pivot_min_y_m": -0.00811817031353712,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.00811817031353712
+    },
+    {
+      "id": "Pebble_Square_4",
+      "category": "square_pebble",
+      "gltf_file": "Pebble_Square_4.gltf",
+      "vertices": 96,
+      "triangles": 48,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "Pebble_Square_4.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.17121998965740204,
+        -0.0027762739919126034,
+        -0.15767109394073486
+      ],
+      "bounds_max": [
+        0.16872341930866241,
+        0.16551485657691956,
+        0.1331545114517212
+      ],
+      "dimensions_m": [
+        0.33994340896606445,
+        0.16829113056883216,
+        0.29082560539245605
+      ],
+      "pivot_min_y_m": -0.0027762739919126034,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.0027762739919126034
+    },
+    {
+      "id": "Pebble_Square_5",
+      "category": "square_pebble",
+      "gltf_file": "Pebble_Square_5.gltf",
+      "vertices": 156,
+      "triangles": 72,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "Pebble_Square_5.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.16856330633163452,
+        -0.00795699656009674,
+        -0.22753244638442993
+      ],
+      "bounds_max": [
+        0.18346840143203735,
+        0.14420261979103088,
+        0.22290711104869843
+      ],
+      "dimensions_m": [
+        0.3520317077636719,
+        0.15215961635112762,
+        0.45043955743312836
+      ],
+      "pivot_min_y_m": -0.00795699656009674,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.00795699656009674
+    },
+    {
+      "id": "Pebble_Square_6",
+      "category": "square_pebble",
+      "gltf_file": "Pebble_Square_6.gltf",
+      "vertices": 139,
+      "triangles": 65,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "Pebble_Square_6.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.21502231061458588,
+        -0.010146240703761578,
+        -0.12062107771635056
+      ],
+      "bounds_max": [
+        0.24700631201267242,
+        0.12762853503227234,
+        0.14230100810527802
+      ],
+      "dimensions_m": [
+        0.4620286226272583,
+        0.13777477573603392,
+        0.26292208582162857
+      ],
+      "pivot_min_y_m": -0.010146240703761578,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.010146240703761578
+    },
+    {
+      "id": "Petal_1",
+      "category": "ground_plant",
+      "gltf_file": "Petal_1.gltf",
+      "vertices": 14,
+      "triangles": 13,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Flowers"
+      ],
+      "referenced_files": [
+        "Flowers.png",
+        "Petal_1.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.256916344165802,
+        1.184918232866039E-06,
+        -0.22899580001831055
+      ],
+      "bounds_max": [
+        0.20332272350788116,
+        0.24367444217205048,
+        0.22596585750579834
+      ],
+      "dimensions_m": [
+        0.46023906767368317,
+        0.2436732572538176,
+        0.4549616575241089
+      ],
+      "pivot_min_y_m": 1.184918232866039E-06,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": -1.184918232866039E-06
+    },
+    {
+      "id": "Petal_2",
+      "category": "ground_plant",
+      "gltf_file": "Petal_2.gltf",
+      "vertices": 16,
+      "triangles": 15,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Flowers"
+      ],
+      "referenced_files": [
+        "Flowers.png",
+        "Petal_2.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.32067161798477173,
+        0.0,
+        -0.3291413486003876
+      ],
+      "bounds_max": [
+        0.3525437116622925,
+        0.23606069386005402,
+        0.30195337533950806
+      ],
+      "dimensions_m": [
+        0.6732153296470642,
+        0.23606069386005402,
+        0.6310947239398956
+      ],
+      "pivot_min_y_m": 0.0,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.0
+    },
+    {
+      "id": "Petal_3",
+      "category": "ground_plant",
+      "gltf_file": "Petal_3.gltf",
+      "vertices": 16,
+      "triangles": 15,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Flowers"
+      ],
+      "referenced_files": [
+        "Flowers.png",
+        "Petal_3.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.31499457359313965,
+        2.0768348463207076E-07,
+        -0.27345067262649536
+      ],
+      "bounds_max": [
+        0.3044891953468323,
+        0.18948519229888916,
+        0.3329152464866638
+      ],
+      "dimensions_m": [
+        0.6194837689399719,
+        0.18948498461540453,
+        0.6063659191131592
+      ],
+      "pivot_min_y_m": 2.0768348463207076E-07,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": -2.0768348463207076E-07
+    },
+    {
+      "id": "Petal_4",
+      "category": "ground_plant",
+      "gltf_file": "Petal_4.gltf",
+      "vertices": 25,
+      "triangles": 30,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Flowers"
+      ],
+      "referenced_files": [
+        "Flowers.png",
+        "Petal_4.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.1433948129415512,
+        -1.3743051852088684E-07,
+        -0.12229615449905396
+      ],
+      "bounds_max": [
+        0.1856984794139862,
+        0.25205618143081665,
+        0.12215583026409149
+      ],
+      "dimensions_m": [
+        0.3290932923555374,
+        0.25205631886133517,
+        0.24445198476314545
+      ],
+      "pivot_min_y_m": -1.3743051852088684E-07,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 1.3743051852088684E-07
+    },
+    {
+      "id": "Petal_5",
+      "category": "ground_plant",
+      "gltf_file": "Petal_5.gltf",
+      "vertices": 16,
+      "triangles": 15,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Flowers"
+      ],
+      "referenced_files": [
+        "Flowers.png",
+        "Petal_5.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.40094661712646484,
+        0.0010437477612867951,
+        -0.4195518493652344
+      ],
+      "bounds_max": [
+        0.43301600217819214,
+        0.2898155748844147,
+        0.3756616413593292
+      ],
+      "dimensions_m": [
+        0.833962619304657,
+        0.2887718271231279,
+        0.7952134907245636
+      ],
+      "pivot_min_y_m": 0.0010437477612867951,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": -0.0010437477612867951
+    },
+    {
+      "id": "Pine_1",
+      "category": "tree",
+      "gltf_file": "Pine_1.gltf",
+      "vertices": 5246,
+      "triangles": 3947,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Bark_NormalTree",
+        "Leaves_Pine"
+      ],
+      "referenced_files": [
+        "Bark_NormalTree_Normal.png",
+        "Bark_NormalTree.png",
+        "Leaf_Pine_C.png",
+        "Pine_1.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -2.448819160461426,
+        -0.23508860170841217,
+        -2.4769327640533447
+      ],
+      "bounds_max": [
+        2.4958789348602295,
+        7.081829071044922,
+        2.0614705085754395
+      ],
+      "dimensions_m": [
+        4.944698095321655,
+        7.316917672753334,
+        4.538403272628784
+      ],
+      "pivot_min_y_m": -0.23508860170841217,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.23508860170841217
+    },
+    {
+      "id": "Pine_2",
+      "category": "tree",
+      "gltf_file": "Pine_2.gltf",
+      "vertices": 4926,
+      "triangles": 3648,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Bark_NormalTree",
+        "Leaves_Pine"
+      ],
+      "referenced_files": [
+        "Bark_NormalTree_Normal.png",
+        "Bark_NormalTree.png",
+        "Leaf_Pine_C.png",
+        "Pine_2.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -2.891958236694336,
+        -0.23508860170841217,
+        -2.6936988830566406
+      ],
+      "bounds_max": [
+        2.8361265659332275,
+        7.141149520874023,
+        2.527508020401001
+      ],
+      "dimensions_m": [
+        5.7280848026275635,
+        7.376238122582436,
+        5.221206903457642
+      ],
+      "pivot_min_y_m": -0.23508860170841217,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.23508860170841217
+    },
+    {
+      "id": "Pine_3",
+      "category": "tree",
+      "gltf_file": "Pine_3.gltf",
+      "vertices": 6573,
+      "triangles": 4964,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Bark_NormalTree",
+        "Leaves_Pine"
+      ],
+      "referenced_files": [
+        "Bark_NormalTree_Normal.png",
+        "Bark_NormalTree.png",
+        "Leaf_Pine_C.png",
+        "Pine_3.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -2.113736867904663,
+        -0.23508860170841217,
+        -2.2923386096954346
+      ],
+      "bounds_max": [
+        1.4976577758789062,
+        7.157110214233398,
+        1.7034649848937988
+      ],
+      "dimensions_m": [
+        3.6113946437835693,
+        7.392198815941811,
+        3.9958035945892334
+      ],
+      "pivot_min_y_m": -0.23508860170841217,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.23508860170841217
+    },
+    {
+      "id": "Pine_4",
+      "category": "tree",
+      "gltf_file": "Pine_4.gltf",
+      "vertices": 4888,
+      "triangles": 3370,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Bark_NormalTree",
+        "Leaves_Pine"
+      ],
+      "referenced_files": [
+        "Bark_NormalTree_Normal.png",
+        "Bark_NormalTree.png",
+        "Leaf_Pine_C.png",
+        "Pine_4.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -2.8718371391296387,
+        -0.23508861660957336,
+        -2.9459073543548584
+      ],
+      "bounds_max": [
+        2.930187225341797,
+        10.0013427734375,
+        2.424938201904297
+      ],
+      "dimensions_m": [
+        5.8020243644714355,
+        10.236431390047073,
+        5.370845556259155
+      ],
+      "pivot_min_y_m": -0.23508861660957336,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.23508861660957336
+    },
+    {
+      "id": "Pine_5",
+      "category": "tree",
+      "gltf_file": "Pine_5.gltf",
+      "vertices": 2315,
+      "triangles": 1646,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Bark_NormalTree",
+        "Leaves_Pine"
+      ],
+      "referenced_files": [
+        "Bark_NormalTree_Normal.png",
+        "Bark_NormalTree.png",
+        "Leaf_Pine_C.png",
+        "Pine_5.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -2.987706422805786,
+        -0.23508861660957336,
+        -3.7784042358398438
+      ],
+      "bounds_max": [
+        3.432434320449829,
+        8.48871898651123,
+        2.4435970783233643
+      ],
+      "dimensions_m": [
+        6.420140743255615,
+        8.723807603120804,
+        6.222001314163208
+      ],
+      "pivot_min_y_m": -0.23508861660957336,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.23508861660957336
+    },
+    {
+      "id": "Plant_1_Big",
+      "category": "ground_plant",
+      "gltf_file": "Plant_1_Big.gltf",
+      "vertices": 360,
+      "triangles": 360,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Leaves"
+      ],
+      "referenced_files": [
+        "Leaves.png",
+        "Plant_1_Big.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -1.394121527671814,
+        -0.05603840574622154,
+        -1.6583820581436157
+      ],
+      "bounds_max": [
+        1.4963372945785522,
+        3.7003872394561768,
+        1.4680646657943726
+      ],
+      "dimensions_m": [
+        2.890458822250366,
+        3.7564256452023983,
+        3.1264467239379883
+      ],
+      "pivot_min_y_m": -0.05603840574622154,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.05603840574622154
+    },
+    {
+      "id": "Plant_1",
+      "category": "ground_plant",
+      "gltf_file": "Plant_1.gltf",
+      "vertices": 120,
+      "triangles": 120,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Leaves"
+      ],
+      "referenced_files": [
+        "Leaves.png",
+        "Plant_1.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.7107237577438354,
+        -0.0350240021944046,
+        -0.7635920643806458
+      ],
+      "bounds_max": [
+        0.562667191028595,
+        0.978546142578125,
+        0.6224353909492493
+      ],
+      "dimensions_m": [
+        1.2733909487724304,
+        1.0135701447725296,
+        1.386027455329895
+      ],
+      "pivot_min_y_m": -0.0350240021944046,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.0350240021944046
+    },
+    {
+      "id": "Plant_7_Big",
+      "category": "ground_plant",
+      "gltf_file": "Plant_7_Big.gltf",
+      "vertices": 126,
+      "triangles": 112,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Leaves"
+      ],
+      "referenced_files": [
+        "Leaves.png",
+        "Plant_7_Big.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.7010567784309387,
+        0.05031152814626694,
+        -0.8505279421806335
+      ],
+      "bounds_max": [
+        0.6097632646560669,
+        0.3037440776824951,
+        0.5116460919380188
+      ],
+      "dimensions_m": [
+        1.3108200430870056,
+        0.2534325495362282,
+        1.3621740341186523
+      ],
+      "pivot_min_y_m": 0.05031152814626694,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": -0.05031152814626694
+    },
+    {
+      "id": "Plant_7",
+      "category": "ground_plant",
+      "gltf_file": "Plant_7.gltf",
+      "vertices": 54,
+      "triangles": 48,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Leaves"
+      ],
+      "referenced_files": [
+        "Leaves.png",
+        "Plant_7.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.44815123081207275,
+        0.07910457253456116,
+        -0.46386587619781494
+      ],
+      "bounds_max": [
+        0.5996842384338379,
+        0.3286193609237671,
+        0.4982551336288452
+      ],
+      "dimensions_m": [
+        1.0478354692459106,
+        0.24951478838920593,
+        0.9621210098266602
+      ],
+      "pivot_min_y_m": 0.07910457253456116,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": -0.07910457253456116
+    },
+    {
+      "id": "Rock_Medium_1",
+      "category": "rock",
+      "gltf_file": "Rock_Medium_1.gltf",
+      "vertices": 351,
+      "triangles": 342,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Rocks"
+      ],
+      "referenced_files": [
+        "Rock_Medium_1.bin",
+        "Rocks_Diffuse.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -1.7272872924804688,
+        -0.27113133668899536,
+        -1.1498832702636719
+      ],
+      "bounds_max": [
+        1.4978611469268799,
+        1.988665223121643,
+        1.8392531871795654
+      ],
+      "dimensions_m": [
+        3.2251484394073486,
+        2.2597965598106384,
+        2.9891364574432373
+      ],
+      "pivot_min_y_m": -0.27113133668899536,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.27113133668899536
+    },
+    {
+      "id": "Rock_Medium_2",
+      "category": "rock",
+      "gltf_file": "Rock_Medium_2.gltf",
+      "vertices": 249,
+      "triangles": 244,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Rocks"
+      ],
+      "referenced_files": [
+        "Rock_Medium_2.bin",
+        "Rocks_Diffuse.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -1.713641881942749,
+        -0.05084158852696419,
+        -1.1591253280639648
+      ],
+      "bounds_max": [
+        1.3351185321807861,
+        1.8481333255767822,
+        1.3199462890625
+      ],
+      "dimensions_m": [
+        3.048760414123535,
+        1.8989749141037464,
+        2.479071617126465
+      ],
+      "pivot_min_y_m": -0.05084158852696419,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.05084158852696419
+    },
+    {
+      "id": "Rock_Medium_3",
+      "category": "rock",
+      "gltf_file": "Rock_Medium_3.gltf",
+      "vertices": 531,
+      "triangles": 522,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "Rocks"
+      ],
+      "referenced_files": [
+        "Rock_Medium_3.bin",
+        "Rocks_Diffuse.png"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -1.8242793083190918,
+        -0.31564441323280334,
+        -0.8904620409011841
+      ],
+      "bounds_max": [
+        1.5958054065704346,
+        2.000638246536255,
+        2.5856480598449707
+      ],
+      "dimensions_m": [
+        3.4200847148895264,
+        2.3162826597690582,
+        3.476110100746155
+      ],
+      "pivot_min_y_m": -0.31564441323280334,
+      "grounded_with_2_percent_tolerance": false,
+      "required_ground_offset_m": 0.31564441323280334
+    },
+    {
+      "id": "RockPath_Round_Small_1",
+      "category": "rock_path",
+      "gltf_file": "RockPath_Round_Small_1.gltf",
+      "vertices": 2036,
+      "triangles": 998,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "RockPath_Round_Small_1.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.5380551815032959,
+        -0.008882608264684677,
+        -0.703344464302063
+      ],
+      "bounds_max": [
+        0.5184587240219116,
+        0.10394920408725739,
+        0.7730143070220947
+      ],
+      "dimensions_m": [
+        1.0565139055252075,
+        0.11283181235194206,
+        1.4763587713241577
+      ],
+      "pivot_min_y_m": -0.008882608264684677,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.008882608264684677
+    },
+    {
+      "id": "RockPath_Round_Small_2",
+      "category": "rock_path",
+      "gltf_file": "RockPath_Round_Small_2.gltf",
+      "vertices": 2264,
+      "triangles": 1126,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "RockPath_Round_Small_2.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.5602763891220093,
+        -0.0077979713678359985,
+        -0.7587976455688477
+      ],
+      "bounds_max": [
+        0.5792431235313416,
+        0.09686935693025589,
+        0.5954861640930176
+      ],
+      "dimensions_m": [
+        1.1395195126533508,
+        0.10466732829809189,
+        1.3542838096618652
+      ],
+      "pivot_min_y_m": -0.0077979713678359985,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.0077979713678359985
+    },
+    {
+      "id": "RockPath_Round_Small_3",
+      "category": "rock_path",
+      "gltf_file": "RockPath_Round_Small_3.gltf",
+      "vertices": 2026,
+      "triangles": 1002,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "RockPath_Round_Small_3.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.5872809290885925,
+        -0.007797975093126297,
+        -0.6902713775634766
+      ],
+      "bounds_max": [
+        0.5917490720748901,
+        0.10147523880004883,
+        0.5997233390808105
+      ],
+      "dimensions_m": [
+        1.1790300011634827,
+        0.10927321389317513,
+        1.289994716644287
+      ],
+      "pivot_min_y_m": -0.007797975093126297,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.007797975093126297
+    },
+    {
+      "id": "RockPath_Round_Thin",
+      "category": "rock_path",
+      "gltf_file": "RockPath_Round_Thin.gltf",
+      "vertices": 4556,
+      "triangles": 2254,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "RockPath_Round_Thin.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.6970729231834412,
+        -0.008862055838108063,
+        -1.0861014127731323
+      ],
+      "bounds_max": [
+        0.7602781653404236,
+        0.10147523880004883,
+        1.00310480594635
+      ],
+      "dimensions_m": [
+        1.4573510885238647,
+        0.11033729463815689,
+        2.0892062187194824
+      ],
+      "pivot_min_y_m": -0.008862055838108063,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.008862055838108063
+    },
+    {
+      "id": "RockPath_Round_Wide",
+      "category": "rock_path",
+      "gltf_file": "RockPath_Round_Wide.gltf",
+      "vertices": 7084,
+      "triangles": 3500,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "RockPath_Round_Wide.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -1.0479755401611328,
+        -0.008882611989974976,
+        -1.125931739807129
+      ],
+      "bounds_max": [
+        1.0626386404037476,
+        0.10394921153783798,
+        1.00310480594635
+      ],
+      "dimensions_m": [
+        2.1106141805648804,
+        0.11283182352781296,
+        2.129036545753479
+      ],
+      "pivot_min_y_m": -0.008882611989974976,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.008882611989974976
+    },
+    {
+      "id": "RockPath_Square_Small_1",
+      "category": "rock_path",
+      "gltf_file": "RockPath_Square_Small_1.gltf",
+      "vertices": 1633,
+      "triangles": 783,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "RockPath_Square_Small_1.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.518924355506897,
+        -0.008622835390269756,
+        -0.4743192493915558
+      ],
+      "bounds_max": [
+        0.49995994567871094,
+        0.14124737679958344,
+        0.4995327293872833
+      ],
+      "dimensions_m": [
+        1.018884301185608,
+        0.1498702121898532,
+        0.9738519787788391
+      ],
+      "pivot_min_y_m": -0.008622835390269756,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.008622835390269756
+    },
+    {
+      "id": "RockPath_Square_Small_2",
+      "category": "rock_path",
+      "gltf_file": "RockPath_Square_Small_2.gltf",
+      "vertices": 1165,
+      "triangles": 559,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "RockPath_Square_Small_2.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.4975392818450928,
+        -0.013205458410084248,
+        -0.4939475357532501
+      ],
+      "bounds_max": [
+        0.4951825737953186,
+        0.13612976670265198,
+        0.4721206724643707
+      ],
+      "dimensions_m": [
+        0.9927218556404114,
+        0.14933522511273623,
+        0.9660682082176208
+      ],
+      "pivot_min_y_m": -0.013205458410084248,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.013205458410084248
+    },
+    {
+      "id": "RockPath_Square_Small_3",
+      "category": "rock_path",
+      "gltf_file": "RockPath_Square_Small_3.gltf",
+      "vertices": 1176,
+      "triangles": 568,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "RockPath_Square_Small_3.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.3961157500743866,
+        -0.00811817031353712,
+        -0.5487543344497681
+      ],
+      "bounds_max": [
+        0.43974483013153076,
+        0.16551485657691956,
+        0.5275344848632812
+      ],
+      "dimensions_m": [
+        0.8358605802059174,
+        0.17363302689045668,
+        1.0762888193130493
+      ],
+      "pivot_min_y_m": -0.00811817031353712,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.00811817031353712
+    },
+    {
+      "id": "RockPath_Square_Thin",
+      "category": "rock_path",
+      "gltf_file": "RockPath_Square_Thin.gltf",
+      "vertices": 3727,
+      "triangles": 1793,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "RockPath_Square_Thin.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -0.7681896090507507,
+        -0.010146241635084152,
+        -1.0022598505020142
+      ],
+      "bounds_max": [
+        0.7916909456253052,
+        0.16620168089866638,
+        0.9846768975257874
+      ],
+      "dimensions_m": [
+        1.559880554676056,
+        0.17634792253375053,
+        1.9869367480278015
+      ],
+      "pivot_min_y_m": -0.010146241635084152,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.010146241635084152
+    },
+    {
+      "id": "RockPath_Square_Wide",
+      "category": "rock_path",
+      "gltf_file": "RockPath_Square_Wide.gltf",
+      "vertices": 4712,
+      "triangles": 2256,
+      "primitives": 1,
+      "materials": 1,
+      "material_names": [
+        "PathRocks"
+      ],
+      "referenced_files": [
+        "PathRocks_Diffuse.png",
+        "RockPath_Square_Wide.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -1.0236998796463013,
+        -0.010146240703761578,
+        -0.9999311566352844
+      ],
+      "bounds_max": [
+        1.0278809070587158,
+        0.16620168089866638,
+        0.9870055913925171
+      ],
+      "dimensions_m": [
+        2.051580786705017,
+        0.17634792160242796,
+        1.9869367480278015
+      ],
+      "pivot_min_y_m": -0.010146240703761578,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.010146240703761578
+    },
+    {
+      "id": "TwistedTree_1",
+      "category": "tree",
+      "gltf_file": "TwistedTree_1.gltf",
+      "vertices": 14064,
+      "triangles": 9564,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Bark_TwistedTree",
+        "Leaves_TwistedTree"
+      ],
+      "referenced_files": [
+        "Bark_TwistedTree_Normal.png",
+        "Bark_TwistedTree.png",
+        "Leaves_TwistedTree_C.png",
+        "TwistedTree_1.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -2.174241065979004,
+        -0.20147469639778137,
+        -6.726779460906982
+      ],
+      "bounds_max": [
+        11.341513633728027,
+        16.52402114868164,
+        4.822585105895996
+      ],
+      "dimensions_m": [
+        13.515754699707031,
+        16.725495845079422,
+        11.549364566802979
+      ],
+      "pivot_min_y_m": -0.20147469639778137,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.20147469639778137
+    },
+    {
+      "id": "TwistedTree_2",
+      "category": "tree",
+      "gltf_file": "TwistedTree_2.gltf",
+      "vertices": 13407,
+      "triangles": 9134,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Bark_TwistedTree",
+        "Leaves_TwistedTree"
+      ],
+      "referenced_files": [
+        "Bark_TwistedTree_Normal.png",
+        "Bark_TwistedTree.png",
+        "Leaves_TwistedTree_C.png",
+        "TwistedTree_2.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -6.619970321655273,
+        -0.20147468149662018,
+        -5.540718078613281
+      ],
+      "bounds_max": [
+        3.942902088165283,
+        18.74772834777832,
+        3.661869764328003
+      ],
+      "dimensions_m": [
+        10.562872409820557,
+        18.94920302927494,
+        9.202587842941284
+      ],
+      "pivot_min_y_m": -0.20147468149662018,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.20147468149662018
+    },
+    {
+      "id": "TwistedTree_3",
+      "category": "tree",
+      "gltf_file": "TwistedTree_3.gltf",
+      "vertices": 14805,
+      "triangles": 10089,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Bark_TwistedTree",
+        "Leaves_TwistedTree"
+      ],
+      "referenced_files": [
+        "Bark_TwistedTree_Normal.png",
+        "Bark_TwistedTree.png",
+        "Leaves_TwistedTree_C.png",
+        "TwistedTree_3.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -4.49001932144165,
+        -0.20147468149662018,
+        -6.520090103149414
+      ],
+      "bounds_max": [
+        6.867476463317871,
+        15.871066093444824,
+        4.985528945922852
+      ],
+      "dimensions_m": [
+        11.357495784759521,
+        16.072540774941444,
+        11.505619049072266
+      ],
+      "pivot_min_y_m": -0.20147468149662018,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.20147468149662018
+    },
+    {
+      "id": "TwistedTree_4",
+      "category": "tree",
+      "gltf_file": "TwistedTree_4.gltf",
+      "vertices": 14576,
+      "triangles": 9600,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Bark_TwistedTree",
+        "Leaves_TwistedTree"
+      ],
+      "referenced_files": [
+        "Bark_TwistedTree_Normal.png",
+        "Bark_TwistedTree.png",
+        "Leaves_TwistedTree_C.png",
+        "TwistedTree_4.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -4.327320098876953,
+        -0.20147468149662018,
+        -7.142794609069824
+      ],
+      "bounds_max": [
+        6.053491592407227,
+        18.536760330200195,
+        4.150291442871094
+      ],
+      "dimensions_m": [
+        10.38081169128418,
+        18.738235011696815,
+        11.293086051940918
+      ],
+      "pivot_min_y_m": -0.20147468149662018,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.20147468149662018
+    },
+    {
+      "id": "TwistedTree_5",
+      "category": "tree",
+      "gltf_file": "TwistedTree_5.gltf",
+      "vertices": 15647,
+      "triangles": 10104,
+      "primitives": 2,
+      "materials": 2,
+      "material_names": [
+        "Bark_TwistedTree",
+        "Leaves_TwistedTree"
+      ],
+      "referenced_files": [
+        "Bark_TwistedTree_Normal.png",
+        "Bark_TwistedTree.png",
+        "Leaves_TwistedTree_C.png",
+        "TwistedTree_5.bin"
+      ],
+      "animations": 0,
+      "has_node_transform": false,
+      "bounds_min": [
+        -3.7464373111724854,
+        -0.20147468149662018,
+        -6.338996887207031
+      ],
+      "bounds_max": [
+        5.748274803161621,
+        15.460700988769531,
+        3.0480315685272217
+      ],
+      "dimensions_m": [
+        9.494712114334106,
+        15.662175670266151,
+        9.387028455734253
+      ],
+      "pivot_min_y_m": -0.20147468149662018,
+      "grounded_with_2_percent_tolerance": true,
+      "required_ground_offset_m": 0.20147468149662018
+    }
+  ]
+}

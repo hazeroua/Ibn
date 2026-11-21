@@ -30,6 +30,7 @@ Ces documents décrivent la vision du jeu final. Ils restent valables pendant le
 |---|---|
 | [catalogue-assets-3d-reboot.md](catalogue-assets-3d-reboot.md) | Candidats 3D, licences, sécurité et ordre d'évaluation |
 | [oasis-zab-guide-historique.md](oasis-zab-guide-historique.md) | Espèces plausibles, zones et grille de tri visuelle pour la petite oasis |
+| [evaluation-stylized-nature-megakit.md](evaluation-stylized-nature-megakit.md) | Import sûr, sélection visuelle, mesures et LOD du premier pack Nature |
 | [licences/quaternius.md](licences/quaternius.md) | Décision conservatrice, droits et preuves des sept packs Quaternius |
 | [quarantaine-archives-3d.md](quarantaine-archives-3d.md) | Inspection sûre des archives 3D avant Blender ou Godot |
 | [ressources-a-telecharger.md](ressources-a-telecharger.md) | Ressources nécessitant une intervention ou un compte |
