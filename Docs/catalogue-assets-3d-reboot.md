@@ -61,6 +61,8 @@ Le pack 3D Tudor utilise une licence commerciale propriétaire décrite sur sa f
 - matériaux compatibles avec l'éclairage du projet, idéalement regroupés dans un atlas ;
 - densité testée avec l'instanciation de Terrain3D sans modifier Terrain3D lui-même.
 
+La sélection botanique ne doit pas être improvisée à partir des noms commerciaux des packs. Le [guide historique et visuel de la petite oasis du Zab](oasis-zab-guide-historique.md) définit les espèces obligatoires, optionnelles et exclues, sépare les faits historiques des plausibilités écologiques et des choix artistiques, et fournit la grille de tri à appliquer aux modèles Quaternius dans le ticket #67.
+
 ### Architecture ultérieure : Tunis et Fès
 
 Les kits `Arabic Desert City` et `Medieval Village` ne sont que des bibliothèques de formes. Avant production, les modules devront être comparés à des références sourcées de Tunis et de Fès au XIVe siècle : morphologie des rues, murs, portes, patios, matériaux, couvertures, ouvertures, éléments religieux et décor. Tout élément seulement « arabe », « désertique », « médiéval » ou « fantasy » reste non validé.
