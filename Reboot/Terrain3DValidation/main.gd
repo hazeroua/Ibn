@@ -11,6 +11,10 @@ const HISTOGRAM_BIN_MS: float = 0.1
 const HISTOGRAM_BIN_COUNT: int = 2000
 const REPORT_INTERVAL_SECONDS: float = 10.0
 const WARMUP_SECONDS: float = 5.0
+const MAX_P99_FRAME_MS: float = 16.6
+const MAX_SINGLE_FRAME_MS: float = 50.0
+const MAX_DRAW_CALLS: int = 300
+const MAX_VIDEO_MEMORY_BYTES: int = 512 * 1024 * 1024
 
 var _terrain: Terrain3D
 var _camera: Camera3D
@@ -29,6 +33,11 @@ var _histogram: PackedInt32Array = PackedInt32Array()
 var _last_collision_second: int = -1
 var _initialization_ms: float = 0.0
 var _capture_saved: bool = false
+var _peak_draw_calls: int = 0
+var _peak_primitives: int = 0
+var _peak_video_memory_bytes: int = 0
+var _peak_process_ms: float = 0.0
+var _peak_physics_process_ms: float = 0.0
 
 
 func _ready() -> void:
@@ -52,12 +61,12 @@ func _process(delta: float) -> void:
 
 	_elapsed_seconds += delta
 	_move_camera()
+	if not _capture_saved and _elapsed_seconds >= 2.0:
+		_save_capture()
 	if _elapsed_seconds < WARMUP_SECONDS:
 		return
 	_measurement_elapsed_seconds += delta
 	_report_elapsed_seconds += delta
-	if not _capture_saved and _measurement_elapsed_seconds >= 2.0:
-		_save_capture()
 	_frame_count += 1
 	var frame_time_ms: float = delta * 1000.0
 	_frame_time_sum_ms += frame_time_ms
@@ -66,6 +75,11 @@ func _process(delta: float) -> void:
 		_frames_over_budget += 1
 	var histogram_index: int = mini(int(frame_time_ms / HISTOGRAM_BIN_MS), HISTOGRAM_BIN_COUNT - 1)
 	_histogram[histogram_index] += 1
+	_peak_draw_calls = maxi(_peak_draw_calls, int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)))
+	_peak_primitives = maxi(_peak_primitives, int(Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)))
+	_peak_video_memory_bytes = maxi(_peak_video_memory_bytes, int(Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED)))
+	_peak_process_ms = maxf(_peak_process_ms, float(Performance.get_monitor(Performance.TIME_PROCESS)) * 1000.0)
+	_peak_physics_process_ms = maxf(_peak_physics_process_ms, float(Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS)) * 1000.0)
 
 	if _report_elapsed_seconds >= REPORT_INTERVAL_SECONDS:
 		_report_elapsed_seconds = 0.0
@@ -224,6 +238,14 @@ func _save_capture() -> void:
 
 func _finish() -> void:
 	var average_ms: float = _frame_time_sum_ms / maxf(float(_frame_count), 1.0)
+	var p99_frame_ms: float = _percentile_ms(0.99)
+	var budgets_passed: bool = (
+		_collision_failures == 0
+		and p99_frame_ms <= MAX_P99_FRAME_MS
+		and _frame_time_max_ms < MAX_SINGLE_FRAME_MS
+		and _peak_draw_calls <= MAX_DRAW_CALLS
+		and _peak_video_memory_bytes <= MAX_VIDEO_MEMORY_BYTES
+	)
 	var report: Dictionary = {
 		"terrain3d_version": _terrain.get_version(),
 		"renderer": RenderingServer.get_current_rendering_method(),
@@ -236,13 +258,19 @@ func _finish() -> void:
 		"initialization_ms": _initialization_ms,
 		"frame_count": _frame_count,
 		"average_frame_ms": average_ms,
-		"p99_frame_ms": _percentile_ms(0.99),
+		"p99_frame_ms": p99_frame_ms,
 		"max_frame_ms": _frame_time_max_ms,
 		"frames_over_16_67_ms": _frames_over_budget,
 		"collision_checks": _collision_checks,
 		"collision_failures": _collision_failures,
-		"draw_calls_last_frame": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
-		"video_memory_bytes": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_VIDEO_MEM_USED),
+		"peak_draw_calls": _peak_draw_calls,
+		"peak_primitives": _peak_primitives,
+		"peak_video_memory_bytes": _peak_video_memory_bytes,
+		"peak_process_ms": _peak_process_ms,
+		"peak_physics_process_ms": _peak_physics_process_ms,
+		"gpu_time_ms": null,
+		"gpu_time_note": "Godot 4.7 n'expose pas le temps GPU par image dans Performance.",
+		"budgets_passed": budgets_passed,
 	}
 	var absolute_report_path: String = ProjectSettings.globalize_path(_report_path)
 	DirAccess.make_dir_recursive_absolute(absolute_report_path.get_base_dir())
@@ -253,7 +281,7 @@ func _finish() -> void:
 	report_file.store_string(JSON.stringify(report, "  "))
 	report_file.close()
 	print("VALIDATION_COMPLETE ", JSON.stringify(report))
-	get_tree().quit(0 if _collision_failures == 0 else 2)
+	get_tree().quit(0 if budgets_passed else 2)
 
 
 func _fail(message: String) -> void:

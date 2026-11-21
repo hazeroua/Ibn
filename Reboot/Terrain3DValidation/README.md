@@ -1,8 +1,8 @@
 # Validation Terrain3D
 
-Prototype isolé du ticket 1 du reboot. Il génère un terrain Terrain3D de 4 × 4 km, déplace une caméra à 70 m/s pendant 30 minutes, vérifie les collisions chaque seconde et écrit les mesures dans `reports/terrain3d-validation.json`.
+Prototype isolé du ticket 1 du reboot. Il génère un terrain Terrain3D de 4 × 4 km, déplace une caméra à 70 m/s pendant 30 minutes, vérifie les collisions chaque seconde et écrit les mesures dans `reports/terrain3d-validation-<renderer>.json`.
 
-La mesure est précédée de cinq secondes de préchauffage exclues des statistiques. Une capture PNG est écrite à côté de chaque rapport.
+La mesure est précédée de cinq secondes de préchauffage exclues des statistiques. Une capture PNG et le journal Godot sont écrits à côté de chaque rapport. Le script ajoute au JSON le pic de mémoire résidente du processus exporté.
 
 ## Pire cas testé
 

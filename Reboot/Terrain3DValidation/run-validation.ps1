@@ -49,8 +49,28 @@ if (-not (Test-Path -LiteralPath $Executable)) {
 if (-not (Test-Path -LiteralPath $Executable)) { throw "Export Windows introuvable : $Executable" }
 
 $ReportPath = Join-Path $ProjectRoot "reports/terrain3d-validation-$Renderer.json"
-$Arguments = @('--rendering-driver', $Driver, '--', "--duration=$DurationSeconds", "--report=$ReportPath")
-$Process = Start-Process -FilePath $Executable -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
+$LogPath = Join-Path $ProjectRoot "reports/terrain3d-validation-$Renderer.log"
+if (Test-Path -LiteralPath $ReportPath) { Remove-Item -LiteralPath $ReportPath -Force }
+if (Test-Path -LiteralPath $LogPath) { Remove-Item -LiteralPath $LogPath -Force }
+$Arguments = @('--rendering-driver', $Driver, '--log-file', $LogPath, '--', "--duration=$DurationSeconds", "--report=$ReportPath")
+$Process = Start-Process -FilePath $Executable -ArgumentList $Arguments -PassThru -WindowStyle Hidden
+$PeakWorkingSetBytes = 0L
+while (-not $Process.HasExited) {
+    $Process.Refresh()
+    $PeakWorkingSetBytes = [Math]::Max($PeakWorkingSetBytes, [int64]$Process.WorkingSet64)
+    Start-Sleep -Milliseconds 100
+}
+$Process.Refresh()
+$PeakWorkingSetBytes = [Math]::Max($PeakWorkingSetBytes, [int64]$Process.PeakWorkingSet64)
 $ExitCode = $Process.ExitCode
 if ($ExitCode -ne 0) { throw "Validation Terrain3D échouée avec le code $ExitCode." }
+if (-not (Test-Path -LiteralPath $ReportPath)) { throw "Rapport absent : $ReportPath" }
+if (-not (Test-Path -LiteralPath $LogPath)) { throw "Journal absent : $LogPath" }
+$Report = Get-Content -Raw -Encoding UTF8 $ReportPath | ConvertFrom-Json
+$Report | Add-Member -NotePropertyName 'peak_process_working_set_bytes' -NotePropertyValue $PeakWorkingSetBytes -Force
+$Report | ConvertTo-Json -Depth 8 | Set-Content -Encoding UTF8 $ReportPath
+$ForbiddenLogLines = Select-String -Path $LogPath -Pattern '(^|\s)(ERROR:|SCRIPT ERROR:|CRASH)' -CaseSensitive
+if ($ForbiddenLogLines) {
+    throw "Le journal contient une erreur : $($ForbiddenLogLines[0].Line)"
+}
 
