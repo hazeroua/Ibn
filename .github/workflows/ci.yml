@@ -25,6 +25,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Tests de quarantaine des archives 3D
+        shell: pwsh
+        run: ./Tools/tests/test-asset-quarantine.ps1
+
       - name: Cache des téléchargements et de godot-cpp compilé
         uses: actions/cache@v4
         with:
@@ -103,6 +107,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: true
+
+      - name: Tests de quarantaine des archives 3D
+        shell: pwsh
+        run: ./Tools/tests/test-asset-quarantine.ps1
 
       - name: Cache des téléchargements et de godot-cpp compilé
         uses: actions/cache@v4
