@@ -4,7 +4,7 @@
 .PARAMETER Scene
   Scène à ouvrir (ex. res://world/sandbox/sandbox.tscn). Par défaut : la scène du projet.
 .PARAMETER Export
-  Lance la version exportée (Build/windows/IbnKhaldoun.exe) au lieu du projet.
+  Lance la version exportée native (Windows ou macOS) au lieu du projet.
 #>
 [CmdletBinding()]
 param(
@@ -24,8 +24,14 @@ function Start-Jeu([string]$Executable, [string[]]$Arguments) {
 }
 
 if ($Export) {
-    $exe = Join-Path $Racine 'Build/windows/IbnKhaldoun.exe'
-    if (-not (Test-Path $exe)) { & (Join-Path $PSScriptRoot 'exporter.ps1') }
+    if ($EstMacOS) {
+        $plateforme = 'macos'
+        $exe = Join-Path $Racine "Build/macos/IbnKhaldoun.app/Contents/MacOS/Les Chemins d'Ibn Khaldoun"
+    } else {
+        $plateforme = 'windows'
+        $exe = Join-Path $Racine 'Build/windows/IbnKhaldoun.exe'
+    }
+    if (-not (Test-Path $exe)) { & (Join-Path $PSScriptRoot 'exporter.ps1') -Plateforme $plateforme }
     $argumentsExport = @()
     if ($Scene) { $argumentsExport = @('--', "--scene=$Scene") }
     Start-Jeu $exe $argumentsExport

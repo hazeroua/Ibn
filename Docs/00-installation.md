@@ -1,6 +1,23 @@
-# 00 — Installation et exécution
+# 00 — Installation Windows et macOS
 
-## Récupérer le dépôt
+> **Tu ne fais presque rien** : tu récupères le projet, tu demandes à Claude Code ou Codex de lancer le script de ta plateforme, et tu acceptes les éventuelles autorisations système. Le script installe, vérifie et enregistre tout.
+
+## macOS Apple silicon
+
+Depuis le dossier du projet :
+
+```zsh
+./Tools/installer-macos.command
+./lancer.command
+```
+
+L'installateur conserve le pipeline PowerShell commun, installe les outils système manquants avec Homebrew et télécharge la version macOS universelle de Godot. Le premier lancement compile ensuite la GDExtension en arm64. `./lancer.command -Export` construit puis lance l'application `Build/macos/IbnKhaldoun.app`.
+
+Homebrew et les Command Line Tools Apple sont les prérequis de démarrage. Si PowerShell 7 manque, `installer-macos.command` l'installe avec Homebrew. Les versions Godot, SCons, gdtoolkit et plugins restent celles de `Tools/versions.json`.
+
+## Windows
+
+### Récupérer le dépôt
 
 La configuration Git du projet utilise SSH :
 

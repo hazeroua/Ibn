@@ -3,7 +3,7 @@
   Télécharge et installe les dépendances du projet aux versions figées de Tools/versions.json.
 
 .DESCRIPTION
-  Fonctionne sous Windows (PowerShell 5.1 ou 7) et sous Linux (PowerShell 7, utilisé par la CI).
+  Fonctionne sous Windows (PowerShell 5.1 ou 7), macOS Apple silicon et Linux (PowerShell 7, utilisé par la CI).
   Peut être relancé sans risque : ne télécharge que ce qui manque.
 
   Installe :
@@ -34,6 +34,9 @@ $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 $EstWindows = [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
+$EstMacOS = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+    [System.Runtime.InteropServices.OSPlatform]::OSX
+)
 
 $Tools      = $PSScriptRoot
 $Racine     = Split-Path -Parent $Tools
@@ -96,6 +99,13 @@ function Expand-Zip([string]$Archive, [string]$Destination) {
     Expand-Archive -Path $zip -DestinationPath $Destination -Force
 }
 
+function Assert-Sha256([string]$Fichier, [string]$Attendu) {
+    $reel = (Get-FileHash -Algorithm SHA256 -LiteralPath $Fichier).Hash.ToLowerInvariant()
+    if ($reel -ne $Attendu.ToLowerInvariant()) {
+        throw "SHA-256 invalide pour $(Split-Path -Leaf $Fichier) : $reel au lieu de $Attendu."
+    }
+}
+
 function Find-Python {
     if ($Python) { return $Python }
     $candidats = if ($EstWindows) { @('python', 'py') } else { @('python3', 'python') }
@@ -105,7 +115,7 @@ function Find-Python {
             if ((Invoke-Sonde $commande.Source @('--version')).Code -eq 0) { return $commande.Source }
         }
     }
-    throw 'Python introuvable. Sous Windows, lancez Tools/installer.ps1 ; sous Linux, installez python3 et python3-venv.'
+    throw 'Python introuvable. Lancez Tools/installer.ps1 sous Windows ou Tools/installer-macos.command sous macOS ; sous Linux, installez python3 et python3-venv.'
 }
 
 # ---------------------------------------------------------------------------
@@ -113,19 +123,40 @@ function Find-Python {
 # ---------------------------------------------------------------------------
 Write-Etape "Godot $($Versions.godot.tag)"
 $dossierGodot = Join-Path $Tools "godot/$($Versions.godot.tag)"
-$archiveGodot = if ($EstWindows) { $Versions.godot.archive_windows } else { $Versions.godot.archive_linux }
+$archiveGodot = if ($EstWindows) {
+    $Versions.godot.archive_windows
+} elseif ($EstMacOS) {
+    $Versions.godot.archive_macos
+} else {
+    $Versions.godot.archive_linux
+}
 if ($EstWindows) {
     $nomEditeur = $archiveGodot -replace '\.zip$', ''
     $nomConsole = $nomEditeur -replace '\.exe$', '_console.exe'
+    $godotEditeur = Join-Path $dossierGodot $nomEditeur
+    $godotConsole = Join-Path $dossierGodot $nomConsole
+} elseif ($EstMacOS) {
+    $godotEditeur = Join-Path $dossierGodot 'Godot.app/Contents/MacOS/Godot'
+    $godotConsole = $godotEditeur
 } else {
     $nomEditeur = $archiveGodot -replace '\.zip$', ''
     $nomConsole = $nomEditeur
+    $godotEditeur = Join-Path $dossierGodot $nomEditeur
+    $godotConsole = Join-Path $dossierGodot $nomConsole
 }
-$godotEditeur = Join-Path $dossierGodot $nomEditeur
-$godotConsole = Join-Path $dossierGodot $nomConsole
 if (-not ((Test-Path $godotEditeur) -and (Test-Path $godotConsole))) {
     $archive = Join-Path $Cache $archiveGodot
     Get-Fichier "$($Versions.godot.url_base)/$archiveGodot" $archive
+    if ($EstMacOS) {
+        try {
+            Assert-Sha256 $archive $Versions.godot.sha256_macos
+        } catch {
+            Write-Info 'Archive Godot macOS invalide dans le cache, nouveau téléchargement.'
+            Remove-Item -Force $archive
+            Get-Fichier "$($Versions.godot.url_base)/$archiveGodot" $archive
+            Assert-Sha256 $archive $Versions.godot.sha256_macos
+        }
+    }
     Expand-Zip $archive $dossierGodot
     if (-not $EstWindows) { Invoke-Externe 'chmod' @('+x', $godotEditeur) }
 }
@@ -144,8 +175,12 @@ if (-not $SansModelesExport) {
     Write-Etape "Modèles d'export $($Versions.godot.version_modeles_export)"
     if ($EstWindows) {
         $dossierModeles = Join-Path $env:APPDATA "Godot/export_templates/$($Versions.godot.version_modeles_export)"
+    } elseif ($EstMacOS) {
+        $profil = [Environment]::GetFolderPath('UserProfile')
+        $dossierModeles = Join-Path $profil "Library/Application Support/Godot/export_templates/$($Versions.godot.version_modeles_export)"
     } else {
-        $donnees = if ($env:XDG_DATA_HOME) { $env:XDG_DATA_HOME } else { Join-Path $HOME '.local/share' }
+        $profil = [Environment]::GetFolderPath('UserProfile')
+        $donnees = if ($env:XDG_DATA_HOME) { $env:XDG_DATA_HOME } else { Join-Path $profil '.local/share' }
         $dossierModeles = Join-Path $donnees "godot/export_templates/$($Versions.godot.version_modeles_export)"
     }
     if (-not (Test-Path (Join-Path $dossierModeles 'version.txt'))) {
@@ -255,7 +290,7 @@ if (Test-Path $OutilsJson) {
     foreach ($p in $existant.PSObject.Properties) { $outils[$p.Name] = $p.Value }
 }
 $outils['genere_le'] = (Get-Date).ToString('s')
-$outils['plateforme'] = if ($EstWindows) { 'windows' } else { 'linux' }
+$outils['plateforme'] = if ($EstWindows) { 'windows' } elseif ($EstMacOS) { 'macos' } else { 'linux' }
 $outils['godot'] = [ordered]@{
     tag            = $Versions.godot.tag
     version        = $versionGodot

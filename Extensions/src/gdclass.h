@@ -11,6 +11,12 @@
 	__pragma(warning(disable : 4189)) \
 	GDCLASS(m_class, m_inherits) \
 	__pragma(warning(pop))
+#elif defined(__clang__)
+#define IBN_GDCLASS(m_class, m_inherits) \
+	_Pragma("clang diagnostic push") \
+	_Pragma("clang diagnostic ignored \"-Wunused-variable\"") \
+	GDCLASS(m_class, m_inherits) \
+	_Pragma("clang diagnostic pop")
 #else
 #define IBN_GDCLASS(m_class, m_inherits) GDCLASS(m_class, m_inherits)
 #endif

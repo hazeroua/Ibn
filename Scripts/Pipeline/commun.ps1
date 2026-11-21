@@ -3,27 +3,33 @@
 # - Lit Tools/outils.json (créé par Tools/installer.ps1 ou Tools/dependances.ps1).
 # - Fournit Invoke-Godot, qui lance Godot, journalise sa sortie et échoue si Godot renvoie un code
 #   non nul ou affiche une erreur (« ERROR: », « SCRIPT ERROR: », « Parse Error: »…).
-# - Fonctionne sous Windows PowerShell 5.1, PowerShell 7 et sous Linux (CI).
+# - Fonctionne sous Windows PowerShell 5.1, PowerShell 7, macOS Apple silicon et Linux (CI).
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
 $Script:EstWindows = [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
+$Script:EstMacOS = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+    [System.Runtime.InteropServices.OSPlatform]::OSX
+)
 $Script:Racine = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 $Script:Jeu = Join-Path $Script:Racine 'Game'
 $Script:DossierMesures = Join-Path $Script:Racine 'Mesures'
 $Script:CheminOutils = Join-Path $Script:Racine 'Tools/outils.json'
 
 if (-not (Test-Path $Script:CheminOutils)) {
-    throw 'Tools/outils.json introuvable : lancez d''abord Tools/installer.ps1 (Windows) ou Tools/dependances.ps1 (Linux).'
+    throw 'Tools/outils.json introuvable : lancez Tools/installer.ps1 (Windows), Tools/installer-macos.command (macOS) ou Tools/dependances.ps1 (Linux).'
 }
 $Script:Outils = Get-Content -Raw -Encoding UTF8 $Script:CheminOutils | ConvertFrom-Json
 $Script:GodotConsole = $Script:Outils.godot.console
 $Script:GodotEditeur = $Script:Outils.godot.editeur
 $Script:PythonOutils = $Script:Outils.scons.python
 foreach ($chemin in @($Script:GodotConsole, $Script:GodotEditeur, $Script:PythonOutils)) {
-    if (-not (Test-Path $chemin)) { throw "Outil introuvable : $chemin. Relancez Tools/installer.ps1." }
+    if (-not (Test-Path $chemin)) {
+        $installateur = if ($Script:EstMacOS) { 'Tools/installer-macos.command' } else { 'Tools/installer.ps1' }
+        throw "Outil introuvable : $chemin. Relancez $installateur."
+    }
 }
 
 function Write-Etape([string]$Message) { Write-Host "`n=== $Message" -ForegroundColor Cyan }

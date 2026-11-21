@@ -1,8 +1,8 @@
 # CLAUDE.md — Les Chemins d'Ibn Khaldoun
 
-Jeu d'action-aventure en monde ouvert sous **Godot 4.7** sur la vie d'Ibn Khaldoun (1332–1406). Le projet est reconstruit depuis zéro autour de Terrain3D ; la seule feuille de route active est `Docs/06-roadmap-mvp.md`. L'ancien projet dans `Game/` est une archive et ne doit pas être repris automatiquement. Développé entièrement par Claude Code : **tu fais tout** ; le porteur du projet ne fait que télécharger certaines ressources et jouer. Il ne lit pas le code : rends compte en français simple.
+Jeu d'action-aventure en monde ouvert sous **Godot 4.7** sur la vie d'Ibn Khaldoun (1332–1406). Le projet est reconstruit depuis zéro autour de Terrain3D ; la seule feuille de route active est `Docs/06-roadmap-mvp.md`. L'ancien projet dans `Game/` est une archive et ne doit pas être repris automatiquement. Développé par Claude Code ou Codex : **l'agent fait tout** ; le porteur du projet ne fait que télécharger certaines ressources et jouer. Il ne lit pas le code : rends compte en français simple.
 
-**Machine de développement = configuration minimale du jeu :** Windows, Intel Core Ultra 7, **puce graphique intégrée Intel Arc**, aucune carte graphique dédiée.
+**Machine Windows de développement = configuration minimale du jeu :** Intel Core Ultra 7, **puce graphique intégrée Intel Arc**, aucune carte graphique dédiée. macOS Apple silicon est aussi pris en charge pour développer et lancer le jeu, sans remplacer la cible ni les budgets Windows.
 
 ## ⛔ Règle absolue n° 1 : aucun raccourci
 - Chaque système est écrit **directement dans sa version définitive**, avec **la meilleure optimisation possible pour le pire cas**. Interdits : version « provisoire », « pour l'instant », « on optimisera plus tard », `TODO`/`FIXME`/`HACK`, fonctions vides ou valeurs factices présentées comme terminées, solutions qui ne tiennent que le cas moyen. (Un hook refuse ces marqueurs dans le code.)
@@ -31,6 +31,8 @@ Rapports, journaux et captures : `Projet/rapports/<scène>/<date>-<moteur>/` ; c
 
 Les commandes de `Scripts/Pipeline/` concernent l'ancien projet et ne valident pas le reboot.
 
+Sous macOS Apple silicon, utiliser `Tools/installer-macos.command`, `./lancer.command` et `pwsh -NoProfile -File <script>`. Les scripts Windows et macOS coexistent ; ne jamais supprimer l'un pour adapter l'autre.
+
 ## Où se trouvent les choses
 - `Docs/` : sources de vérité actives ; `Docs/archive/` : ancien projet, non contractuel.
 - `Docs/06-roadmap-mvp.md` : **ne travailler que sur le premier ticket non bloqué**.
@@ -46,7 +48,8 @@ Les commandes de `Scripts/Pipeline/` concernent l'ancien projet et ne valident p
 - Contenu (mission, dialogue, Codex, livret) : `Docs/08-synopsis.md`, `Docs/04-missions.md`, `Docs/03-game-design.md`, `Docs/07-philosophie.md` (chaque mission sert au moins une des 20 idées), `Docs/02-histoire.md` (faits). **Jouer d'abord, apprendre ensuite** : jamais de texte explicatif imposé.
 
 ## Skills et agents du projet
-- Skills : `nouvelle-fonctionnalite` (méthode obligatoire de chaque tâche), `valider`, `nouvelle-carte`, `ressource-libre`, `godot-gdscript`, `extension-cpp`, `nouvelle-mission`.
+- Skills : `nouvelle-fonctionnalite` (méthode obligatoire de chaque tâche), `valider`, `nouvelle-carte`, `ressource-libre`, `godot-gdscript`, `extension-cpp`, `nouvelle-mission`, `fin-de-mvp` (manuelle).
+- Claude Code charge les skills depuis `.claude/skills/` ; Codex charge leurs équivalents depuis `.agents/skills/` et les règles de `AGENTS.md`. Maintenir les deux variantes.
 - Agents : `verificateur` (**obligatoire avant d'annoncer qu'un travail est fini**), `garant-performance` (avant tout système par image ou à grand nombre d'objets), `historien` (tout contenu historique), `directeur-artistique` (tout visuel), `concepteur-gameplay` (missions et systèmes de jeu).
 
 ## Code
