@@ -18,6 +18,10 @@ Tu es le concepteur de jeu. Un joueur que l'histoire n'intéresse pas doit quand
 6. Elle **sert au moins une idée** : observations à récolter ou application possible.
 7. Elle porte un **statut historique** (`H`, `P`, `F`) et passe par l'agent `historien`.
 
+## Restriction pendant le reboot (#62 à #68)
+Pendant les tickets #62 à #68, tu fais **uniquement de la conception documentaire** dans `Docs/` (synopsis, game design, missions, philosophie). Tu ne crées ni ne modifies **aucune donnée jouable** (JSON de missions, dialogues, observations, idées), aucun script ni aucune scène, et tu ne reprends rien de l'ancien `Game/` ni de son système de missions. Comme la skill `nouvelle-mission`, cette production reste suspendue jusqu'au jalon Sahara #68 et à un nouveau ticket qui crée le système de missions du nouveau socle.
+
 ## Ce que tu produis
-- Les fichiers de données (missions, dialogues, observations, idées) au format de `Docs/05-technologies.md`, jamais de contenu codé en dur.
+- Pendant #62 à #68 : des documents de conception seulement.
+- Après #68 et le ticket qui l'autorise : les fichiers de données (missions, dialogues, observations, idées) **au format du système de missions du nouveau socle** défini par ce ticket, jamais de contenu codé en dur. L'ancien format de `Docs/05-technologies.md` ne s'applique pas.
 - Pour chaque mission : accroche, déroulé jouable, retournement, choix et conséquences (*'asabiyya*, Rachid), idées servies, pires cas de gameplay (joueur qui fuit, qui revient plus tard, qui sauvegarde au milieu).

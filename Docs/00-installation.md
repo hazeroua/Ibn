@@ -1,76 +1,43 @@
-# 00 — Installation
+# 00 — Installation et exécution
 
-> **Tu ne fais presque rien** : tu récupères le projet, tu demandes à Claude Code de lancer le script d'installation, et tu acceptes une fenêtre d'autorisation Windows. Le script installe, vérifie et enregistre tout.
+## Récupérer le dépôt
 
-## 1. Récupérer le projet
-
-Dans PowerShell :
+La configuration Git du projet utilise SSH :
 
 ```powershell
-git clone https://github.com/hazeroua/Ibn.git C:\Projets\IbnKhaldoun
+git clone git@github.com:hazeroua/Ibn.git C:\Projets\IbnKhaldoun
 ```
 
-Un chemin court, **en dehors de OneDrive** (les dossiers synchronisés posent des problèmes avec Git et Godot).
+Utiliser un chemin court, hors OneDrive.
 
-## 2. Lancer l'installation
-
-Ouvre Claude Code dans `C:\Projets\IbnKhaldoun` et écris :
-
-> Lance `Tools/installer.ps1` et vérifie que tout est installé.
-
-Ou directement :
+## Installer les outils
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File C:\Projets\IbnKhaldoun\Tools\installer.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\Projets\IbnKhaldoun\Tools\installer.ps1
 ```
 
-Le script peut être relancé autant de fois que nécessaire : il n'installe que ce qui manque. Il est vérifié à chaque envoi par la CI (Windows PowerShell 5.1).
+Le script est relançable. Les versions sont figées dans `Tools/versions.json` et les chemins détectés sont écrits dans `Tools/outils.json`.
 
-## Ce qui est installé
+Principaux composants : Godot 4.7.2, modèles d'export Windows, Python et gdtoolkit, outils de compilation, Blender et dépendances Godot dont Terrain3D 1.1.0.
 
-**Outils système (winget), s'ils manquent :**
-
-| Outil | Rôle |
-|---|---|
-| Git + Git LFS | Historique du projet, gros fichiers |
-| Python | Outils de compilation et d'analyse |
-| Visual Studio Build Tools | Compilateur C++ (MSVC), sans l'éditeur complet (environ 6 à 8 Go) |
-| Blender | Modèles 3D par script |
-
-**Dépendances du projet, aux versions figées de `Tools/versions.json` (`Tools/dependances.ps1`) :**
-
-| Dépendance | Version | Où |
-|---|---|---|
-| Godot (portable) | 4.7.2 | `Tools/godot/` |
-| Modèles d'export Godot | 4.7.2 | `%APPDATA%\Godot\export_templates\` (environ 1 Go) |
-| godot-cpp | branche 4.5 (compatible Godot 4.5 et suivants) | `Extensions/godot-cpp/` |
-| SCons | 4.11.1 | environnement Python dédié `Tools/venv/` |
-| gdtoolkit (gdlint, gdformat) | 4.5.0 | `Tools/venv/` |
-| GUT (tests) | 9.7.1 | `Game/addons/gut/` |
-| Dialogue Manager | 4.2.0 | `Game/addons/dialogue_manager/` |
-| Terrain3D | 1.1.0 | `Game/addons/terrain_3d/` |
-
-**Total : environ 10 Go.** À la fin, le script écrit **`Tools/outils.json`** (chemins et versions réellement installés), que tous les scripts du pipeline utilisent.
-
-## Ta seule intervention
-
-Pendant l'installation de **Visual Studio Build Tools** ou de **Blender**, Windows peut afficher *« Voulez-vous autoriser cette application à apporter des modifications ? »* → **Oui**.
-
-## 3. Essayer
+## Exécuter le prototype actif
 
 ```powershell
-C:\Projets\IbnKhaldoun\lancer.bat
+Set-Location C:\Projets\IbnKhaldoun\Reboot\Terrain3DValidation
+powershell -NoProfile -ExecutionPolicy Bypass -File .\run-validation.ps1 -Renderer vulkan -DurationSeconds 30 -ToolchainRoot C:\Projets\IbnKhaldoun
 ```
 
-La première fois, le lancement compile l'extension C++, télécharge la texture du sol, importe le projet et construit la scène, puis ouvre le bac à sable. Caméra libre : déplacement avec Z Q S D, E pour monter et A pour descendre, Maj pour accélérer, clic droit maintenu pour regarder, Échap pour quitter. La manette fonctionne aussi.
+Pour D3D12, remplacer `vulkan` par `d3d12`. Sans `-DurationSeconds`, le protocole final dure 1 800 secondes.
 
-## Versions figées
+Les rapports, journaux, captures et exports sont placés dans les dossiers ignorés `reports/` et `build/` du prototype.
 
-Godot et les dépendances ne changent **jamais** sans décision explicite : `Tools/versions.json` fait foi, et la CI vérifie le projet avec exactement ces versions.
+## Projet historique
 
-## En cas de problème
+Les anciennes commandes sous `Scripts/Pipeline/` concernent le projet archivé dans `Game/`. Elles ne valident pas le reboot et ne doivent pas être utilisées pour fermer un ticket #62 à #68.
 
-Claude Code lit le message d'erreur, corrige et relance. Cas prévus :
-- **winget absent** : installer « App Installer » depuis le Microsoft Store.
-- **Un téléchargement interrompu** : relancer le script, il reprend où il en était.
-- **godot-cpp sur une mauvaise branche** : le script le détecte et indique de supprimer `Extensions/godot-cpp` avant de relancer.
+## En cas d'échec
+
+- Lire le journal associé au moteur de rendu dans `reports/`.
+- Toute ligne `ERROR:`, `SCRIPT ERROR:` ou `CRASH` invalide l'exécution.
+- Ne pas assouplir un budget pour obtenir un résultat vert.
+- Corriger, exporter à nouveau et relancer le protocole complet.

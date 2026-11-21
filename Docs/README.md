@@ -1,38 +1,39 @@
-# Les Chemins d'Ibn Khaldoun — Dossier de conception
+# Documentation — Les Chemins d'Ibn Khaldoun
 
-> Titre provisoire. Jeu d'action-aventure en monde ouvert, en 3D stylisée, sous Godot 4, qui suit la vie d'Ibn Khaldoun (1332–1406), de Tunis à Damas. On explore librement à pied et à cheval, on entre dans les villes, on parle et on interagit avec leurs habitants.
+Le projet est reconstruit depuis zéro autour de Terrain3D. Depuis le 21 novembre 2026, l'ancien projet n'est plus la base de développement : il reste dans le dépôt comme archive technique et comme source éventuelle d'éléments à sélectionner après la première boucle jouable.
 
-Ce dossier décrit le projet avant la première ligne de code. Il sert de référence au porteur du projet **et** à l'IA qui codera le jeu (vibe coding) : chaque fichier doit pouvoir être donné tel quel comme contexte à l'agent.
+## Commencer ici
 
-## Sommaire
+1. [Décision de reboot Terrain3D](reboot-terrain3d.md) — pourquoi le projet repart de zéro et ce qui est conservé.
+2. [Feuille de route active](06-roadmap-mvp.md) — les sept tickets GitHub, leur ordre et leur état.
+3. [Technologies et architecture](05-technologies.md) — socle actif, contraintes et budgets.
+4. [Installation](00-installation.md) — préparer la machine et exécuter le prototype.
 
-| Fichier | Contenu |
+Ces quatre documents constituent la source de vérité opérationnelle. En cas de contradiction, ils remplacent les anciens documents MVP rangés dans [`archive/`](archive/README.md).
+
+## Conception durable
+
+Ces documents décrivent la vision du jeu final. Ils restent valables pendant le reboot, mais ne constituent pas une autorisation d'implémenter un système hors de la feuille de route active.
+
+| Document | Rôle |
 |---|---|
-| [00-installation.md](00-installation.md) | Les outils à installer, et comment Claude Code les installe |
-| [01-vision-et-attentes.md](01-vision-et-attentes.md) | Ce que je veux, ce que je ne veux pas, critères de réussite |
-| [02-histoire.md](02-histoire.md) | Base historique : les faits de sa vie et des régions traversées |
-| [03-game-design.md](03-game-design.md) | Gameplay, monde ouvert, cheval, systèmes de jeu |
-| [04-missions.md](04-missions.md) | Missions par ville et par époque |
-| [05-technologies.md](05-technologies.md) | Moteur, outils, architecture, budget de performance |
-| [06-roadmap-mvp.md](06-roadmap-mvp.md) | Les 17 MVP : un premier résultat vite, puis le jeu qui s'améliore à chaque étape |
-| [08-synopsis.md](08-synopsis.md) | **L'histoire du jeu** : le pitch, les personnages, les actes |
-| [07-philosophie.md](07-philosophie.md) | **Le fil conducteur** : la pensée d'Ibn Khaldoun, apprise en jouant (carnet, idées, livrets) |
-| [CLAUDE.md](../CLAUDE.md) | Consignes pour l'agent IA qui code le projet |
+| [01-vision-et-attentes.md](01-vision-et-attentes.md) | Vision, public et critères de réussite |
+| [02-histoire.md](02-histoire.md) | Faits historiques de référence |
+| [03-game-design.md](03-game-design.md) | Expérience de jeu cible |
+| [04-missions.md](04-missions.md) | Missions envisagées pour le jeu complet |
+| [07-philosophie.md](07-philosophie.md) | Transmission de la pensée d'Ibn Khaldoun par le jeu |
+| [08-synopsis.md](08-synopsis.md) | Récit, personnages et actes |
 
-## Le pitch
+## Exploitation
 
-**Damas, 1401.** Encerclé par l'armée de Tamerlan, un vieil historien se fait descendre par une corde le long des remparts pour affronter le conquérant. Pour sauver la ville, il va lui raconter sa vie : la peste, la prison, les cours royales, les guerres du désert, l'amitié et la trahison de Rachid, son frère d'enfance. Le joueur vit chacun de ces souvenirs. (Voir `08-synopsis.md`.)
+| Document | Rôle |
+|---|---|
+| [ressources-a-telecharger.md](ressources-a-telecharger.md) | Ressources nécessitant une intervention ou un compte |
+| [CLAUDE.md](../CLAUDE.md) | Règles de travail de l'agent |
 
-## Le jeu en une phrase
+## Règle d'archivage
 
-On incarne Abd al-Rahman Ibn Khaldoun, jeune lettré tunisois devenu diplomate, chambellan, prisonnier, négociateur auprès des tribus, juge au Caire et interlocuteur de Tamerlan ; on parcourt à pied et à cheval le Maghreb, al-Andalus, l'Égypte, le Hijaz et la Syrie du XIVᵉ siècle, et chaque mission fait comprendre l'histoire de la région.
-
-**Le fil conducteur, c'est sa philosophie** : le joueur vit les situations qui ont fait naître ses idées, les comprend, puis les applique. À la fin, il a compris toute la pensée d'Ibn Khaldoun sans avoir lu ses livres.
-
-## Principes directeurs
-
-0. **Jouer d'abord, apprendre ensuite.** Le jeu doit être captivant même pour quelqu'un que l'histoire n'intéresse pas. L'apprentissage vient de ce qu'on vit, jamais d'un cours.
-1. **Le moteur d'abord, l'histoire ensuite.** On ne raconte rien tant que marcher dans une médina, parler aux habitants et chevaucher dans le désert ne sont pas agréables.
-2. **Petit mais beau.** Une tranche jouable très soignée vaut mieux qu'un monde ouvert vide.
-3. **Tout en texte.** Code, missions, dialogues, données : tout ce qui peut être un fichier texte l'est, pour que l'IA puisse le lire et l'écrire.
-4. **L'histoire est respectée.** On invente pour combler les vides, jamais pour contredire les faits connus, et le jeu distingue clairement les deux.
+- Un document actif décrit uniquement le reboot et l'état réellement exécutable.
+- Une décision abandonnée est déplacée dans `Docs/archive/` au lieu d'être mélangée à la roadmap.
+- Les mesures de l'ancien projet ne servent pas de preuve pour le nouveau socle.
+- Tunis, Barq, les foules et les missions historiques restent hors périmètre jusqu'à la réussite de la première boucle Sahara.

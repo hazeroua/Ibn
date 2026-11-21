@@ -1,19 +1,19 @@
 ---
 name: nouvelle-fonctionnalite
-description: Méthode obligatoire pour réaliser une fonctionnalité du MVP en cours, de la branche Git au rapport final (pires cas écrits, code définitif, test de charge, mesures, captures, vérification indépendante). À utiliser au début de toute tâche de développement.
+description: Méthode obligatoire pour réaliser un ticket du reboot Terrain3D, de la branche Git au rapport final (pires cas écrits, code définitif, test de charge, mesures, captures, vérification indépendante).
 ---
-# Réaliser une fonctionnalité
+# Réaliser un ticket du reboot
 
-1. **Cadrer** : reformuler la tâche en une phrase ; vérifier qu'elle appartient au MVP en cours (`Docs/06-roadmap-mvp.md`, réglage `ibn/projet/mvp_en_cours` de `Game/project.godot`). Sinon, s'arrêter et le signaler.
-2. **Brancher** : `git switch -c <mvp>-<fonctionnalite>` depuis la branche du MVP.
+1. **Cadrer** : reformuler la tâche en une phrase ; vérifier qu'elle correspond au premier ticket non bloqué de `Docs/06-roadmap-mvp.md`. Sinon, s'arrêter et le signaler.
+2. **Brancher** : créer une branche `codex/<ticket>-<fonctionnalite>` depuis `main` dans un worktree propre.
 3. **Écrire les pires cas** en tête de la description de commit et dans le test de charge : nombres maximaux, puce intégrée, partie de 100 heures, galop en zone dense, tous systèmes actifs. Pour tout système par image ou à grand nombre d'objets, consulter l'agent `garant-performance`.
-4. **Coder la version définitive** : données en JSON, GDScript typé, C++ pour les chemins chauds, aucun `TODO`/provisoire (un hook le bloque). Scènes complexes = constructeur dans `Game/tools/builders/` + données.
-5. **Tester** : tests GUT dans `Game/tests/unit/` (logique et test de charge du pire cas, avec mesure imprimée par `gut.p`).
+4. **Coder la version définitive** : données versionnées, GDScript typé, C++ seulement pour les chemins chauds démontrés, aucun `TODO`/provisoire. Pour #62, rester dans `Reboot/Terrain3DValidation/`. Après #63, utiliser exclusivement la structure documentée du nouveau socle.
+5. **Tester** : utiliser le framework et les chemins du nouveau socle définis par #63. Pour #62, utiliser `Reboot/Terrain3DValidation/run-validation.ps1` sous Vulkan et D3D12.
 6. **Valider** : skill `valider` (chaîne complète, captures relues avec Read).
 7. **Faire vérifier** : agent `verificateur` ; pour l'histoire, agent `historien` ; pour le visuel, agent `directeur-artistique`. Corriger tout point bloquant puis revalider.
 8. **Committer** : un commit clair par fonctionnalité, terminé par les lignes d'attribution demandées.
 9. **Rendre compte** au porteur du projet, en français simple :
    - ce qui a changé ;
    - les pires cas traités et leurs mesures ;
-   - **la commande unique pour essayer** (ex. `lancer.bat`) ;
+   - **la commande unique du pipeline actif pour essayer** ;
    - les ressources à télécharger, s'il y en a.

@@ -1,29 +1,37 @@
 ---
 name: valider
-description: Lance la chaîne complète de vérification du projet (qualité du GDScript, ressources, compilation C++, import, construction des scènes, tests GUT, mesures, captures) et corrige jusqu'au vert. À utiliser avant de rendre la main, après toute modification.
+description: Lance la chaîne de vérification du reboot Terrain3D et corrige jusqu'au vert. Pour le ticket #62, valide le prototype sous Vulkan et D3D12 ; après #63, suit le pipeline documenté du nouveau socle.
 ---
-# Valider le projet
+# Valider le reboot
 
-## Commande
-```
-powershell -NoProfile -ExecutionPolicy Bypass -File Scripts/Pipeline/valider.ps1
-```
-Options : `-SansRendu` (machine sans affichage), `-SansBudgets` (hors machine de développement uniquement), `-Cartes sandbox,…`.
+## Ticket #62 — Terrain3D
 
-## Étapes et causes d'échec fréquentes
-| Étape | Script | Échec typique | Correction |
-|---|---|---|---|
-| Qualité GDScript | gdlint / gdformat | ligne trop longue, ordre des déclarations | `python -m gdtoolkit.formatter --line-length 140 <fichier>` puis corriger le reste |
-| Ressources | `importer-ressources.ps1` | MD5 incorrect, identifiant Poly Haven inconnu | vérifier `Game/data/assets/polyhaven.json` |
-| C++ | `compiler.ps1` | avertissement traité comme erreur | corriger le code, jamais baisser le niveau d'avertissement |
-| Import | `importer.ps1` | `ERROR:` dans la sortie | lire `Mesures/journaux/import.log` |
-| Construction | `construire.ps1` | donnée manquante (`JsonData : clé … manquante`) | corriger le JSON de la carte |
-| Tests | `tester.ps1` | test en échec | lire `Mesures/tests/tests.log` et `junit.xml` |
-| Mesures | `mesurer.ps1` | `Budget dépassé : …` | consulter l'agent `garant-performance` |
-| Captures | `capturer.ps1` | `Capture … : image presque noire / uniforme / pixels magenta` (contrôle automatique `CaptureCheck`) | lumière absente, rien de rendu, texture ou matériau manquant |
+Depuis `Reboot/Terrain3DValidation/` :
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\run-validation.ps1 -Renderer vulkan -DurationSeconds 30 -ToolchainRoot C:\Projets\IbnKhaldoun
+powershell -NoProfile -ExecutionPolicy Bypass -File .\run-validation.ps1 -Renderer d3d12 -DurationSeconds 30 -ToolchainRoot C:\Projets\IbnKhaldoun
+```
+
+Cette vérification de 30 secondes doit être verte avant chaque commit. Le porteur du projet a décidé qu'elle suffit pour fermer #62 : les sessions de 30 minutes ne sont pas exigées.
+
+Contrôler pour chaque moteur :
+
+- code de sortie nul ;
+- aucune ligne `ERROR:`, `SCRIPT ERROR:` ou `CRASH` ;
+- `budgets_passed: true` dans le rapport JSON ;
+- durée demandée réellement mesurée après préchauffage ;
+- aucune collision manquée ;
+- matériel Intel Arc attendu ;
+- capture 1 920 × 1 080 ouverte et relue visuellement.
+
+## Après le ticket #63
+
+Le ticket #63 doit créer une commande unique de validation et la documenter dans `Docs/05-technologies.md`. Tant que cette commande n'existe pas, l'ancien pipeline ne constitue pas une preuve du reboot.
 
 ## Règles
-- Toute ligne `ERROR:` ou `SCRIPT ERROR:` de Godot fait échouer le pipeline : on corrige la cause, on ne filtre pas le message.
-- Après une correction, relancer **toute** la validation, pas seulement l'étape fautive.
-- Les budgets ne se vérifient que sur la machine de développement ; ne jamais assouplir un budget pour faire passer une mesure sans l'accord explicite du porteur du projet.
-- Terminer en ouvrant les captures produites avec Read pour vérifier l'image soi-même.
+
+- Corriger toute erreur, puis relancer la chaîne complète.
+- Ne jamais filtrer un message d'erreur légitime.
+- Ne jamais assouplir un budget sans accord explicite.
+- Les mesures de l'ancien projet dans `Mesures/` ne valident aucun ticket #62 à #68.

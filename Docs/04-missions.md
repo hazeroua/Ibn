@@ -217,4 +217,4 @@ Une série de **6 affaires** jouables comme des enquêtes judiciaires : interrog
 | Activités | 10 types |
 | Durée | 40 h (histoire), 80 h et plus (complet) |
 
-**Tranche verticale (MVP 8 à 10) :** prologue complet + acte I complet (9 missions principales, 3 chaînes, 10 annexes, échecs, courses).
+**Tranche verticale narrative future :** prologue complet + acte I complet (9 missions principales, 3 chaînes, 10 annexes, échecs, courses), après validation de la boucle Sahara et des systèmes nécessaires.

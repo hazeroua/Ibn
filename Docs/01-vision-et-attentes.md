@@ -17,7 +17,7 @@
 - Le jeu doit être **le plus optimisé possible**.
 - **Aucun raccourci dans le code** : jamais de « on fera un meilleur système plus tard » ni de « ça suffit pour l'instant, on optimisera plus tard ». Tout est écrit avec la meilleure optimisation possible **pour tenir les pires cas**.
 - Le développement est **entièrement vibe codé** : **tout se fait avec Claude Code**. Je ne manipule rien moi-même, sauf **télécharger les ressources graphiques** (personnages, tenues, textures, modèles) quand c'est nécessaire.
-- Avancer par **MVP** : d'abord la construction du jeu (moteur, cheval, monde), ensuite l'histoire.
+- Avancer par **jalons vérifiables** : d'abord le socle Terrain3D et une boucle Sahara, ensuite les systèmes de voyage, puis l'histoire.
 
 ## Ce que le joueur doit ressentir
 
@@ -51,11 +51,11 @@ Un grand jeu en monde ouvert mobilise habituellement des dizaines, voire des cen
 
 1. Un **style stylisé**, qui demande beaucoup moins de ressources que le photoréalisme.
 2. S'appuyer massivement sur les **ressources libres** (Poly Haven, Quaternius, Kenney, MakeHuman) et la **génération procédurale** (villes, dunes, végétation construites par des règles).
-3. Viser d'abord une **tranche verticale** (prologue + Tunis) de très bonne qualité, et l'utiliser comme **vitrine** pour attirer des artistes, une communauté ou un financement.
+3. Livrer d'abord une **boucle Sahara** très soignée pour valider le socle ; construire ensuite une tranche verticale narrative (prologue + Tunis) utilisable comme vitrine.
 
 ## Critères de réussite
 
-- **Premiers MVP :** marcher dans une médina, parler aux PNJ et chevaucher dans le désert sont agréables, à 60 i/s.
+- **Premier jalon :** parcourir le Sahara à pied entre un camp et une oasis est agréable et stable à 60 i/s.
 - **Tranche verticale :** un joueur qui ne connaît pas Ibn Khaldoun termine Tunis 1348 en voulant la suite, et peut expliquer ce qu'est la peste noire au Maghreb et qui gouvernait Tunis.
 - **Long terme :** le jeu complet couvre les 8 grandes étapes de la vie d'Ibn Khaldoun.
 - **Fin du jeu :** le joueur sait expliquer avec ses mots les 20 idées principales d'Ibn Khaldoun et le grand cycle *désert → cohésion → pouvoir → ville → luxe → déclin*.
