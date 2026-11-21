@@ -24,10 +24,10 @@ Toujours via les scripts (Windows : `powershell -NoProfile -ExecutionPolicy Bypa
 | Besoin | Commande |
 |---|---|
 | Installer / vérifier les outils | `Tools/installer.ps1` (versions figées : `Tools/versions.json`, chemins : `Tools/outils.json`) |
-| **Tout valider** (dépendances, gdlint/gdformat, import, tests GUT, export Windows, mesure, capture, budget) | `Projet/valider.bat` ou `Projet/outils/valider.ps1 [-Scene <id>] [-Renderer vulkan\|d3d12] [-DurationSeconds 30] [-SansMesure]` |
+| **Tout valider** (dépendances, ressources, gdlint/gdformat, import, construction, tests GUT, export Windows, mesure de chaque scène, captures, budgets) | `Projet/valider.bat` ou `Projet/outils/valider.ps1 [-Scene <id>] [-Renderer vulkan\|d3d12] [-DurationSeconds 30] [-SansMesure]` |
 | Lancer le dernier export | `Projet/lancer.bat` |
 
-Rapports, journaux et captures : `Projet/rapports/<scène>/<date>-<moteur>/` ; compte rendu de la dernière validation : `Projet/rapports/derniere-validation.txt`.
+Rapports, journaux et captures : `Projet/rapports/<date>-<moteur>/<scène>/` ; compte rendu de la dernière validation : `Projet/rapports/derniere-validation.txt`.
 
 Les commandes de `Scripts/Pipeline/` concernent l'ancien projet et ne valident pas le reboot.
 

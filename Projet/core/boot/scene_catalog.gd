@@ -20,10 +20,12 @@ static func from_dictionary(data: Dictionary) -> SceneCatalog:
 		var scene_context: String = context + " › " + scene_id
 		var path: String = JsonData.read_string(entry, "path", catalog.errors, scene_context)
 		var budget: String = JsonData.read_string(entry, "budget", catalog.errors, scene_context)
-		for resource_path: String in [path, budget]:
+		# Constructeur facultatif, lancé par outils/construire.gd avant l'import final.
+		var builder: String = String((entry as Dictionary).get("builder", ""))
+		for resource_path: String in [path, budget, builder]:
 			if not resource_path.is_empty() and not ResourceLoader.exists(resource_path) and not FileAccess.file_exists(resource_path):
 				catalog.errors.append("%s : fichier introuvable %s." % [scene_context, resource_path])
-		catalog._scenes[scene_id] = {"path": path, "budget": budget}
+		catalog._scenes[scene_id] = {"path": path, "budget": budget, "builder": builder}
 	if not catalog.default_scene_id.is_empty() and not catalog._scenes.has(catalog.default_scene_id):
 		catalog.errors.append("%s : la scène par défaut « %s » n'est pas au catalogue." % [context, catalog.default_scene_id])
 	return catalog
@@ -39,6 +41,10 @@ func scene_path(scene_id: String) -> String:
 
 func budget_path(scene_id: String) -> String:
 	return String(_scenes[scene_id]["budget"])
+
+
+func builder_path(scene_id: String) -> String:
+	return String(_scenes[scene_id]["builder"])
 
 
 func scene_ids() -> PackedStringArray:

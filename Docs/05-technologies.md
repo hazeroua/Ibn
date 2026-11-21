@@ -32,10 +32,13 @@ Projet/                       Le jeu (Godot 4.7.2, Terrain3D 1.1.0)
 │   ├── input/                Actions clavier, souris, manette (data/config/input.json)
 │   ├── log/                  Journal du jeu (user://logs/ibn.log)
 │   └── perf/                 Sonde de mesure, statistiques d'image, budgets
-├── world/<scène>/            Scènes construites par script depuis data/<scène>/
+├── world/<scène>/            Scènes, générateurs et constructeurs (data/<scène>/)
+├── world/common/             Éclairage, aide, corps de test des collisions
 ├── data/                     Toutes les données ; budgets dans data/budgets/<scène>.json
 ├── tests/unit/               Tests GUT
-├── outils/valider.ps1        Pipeline complet (lancé par valider.bat)
+├── outils/                   valider.ps1 (pipeline, lancé par valider.bat), construire.gd
+├── ressources/telechargees/  Textures libres téléchargées et vérifiées (non versionnées)
+├── generated/<scène>/        Régions Terrain3D et textures construites (non versionnées)
 ├── addons/, build/, rapports/   Générés, non versionnés
 └── README.md                 Organisation, commandes et pires cas
 
@@ -76,13 +79,24 @@ Projet\valider.bat [-Scene terrain_test] [-Renderer vulkan|d3d12] [-DurationSeco
 Étapes, avec arrêt à la première erreur ou à la première ligne `ERROR:` d'un journal :
 
 1. installation de Terrain3D et GUT aux versions de `Tools/versions.json` ;
-2. gdlint et gdformat (140 colonnes) ;
-3. import du projet ;
-4. tests GUT ;
-5. export Windows dans `Projet/build/` ;
-6. mesure de la scène sur le GPU de la machine, capture et comparaison au budget.
+2. téléchargement des ressources de `data/ressources.json`, vérifiées par leurs empreintes SHA-256 (`data/ressources.lock.json`, enregistrées au premier téléchargement) ;
+3. gdlint et gdformat (140 colonnes) ;
+4. import du projet ;
+5. constructeurs des scènes (`outils/construire.gd`, clé `builder` du catalogue), puis import de ce qu'ils produisent ; un constructeur ne refait rien si ses données, ses ressources et son code n'ont pas changé ;
+6. tests GUT ;
+7. export Windows dans `Projet/build/` ;
+8. mesure de chaque scène du catalogue sur le GPU de la machine, captures et comparaison au budget.
 
-Résultats : `Projet/rapports/<scène>/<date>-<moteur>/` (journaux, `rapport.json`, `capture.png`) et `Projet/rapports/derniere-validation.txt`.
+Résultats : `Projet/rapports/<date>-<moteur>/` (journaux du pipeline, puis un dossier par scène avec `jeu.log`, `rapport.json`, `capture.png` et les captures des points de vue) et `Projet/rapports/derniere-validation.txt`.
+
+### Le Sahara (#64)
+
+`SaharaBuilder` génère hors du jeu, en 15 s environ, le relief 2 048 × 2 048 (2 m entre sommets), la carte de contrôle Terrain3D (sol dominant, sol secondaire, mélange) et la carte de couleur, puis enregistre 16 régions dans `generated/sahara/terrain/`. Les textures Poly Haven sont empaquetées au format Terrain3D (albédo + hauteur, normale OpenGL + rugosité) en 2 048 px et importées en compression GPU avec mipmaps. La scène charge ces régions en environ 200 ms.
+
+Contrôles de qualité du relief :
+
+- torsion maximale d'une cellule praticable (pente < 45°) : 0,30 m, vérifiée par le constructeur. C'est l'écart maximal entre surface affichée et surface de collision, qui ne découpent pas les cellules selon la même diagonale ; les massifs reçoivent un léger flou gaussien pour qu'aucune arête ne soit plus fine qu'une cellule ;
+- collisions : test GUT sur le vrai terrain (capsule à 1,6 m/s puis 70 m/s, aucune traversée ni blocage) et même parcours pendant la mesure.
 
 Aucune extension C++ n'existe encore dans `Projet/`. La première extension justifiée par une mesure créera `Projet/extensions/<nom>/` et ajoutera sa compilation au pipeline.
 
@@ -105,7 +119,7 @@ Les artefacts générés ne sont pas versionnés.
 
 ## Budgets
 
-Le budget de chaque scène est dans `Projet/data/budgets/<scène>.json`. Celui de `terrain_test` reprend les limites du ticket #62 et ajoute un temps de démarrage maximal de 5 secondes.
+Le budget de chaque scène est dans `Projet/data/budgets/<scène>.json`. Ceux de `terrain_test` et `sahara` reprennent les limites du ticket #62 et ajoutent un temps de démarrage maximal de 5 secondes ; celui du Sahara exige en plus zéro traversée du sol et zéro blocage du corps de test, et au moins 500 m parcourus.
 
 ### Budgets du ticket #62
 

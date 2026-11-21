@@ -10,10 +10,12 @@ const PROGRESS_INTERVAL_SECONDS: float = 10.0
 const EXIT_OK: int = 0
 const EXIT_FAILURE: int = 1
 const EXIT_BUDGET_EXCEEDED: int = 2
-const FRAMES_SKIPPED_AFTER_CAPTURE: int = 2
+const FRAMES_SKIPPED_AFTER_CAPTURE: int = 10
 
 var _scene_id: String = ""
 var _scene_root: Node
+## Taille de rendu exigée pendant la mesure (zéro : pas de contrôle, plein écran).
+var _expected_viewport: Vector2i = Vector2i.ZERO
 var _budget: PerformanceBudget
 var _warmup_seconds: float = 5.0
 var _duration_seconds: float = 30.0
@@ -30,16 +32,16 @@ var _finished: bool = false
 var _peak_draw_calls: int = 0
 var _peak_primitives: int = 0
 var _peak_video_memory_bytes: int = 0
-var _peak_static_memory_bytes: int = 0
 var _peak_process_ms: float = 0.0
 var _peak_physics_process_ms: float = 0.0
 ## Mesures propres à la scène (collisions manquées, etc.), fournies par la scène.
 var _scene_metrics: Dictionary = {}
 
 
-func configure(scene_id: String, scene_root: Node, budget: PerformanceBudget, options: LaunchOptions) -> void:
+func configure(scene_id: String, scene_root: Node, budget: PerformanceBudget, options: LaunchOptions, expected_viewport: Vector2i) -> void:
 	_scene_id = scene_id
 	_scene_root = scene_root
+	_expected_viewport = expected_viewport
 	_budget = budget
 	_warmup_seconds = options.warmup_seconds
 	_duration_seconds = options.duration_seconds
@@ -58,6 +60,29 @@ func is_measuring() -> bool:
 	return not _finished
 
 
+## Vrai pendant le préchauffage (avant la capture et la mesure).
+func is_warming_up() -> bool:
+	return not _capture_saved
+
+
+## Part écoulée de la mesure, de 0 à 1.
+func measured_fraction() -> float:
+	return clampf(_measured_seconds / _duration_seconds, 0.0, 1.0)
+
+
+## Allonge le préchauffage, par exemple pour une tournée de captures de la scène.
+func extend_warmup(seconds: float) -> void:
+	_warmup_seconds = maxf(_warmup_seconds, seconds)
+
+
+## Enregistre une capture nommée dans le dossier du rapport (hors mesure uniquement).
+func save_named_capture(file_name: String) -> bool:
+	if not is_warming_up():
+		GameLog.warning("mesure", "Capture « %s » refusée pendant la mesure." % file_name)
+		return false
+	return _write_capture(file_name)
+
+
 ## Enregistre ou met à jour une mesure propre à la scène.
 func report_metric(key: String, value: float) -> void:
 	_scene_metrics[key] = value
@@ -71,6 +96,15 @@ func _process(delta: float) -> void:
 			return
 		_startup_ms = float(Time.get_ticks_msec())
 		GameLog.info("mesure", "Scène prête après %.0f ms ; préchauffage de %.0f s." % [_startup_ms, _warmup_seconds])
+	# Une taille de rendu différente fausse captures et mesures : tout est annulé.
+	if _expected_viewport != Vector2i.ZERO and Vector2i(get_viewport().get_visible_rect().size) != _expected_viewport:
+		_abort(
+			(
+				"Taille de rendu %s au lieu de %s : mesure annulée."
+				% [str(Vector2i(get_viewport().get_visible_rect().size)), str(_expected_viewport)]
+			)
+		)
+		return
 	_elapsed_seconds += delta
 	if _elapsed_seconds < _warmup_seconds:
 		return
@@ -95,24 +129,28 @@ func _sample_monitors() -> void:
 	_peak_draw_calls = maxi(_peak_draw_calls, int(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)))
 	_peak_primitives = maxi(_peak_primitives, int(Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)))
 	_peak_video_memory_bytes = maxi(_peak_video_memory_bytes, int(Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED)))
-	_peak_static_memory_bytes = maxi(_peak_static_memory_bytes, int(Performance.get_monitor(Performance.MEMORY_STATIC)))
 	_peak_process_ms = maxf(_peak_process_ms, Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0)
 	_peak_physics_process_ms = maxf(_peak_physics_process_ms, Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0)
 
 
 func _save_capture() -> void:
+	_write_capture("capture.png")
 	_capture_saved = true
-	var capture_path: String = _report_dir.path_join("capture.png")
+
+
+func _write_capture(file_name: String) -> bool:
+	var capture_path: String = _report_dir.path_join(file_name)
 	DirAccess.make_dir_recursive_absolute(_report_dir)
 	var image: Image = get_viewport().get_texture().get_image()
 	if image == null or image.is_empty():
 		_abort("Capture impossible : aucun rendu disponible (mode sans affichage ?).")
-		return
+		return false
 	var save_error: Error = image.save_png(capture_path)
 	if save_error != OK:
 		_abort("Impossible d'écrire la capture %s : %s" % [capture_path, error_string(save_error)])
-		return
+		return false
 	GameLog.info("mesure", "Capture %d × %d écrite : %s" % [image.get_width(), image.get_height(), capture_path])
+	return true
 
 
 func build_report() -> Dictionary:
@@ -138,7 +176,6 @@ func build_report() -> Dictionary:
 		"peak_draw_calls": _peak_draw_calls,
 		"peak_primitives": _peak_primitives,
 		"peak_video_memory_mib": float(_peak_video_memory_bytes) / BYTES_PER_MIB,
-		"peak_static_memory_mib": float(_peak_static_memory_bytes) / BYTES_PER_MIB,
 		"peak_process_ms": _peak_process_ms,
 		"peak_physics_process_ms": _peak_physics_process_ms,
 		"gpu_time_ms": null,

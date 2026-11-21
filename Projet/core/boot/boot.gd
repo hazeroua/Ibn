@@ -46,6 +46,10 @@ func _ready() -> void:
 	var graphics: GraphicsSettings = GraphicsSettings.from_dictionary(JsonData.load_dictionary(GRAPHICS_CONFIG_PATH))
 	if not _check_errors(graphics.errors):
 		return
+	if options.measure:
+		# Taille de rendu figée pendant la mesure, avant d'appliquer la taille : changer ce
+		# réglage ensuite redessine le cadre Windows et agrandit la zone de rendu.
+		get_window().unresizable = true
 	graphics.apply(get_window())
 	if options.measure:
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
@@ -77,7 +81,7 @@ func _ready() -> void:
 			scene_root.free()
 			return
 		var probe: PerformanceProbe = PerformanceProbe.new()
-		probe.configure(scene_id, scene_root, budget, options)
+		probe.configure(scene_id, scene_root, budget, options, Vector2i.ZERO if graphics.fullscreen else graphics.window_size)
 		get_tree().root.add_child.call_deferred(probe)
 		GameLog.info(
 			"démarrage",

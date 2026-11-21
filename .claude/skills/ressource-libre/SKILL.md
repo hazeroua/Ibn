@@ -1,6 +1,6 @@
 ---
 name: ressource-libre
-description: Sélectionne une ressource libre pour le reboot. Le premier ticket qui importe une ressource dans `Projet/` crée son manifeste et son étape d'import dans `Projet/valider.bat`.
+description: Ajoute une ressource libre (texture, modèle, son) au jeu : manifeste data/ressources.json, téléchargement vérifié par empreinte, transformation par un constructeur.
 ---
 # Ajouter une ressource libre
 
@@ -9,9 +9,10 @@ description: Sélectionne une ressource libre pour le reboot. Le premier ticket 
 2. **Génération par script** : Blender en ligne de commande, dans `Projet/outils/`.
 3. **Téléchargement manuel** (dernier recours, ressource derrière un compte) : l'ajouter à `Docs/ressources-a-telecharger.md` (nom, lien, licence, raison, dossier de destination) et attendre son dépôt dans `Import/`.
 
-## Import après #63
+## Import dans Projet/
 
-- #63 n'importe aucune ressource externe. Le premier ticket qui en a besoin (textures de #64 ou #66) crée `Projet/data/ressources.json` (source, licence, empreinte SHA-256), le dossier `Projet/assets/` et l'étape de téléchargement vérifié dans `Projet/outils/valider.ps1`.
+- Déclarer la ressource dans `Projet/data/ressources.json` (source, page, licence CC0, adresses https). `valider.bat` la télécharge dans `Projet/ressources/telechargees/<clé>/` et enregistre son empreinte SHA-256 dans `Projet/data/ressources.lock.json` au premier téléchargement : relire le fichier (Read pour une image) avant de committer le verrou.
+- La transformer par un constructeur (`world/<scène>/*_builder.gd`) vers `Projet/generated/`, jamais à la main.
 - Ne jamais ajouter une ressource du reboot au manifeste ou aux dossiers de l'ancien `Game/`.
 - Les fichiers téléchargés peuvent rester non versionnés si le manifeste, la licence, la somme de contrôle et les réglages d'import permettent de les reproduire.
 

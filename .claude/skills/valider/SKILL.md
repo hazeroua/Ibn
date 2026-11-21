@@ -33,13 +33,13 @@ Projet\valider.bat
 
 Équivalent : `powershell -NoProfile -ExecutionPolicy Bypass -File Projet\outils\valider.ps1 [-Scene <id>] [-Renderer vulkan|d3d12] [-DurationSeconds 30]`.
 
-Étapes : dépendances figées (Terrain3D, GUT), gdlint et gdformat, import, tests GUT, export Windows, mesure de la scène sur le GPU, capture, comparaison à `Projet/data/budgets/<scène>.json`. Le script s'arrête à la première erreur ou ligne `ERROR:` d'un journal.
+Étapes : dépendances figées (Terrain3D, GUT), ressources libres vérifiées par empreinte, gdlint et gdformat, import, constructeurs des scènes, tests GUT, export Windows, mesure de chaque scène sur le GPU, captures, comparaison à `Projet/data/budgets/<scène>.json`. Le script s'arrête à la première erreur ou ligne `ERROR:` d'un journal.
 
 Contrôler ensuite :
 
 - `Projet/rapports/derniere-validation.txt` se termine par « VALIDATION RÉUSSIE » ;
 - `rapport.json` : `budgets_passed: true`, matériel Intel Arc ;
-- `capture.png` (1 920 × 1 080) ouverte et relue visuellement.
+- `capture.png` et les captures `vue_*.png` (1 920 × 1 080) ouvertes et relues visuellement.
 
 ## Règles
 
