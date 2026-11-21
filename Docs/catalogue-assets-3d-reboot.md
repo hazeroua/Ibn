@@ -86,6 +86,8 @@ Même les formats de données passent par des parseurs Blender ou Godot et ne so
 
 ## Procédure d'admission d'une archive
 
+Le contrôle automatique du ticket #74 s'exécute avec `Tools/inspecter-archive-3d.ps1` et produit un rapport JSON. Son fonctionnement, ses décisions et ses limites sont décrits dans [quarantaine-archives-3d.md](quarantaine-archives-3d.md).
+
 1. Obtenir l'autorisation explicite avant téléchargement ou achat.
 2. Télécharger uniquement depuis la fiche officielle ; ne pas utiliser de miroir inconnu.
 3. Placer l'archive dans une zone de quarantaine hors du projet actif.
