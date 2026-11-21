@@ -24,7 +24,9 @@ Push-Location (Join-Path $Racine 'Extensions')
 try {
     foreach ($cibleScons in $cibles) {
         Write-Etape "Compilation C++ : $cibleScons"
-        Invoke-Outil $PythonOutils @('-m', 'SCons', "target=$cibleScons", "-j$paralleles")
+        $argumentsScons = @('-m', 'SCons', "target=$cibleScons", "-j$paralleles")
+        if ($EstMacOS) { $argumentsScons += 'arch=arm64' }
+        Invoke-Outil $PythonOutils $argumentsScons
         Write-Ok $cibleScons
     }
 } finally {

@@ -18,6 +18,7 @@
 /Extensions/**/*.ilk
 /Extensions/.sconsign*.dblite
 /Game/bin/*.dll
+/Game/bin/*.dylib
 
 # Ressources en attente d'import
 /Import/*

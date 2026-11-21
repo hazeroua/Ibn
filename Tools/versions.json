@@ -5,6 +5,8 @@
     "version_modeles_export": "4.7.2.stable",
     "url_base": "https://github.com/godotengine/godot/releases/download/4.7.2-stable",
     "archive_windows": "Godot_v4.7.2-stable_win64.exe.zip",
+    "archive_macos": "Godot_v4.7.2-stable_macos.universal.zip",
+    "sha256_macos": "c58a24e31d720be9d62f60cb5627c4e695fb72f21b0cfe1bc9ccaa9a3b3ba63e",
     "archive_linux": "Godot_v4.7.2-stable_linux.x86_64.zip",
     "modeles_export": "Godot_v4.7.2-stable_export_templates.tpz"
   },

@@ -92,3 +92,47 @@ jobs:
           name: rendu-linux
           path: Mesures/
           if-no-files-found: ignore
+
+  macos:
+    name: macOS Apple silicon (compilation et chargement)
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Cache des téléchargements et de godot-cpp compilé
+        uses: actions/cache@v4
+        with:
+          path: |
+            Tools/_telechargements
+            Extensions/godot-cpp
+          key: macos-${{ hashFiles('Tools/versions.json') }}-v1
+
+      - name: Vérification des outils de l'image arm64
+        run: |
+          pwsh --version
+          python3.12 --version
+          git lfs version
+
+      - name: Dépendances sans modèles d'export
+        shell: pwsh
+        run: ./Tools/dependances.ps1 -SansModelesExport -Python (Get-Command python3.12).Source
+
+      - name: Compilation C++ arm64
+        shell: pwsh
+        run: ./Scripts/Pipeline/compiler.ps1 -Cible debug
+
+      - name: Import et chargement de la GDExtension
+        shell: pwsh
+        run: ./Scripts/Pipeline/importer.ps1
+
+      - name: Démarrage headless de la scène principale
+        shell: pwsh
+        run: |
+          . ./Scripts/Pipeline/commun.ps1
+          $null = Invoke-Godot -Arguments @('--headless', '--path', $Jeu, '--quit-after', '120') `
+              -Journal (Join-Path $DossierMesures 'journaux/ci-macos-demarrage.log')
