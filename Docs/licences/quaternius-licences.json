@@ -1,0 +1,247 @@
+{
+  "schema_version": 1,
+  "provider": "Quaternius",
+  "observed_at": "2026-11-21",
+  "acquisition_status": "not_downloaded",
+  "canonical_evidence_format": "id|url|date_observation|constat_canonique encoded as UTF-8 without trailing newline",
+  "policy": {
+    "default_license_for_new_acquisition": "Quaternius Asset License (QAL) v1.0",
+    "reason": "Pack pages and FAQ display CC0 while the global license page displays QAL v1.0; apply the more restrictive current terms until archive-specific proof is preserved.",
+    "source_files_in_public_git": false,
+    "source_files_in_git_lfs": false,
+    "finished_product_distribution": true,
+    "attribution_required": false,
+    "collaborators": "Allowed solely to work on this Product under QAL v1.0 restrictions.",
+    "archive_specific_cc0_override": "Allowed only after an authorized acquisition provides explicit CC0 evidence tied to that exact archive."
+  },
+  "evidence": [
+    {
+      "id": "global-qal",
+      "url": "https://quaternius.com/license.html",
+      "date_observation": "2026-11-21",
+      "constat_canonique": "QAL v1.0; updated 2026-08-28; commercial use and modification allowed; no attribution; standalone redistribution prohibited; collaborators allowed only for the Product",
+      "sha256": "e77502f72b0891e1c7982eb0285d92ac2d0a1de04cf79f62e7b8a61de024820d",
+      "page_content_sha256": "d1b56be5228d372b049b45cc7447a823da7989a6cf7036f60cfac2284c8fcb0d"
+    },
+    {
+      "id": "global-faq",
+      "url": "https://quaternius.com/faq.html",
+      "date_observation": "2026-11-21",
+      "constat_canonique": "FAQ displays CC0 for all models; commercial, educational and personal use; no attribution",
+      "sha256": "06039b04d60e5ed5c57ab56c04caceee9f30051bd1f2cb04ed45611a626eb7a1",
+      "page_content_sha256": "3f5ee33ce1288f322e35b22699919a2363709ba86767b38579356bfd1d45224a"
+    },
+    {
+      "id": "stylized-nature-megakit",
+      "url": "https://quaternius.com/packs/stylizednaturemegakit.html",
+      "date_observation": "2026-11-21",
+      "constat_canonique": "Pack page displays CC0; header formats FBX, OBJ, Blend, glTF; release July 2024",
+      "sha256": "526bc5e203de567723ebc48ae94dadeeb9fdbe185092cd1ceb1c9f06a2ca3330",
+      "page_content_sha256": "baf19d8bd791b964d92bd0c3987683d0ad617a431f70f68d311c4d4936277515"
+    },
+    {
+      "id": "ultimate-stylized-nature",
+      "url": "https://quaternius.com/packs/ultimatestylizednature.html",
+      "date_observation": "2026-11-21",
+      "constat_canonique": "Pack page displays CC0; header formats FBX, OBJ, Blend, glTF; release May 2022",
+      "sha256": "4e2c915ae4c3df2d9a839bf60de5ae62b67e2a7e308473dbc53e0ceeddfc0869",
+      "page_content_sha256": "acd8bef5d1405b044a97e145fb54e8a83d3a6c4e55b614009f1388d96ea66ff8"
+    },
+    {
+      "id": "fantasy-props-megakit",
+      "url": "https://quaternius.com/packs/fantasypropsmegakit.html",
+      "date_observation": "2026-11-21",
+      "constat_canonique": "Pack page displays CC0; header formats FBX, OBJ, Blend, glTF; release June 2025",
+      "sha256": "14893b3b26e76f0c2ea43e52591d593a54ffd9065886d24ed9d9b0b8763dacf1",
+      "page_content_sha256": "06b3981f0536fefac5dc63047e7134600186f7a1d2528b14f6394007e742a6c3"
+    },
+    {
+      "id": "medieval-village-megakit",
+      "url": "https://quaternius.com/packs/medievalvillagemegakit.html",
+      "date_observation": "2026-11-21",
+      "constat_canonique": "Pack page displays CC0; header formats FBX, OBJ, Blend, glTF; release January 2025",
+      "sha256": "6d01ed458cc25d0fc580444e1c049b3d95728ae77fdc23272a1d1a4fe8900f72",
+      "page_content_sha256": "b5666be3e82dc824600b9e57d5472e5596ebc85d29a019b88af15cc3a3ebae41"
+    },
+    {
+      "id": "universal-base-characters",
+      "url": "https://quaternius.com/packs/universalbasecharacters.html",
+      "date_observation": "2026-11-21",
+      "constat_canonique": "Pack page displays CC0; header formats FBX, OBJ, Blend, glTF; feature formats FBX and glTF; release August 2025",
+      "sha256": "62b1da5542161256ecd10b293bea895f0e40e7d7df97916775c1b0daaaf33bde",
+      "page_content_sha256": "4d31a8888b388ef4d951678f997d3662ae993f1a01e0e1a41a916135240f332e"
+    },
+    {
+      "id": "modular-character-outfits-fantasy",
+      "url": "https://quaternius.com/packs/modularcharacteroutfitsfantasy.html",
+      "date_observation": "2026-11-21",
+      "constat_canonique": "Pack page displays CC0; header formats FBX, OBJ, Blend, glTF; feature formats FBX and glTF; release November 2025",
+      "sha256": "2521408a5dbc80fe3c6e785aca440fabcf33908b306eb02f69c5bd9537b72ef3",
+      "page_content_sha256": "42f717ae42706dd33a83d0bb3b875bfd1960334ea3172cf3ffec4c3b12e8b603"
+    },
+    {
+      "id": "universal-animation-library",
+      "url": "https://quaternius.com/packs/universalanimationlibrary.html",
+      "date_observation": "2026-11-21",
+      "constat_canonique": "Pack page displays CC0; header formats FBX, GLB, Blend; release March 2025",
+      "sha256": "58d3efdfcd5dd371a98533b896ec233a99516a347f88e41059e375d23e3cbc60",
+      "page_content_sha256": "9157d71e192638132706d6734bfb109b0647f150f305d4514b81a0cdfe9bf471"
+    }
+  ],
+  "packs": [
+    {
+      "id": "stylized-nature-megakit",
+      "name": "Stylized Nature MegaKit",
+      "page_release": "July 2024",
+      "displayed_license": "CC0",
+      "formats_header": [
+        "FBX",
+        "OBJ",
+        "Blend",
+        "glTF"
+      ],
+      "license_decision": "QAL v1.0 until archive-specific CC0 proof",
+      "evidence_refs": [
+        "stylized-nature-megakit",
+        "global-faq",
+        "global-qal"
+      ],
+      "archive_name": null,
+      "archive_sha256": null,
+      "archive_license_sha256": null
+    },
+    {
+      "id": "ultimate-stylized-nature",
+      "name": "Ultimate Stylized Nature Pack",
+      "page_release": "May 2022",
+      "displayed_license": "CC0",
+      "formats_header": [
+        "FBX",
+        "OBJ",
+        "Blend",
+        "glTF"
+      ],
+      "license_decision": "QAL v1.0 until archive-specific CC0 proof",
+      "evidence_refs": [
+        "ultimate-stylized-nature",
+        "global-faq",
+        "global-qal"
+      ],
+      "archive_name": null,
+      "archive_sha256": null,
+      "archive_license_sha256": null
+    },
+    {
+      "id": "fantasy-props-megakit",
+      "name": "Fantasy Props MegaKit",
+      "page_release": "June 2025",
+      "displayed_license": "CC0",
+      "formats_header": [
+        "FBX",
+        "OBJ",
+        "Blend",
+        "glTF"
+      ],
+      "license_decision": "QAL v1.0 until archive-specific CC0 proof",
+      "evidence_refs": [
+        "fantasy-props-megakit",
+        "global-faq",
+        "global-qal"
+      ],
+      "archive_name": null,
+      "archive_sha256": null,
+      "archive_license_sha256": null
+    },
+    {
+      "id": "medieval-village-megakit",
+      "name": "Medieval Village MegaKit",
+      "page_release": "January 2025",
+      "displayed_license": "CC0",
+      "formats_header": [
+        "FBX",
+        "OBJ",
+        "Blend",
+        "glTF"
+      ],
+      "license_decision": "QAL v1.0 until archive-specific CC0 proof",
+      "evidence_refs": [
+        "medieval-village-megakit",
+        "global-faq",
+        "global-qal"
+      ],
+      "archive_name": null,
+      "archive_sha256": null,
+      "archive_license_sha256": null
+    },
+    {
+      "id": "universal-base-characters",
+      "name": "Universal Base Characters",
+      "page_release": "August 2025",
+      "displayed_license": "CC0",
+      "formats_header": [
+        "FBX",
+        "OBJ",
+        "Blend",
+        "glTF"
+      ],
+      "formats_feature_section": [
+        "FBX",
+        "glTF"
+      ],
+      "license_decision": "QAL v1.0 until archive-specific CC0 proof",
+      "evidence_refs": [
+        "universal-base-characters",
+        "global-faq",
+        "global-qal"
+      ],
+      "archive_name": null,
+      "archive_sha256": null,
+      "archive_license_sha256": null
+    },
+    {
+      "id": "modular-character-outfits-fantasy",
+      "name": "Modular Character Outfits - Fantasy",
+      "page_release": "November 2025",
+      "displayed_license": "CC0",
+      "formats_header": [
+        "FBX",
+        "OBJ",
+        "Blend",
+        "glTF"
+      ],
+      "formats_feature_section": [
+        "FBX",
+        "glTF"
+      ],
+      "license_decision": "QAL v1.0 until archive-specific CC0 proof",
+      "evidence_refs": [
+        "modular-character-outfits-fantasy",
+        "global-faq",
+        "global-qal"
+      ],
+      "archive_name": null,
+      "archive_sha256": null,
+      "archive_license_sha256": null
+    },
+    {
+      "id": "universal-animation-library",
+      "name": "Universal Animation Library",
+      "page_release": "March 2025",
+      "displayed_license": "CC0",
+      "formats_header": [
+        "FBX",
+        "GLB",
+        "Blend"
+      ],
+      "license_decision": "QAL v1.0 until archive-specific CC0 proof",
+      "evidence_refs": [
+        "universal-animation-library",
+        "global-faq",
+        "global-qal"
+      ],
+      "archive_name": null,
+      "archive_sha256": null,
+      "archive_license_sha256": null
+    }
+  ]
+}

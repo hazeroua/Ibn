@@ -29,6 +29,7 @@ Ces documents décrivent la vision du jeu final. Ils restent valables pendant le
 | Document | Rôle |
 |---|---|
 | [catalogue-assets-3d-reboot.md](catalogue-assets-3d-reboot.md) | Candidats 3D, licences, sécurité et ordre d'évaluation |
+| [licences/quaternius.md](licences/quaternius.md) | Décision conservatrice, droits et preuves des sept packs Quaternius |
 | [ressources-a-telecharger.md](ressources-a-telecharger.md) | Ressources nécessitant une intervention ou un compte |
 | [CLAUDE.md](../CLAUDE.md) | Règles de travail de l'agent |
 
