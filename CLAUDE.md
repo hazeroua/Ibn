@@ -1,6 +1,6 @@
 # CLAUDE.md — Les Chemins d'Ibn Khaldoun
 
-Jeu d'action-aventure en monde ouvert sous **Godot 4.7** (GDScript typé + C++ via GDExtension) sur la vie d'Ibn Khaldoun (1332–1406). Développé entièrement par Claude Code : **tu fais tout** ; le porteur du projet ne fait que télécharger certaines ressources et jouer. Il ne lit pas le code : rends compte en français simple.
+Jeu d'action-aventure en monde ouvert sous **Godot 4.7** sur la vie d'Ibn Khaldoun (1332–1406). Le projet est reconstruit depuis zéro autour de Terrain3D ; la seule feuille de route active est `Docs/06-roadmap-mvp.md`. L'ancien projet dans `Game/` est une archive et ne doit pas être repris automatiquement. Développé entièrement par Claude Code : **tu fais tout** ; le porteur du projet ne fait que télécharger certaines ressources et jouer. Il ne lit pas le code : rends compte en français simple.
 
 **Machine de développement = configuration minimale du jeu :** Windows, Intel Core Ultra 7, **puce graphique intégrée Intel Arc**, aucune carte graphique dédiée.
 
@@ -10,58 +10,56 @@ Jeu d'action-aventure en monde ouvert sous **Godot 4.7** (GDScript typé + C++ v
 - Structures de données et algorithmes choisis pour leur **complexité dans le pire cas** ; **zéro allocation** dans les chemins par image.
 - Chaque système a un **test de charge** qui reproduit son pire cas, avec des mesures.
 - Si une contrainte empêche la meilleure solution : **le dire et s'arrêter pour demander**, jamais livrer au rabais.
-- **Un MVP limite le périmètre, jamais la qualité.**
+- **Un ticket limite le périmètre, jamais la qualité.**
 
 ## ⛔ Règle absolue n° 2 : le porteur du projet ne manipule rien
 - Ne jamais lui demander d'ouvrir l'éditeur Godot, de cliquer, de régler une valeur ou de créer un fichier.
-- **Les scripts sont la source de vérité** : scènes complexes construites par `Game/tools/builders/build_<carte>.gd` à partir de `Game/data/<carte>/` (les `.tscn` générés ne se modifient jamais, un hook l'interdit) ; modèles 3D par `Scripts/Blender/`.
+- **Les scripts et données versionnés sont la source de vérité** : scènes complexes générées de manière reproductible, sans réglage manuel dans l'éditeur. Le ticket #63 fixe la structure définitive du nouveau projet.
 - Ressources libres téléchargées par script ; seules celles derrière un compte vont dans `Docs/ressources-a-telecharger.md`, puis `Import/`.
 - **Vérifie toi-même** : tests GUT, mesures, captures relues avec Read.
 
-## Commandes
+## Commandes actives
 Toujours via les scripts (Windows : `powershell -NoProfile -ExecutionPolicy Bypass -File <script>`).
 
 | Besoin | Commande |
 |---|---|
 | Installer / vérifier les outils | `Tools/installer.ps1` (versions figées : `Tools/versions.json`, chemins : `Tools/outils.json`) |
-| **Tout valider** (lint, ressources, C++, import, scènes, tests, mesures, captures) | `Scripts/Pipeline/valider.ps1` |
-| Compiler le C++ | `Scripts/Pipeline/compiler.ps1 [-Cible debug\|release]` |
-| Construire une scène | `Scripts/Pipeline/construire.ps1 [-Constructeur <carte>]` |
-| Tests GUT | `Scripts/Pipeline/tester.ps1` |
-| Mesurer / capturer / filmer | `Scripts/Pipeline/mesurer.ps1`, `capturer.ps1`, `video.ps1` (`-Carte <carte>`) |
-| Exporter le jeu Windows | `Scripts/Pipeline/exporter.ps1` |
-| Lancer le jeu | `lancer.bat [-Scene res://…] [-Export]` |
+| Valider rapidement Terrain3D sous Vulkan | `Reboot/Terrain3DValidation/run-validation.ps1 -Renderer vulkan -DurationSeconds 30 -ToolchainRoot C:\Projets\IbnKhaldoun` |
+| Valider rapidement Terrain3D sous D3D12 | `Reboot/Terrain3DValidation/run-validation.ps1 -Renderer d3d12 -DurationSeconds 30 -ToolchainRoot C:\Projets\IbnKhaldoun` |
+| Session longue (facultative) | mêmes commandes sans `-DurationSeconds` : 30 minutes par moteur |
 
-Mesures et captures : `Mesures/<mvp>/<carte>/<date>/` ; journaux : `Mesures/journaux/`, `Mesures/tests/`.
+Les commandes de `Scripts/Pipeline/` concernent l'ancien projet et ne valident pas le reboot.
 
 ## Où se trouvent les choses
-- `Docs/` : conception (lire selon la tâche, ci-dessous). `Docs/06-roadmap-mvp.md` : **ne travailler que sur le MVP en cours** (réglage `ibn/projet/mvp_en_cours` de `Game/project.godot`).
-- `Game/` : projet Godot. `core/` (démarrage, entrées, données JSON, pipeline), `world/` (cartes et leurs constructeurs), `data/` (toutes les données, **jamais de contenu codé en dur**), `tests/unit/` (GUT), `tests/perf/budgets/` (budgets par carte), `tools/builders/`.
-- `Extensions/` : C++ (GDExtension), `src/` ; godot-cpp figé.
-- `Scripts/Pipeline/` : tout le pipeline ; `.github/workflows/ci.yml` : CI Windows + Linux (rendu logiciel).
+- `Docs/` : sources de vérité actives ; `Docs/archive/` : ancien projet, non contractuel.
+- `Docs/06-roadmap-mvp.md` : **ne travailler que sur le premier ticket non bloqué**.
+- `Reboot/Terrain3DValidation/` : prototype actif du ticket #62.
+- `Game/`, `Extensions/`, `Scripts/Pipeline/` : ancien projet conservé pour consultation, sans réutilisation automatique.
+- `Tools/` : outils et versions figées partagés.
 
 ## Documents à lire selon la tâche
-- Toujours : `Docs/01-vision-et-attentes.md`, la section du MVP en cours de `Docs/06-roadmap-mvp.md`.
+- Toujours : `Docs/README.md`, `Docs/reboot-terrain3d.md` et le ticket actif de `Docs/06-roadmap-mvp.md`.
 - Technique : `Docs/05-technologies.md`.
+- Vision ou contenu futur : `Docs/01-vision-et-attentes.md`, puis les documents de conception concernés.
 - Contenu (mission, dialogue, Codex, livret) : `Docs/08-synopsis.md`, `Docs/04-missions.md`, `Docs/03-game-design.md`, `Docs/07-philosophie.md` (chaque mission sert au moins une des 20 idées), `Docs/02-histoire.md` (faits). **Jouer d'abord, apprendre ensuite** : jamais de texte explicatif imposé.
 
 ## Skills et agents du projet
-- Skills : `nouvelle-fonctionnalite` (méthode obligatoire de chaque tâche), `valider`, `nouvelle-carte`, `ressource-libre`, `godot-gdscript`, `extension-cpp`, `nouvelle-mission`, `fin-de-mvp` (manuelle).
+- Skills : `nouvelle-fonctionnalite` (méthode obligatoire de chaque tâche), `valider`, `nouvelle-carte`, `ressource-libre`, `godot-gdscript`, `extension-cpp`, `nouvelle-mission`.
 - Agents : `verificateur` (**obligatoire avant d'annoncer qu'un travail est fini**), `garant-performance` (avant tout système par image ou à grand nombre d'objets), `historien` (tout contenu historique), `directeur-artistique` (tout visuel), `concepteur-gameplay` (missions et systèmes de jeu).
 
 ## Code
 - GDScript **typé statiquement partout** (y compris variables de boucle) ; formaté par gdformat (140 colonnes), analysé par gdlint (hook après chaque modification).
-- C++ pour tout chemin chaud (streaming, foules, routines en masse, génération, cheval, tout ce qu'une mesure désigne) ; avertissements traités comme des erreurs.
-- Pas de `_process` sans nécessité ; répétitions en `MultiMeshInstance3D` ; lointain en niveaux de détail et imposteurs ; occlusion dans les médinas ; maillages et matériaux partagés.
+- C++ pour tout chemin chaud démontré par profilage ; avertissements traités comme des erreurs.
+- Pas de `_process` sans nécessité ; répétitions instanciées ; lointain en niveaux de détail et imposteurs ; maillages et matériaux partagés.
 - Noms de code en anglais ; commentaires et textes du jeu en français (traduisibles).
 - Toute ligne `ERROR:` ou `SCRIPT ERROR:` de Godot fait échouer le pipeline : corriger la cause, ne jamais filtrer le message.
 - Version de Godot et des dépendances **figées** (`Tools/versions.json`) : ne rien changer sans le demander.
 
 ## Performance (non négociable)
-**60 i/s en 1080p (FSR 2) sur la puce Intel Arc intégrée, dans le pire cas.** Budgets par carte dans `Game/tests/perf/budgets/` ; ne jamais assouplir un budget sans l'accord du porteur du projet ; signaler immédiatement tout dépassement.
+**60 i/s en 1080p (FSR 2) sur la puce Intel Arc intégrée, dans le pire cas.** Les budgets actifs du ticket #62 sont dans `Reboot/Terrain3DValidation/README.md` et `Docs/05-technologies.md`. Le ticket #63 devra établir l'emplacement définitif des budgets du nouveau projet. Ne jamais assouplir un budget sans l'accord du porteur du projet ; signaler immédiatement tout dépassement.
 
 ## Fin de chaque tâche
-Rapport en français simple : ce qui a changé ; pires cas traités et mesures ; **la commande unique pour essayer** ; ressources à télécharger éventuelles. Une fonctionnalité = une branche Git = un commit clair.
+Rapport en français simple : ce qui a changé ; pires cas traités et mesures ; **la commande unique pour essayer** ; ressources à télécharger éventuelles. Un ticket = une branche Git = un ou plusieurs commits clairs.
 
 ## Histoire
 Ne jamais contredire `Docs/02-histoire.md` ; tout contenu inventé porte `"statut_historique": "F"` (fiction) ou `"P"` (plausible) ; peuples, religions et cultures représentés avec respect et nuance.

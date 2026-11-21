@@ -1,234 +1,97 @@
-# 05 — Technologies
+# 05 — Technologies et architecture du reboot
 
-## Contraintes
+## État actuel
 
-1. **Tout se fait avec Claude Code** : le porteur du projet ne manipule rien, sauf télécharger certaines ressources graphiques.
-2. **Le plus open source possible.**
-3. **Le plus optimisé possible**, dans le pire cas (règle absolue de `CLAUDE.md`).
-4. **La machine de développement n'a pas de carte graphique dédiée** : Intel Core Ultra 7 avec puce graphique intégrée Intel Arc.
+Le seul socle actif du reboot est le prototype `Reboot/Terrain3DValidation/`. Le projet historique dans `Game/`, ses extensions C++ et ses scènes restent présents pour consultation, mais ne sont pas des dépendances autorisées du nouveau projet.
 
-## Décision : Godot 4 (15/11/2026)
+Le ticket #63 déterminera l'emplacement définitif du nouveau projet Godot après validation complète de Terrain3D.
 
-Unreal Engine 5 a été écarté : sans carte graphique dédiée, ses atouts (Nanite, Lumen) sont inutilisables, son éditeur est très lourd, et ses fichiers binaires empêchent Claude Code de tout faire.
+## Versions figées
 
-| Critère | Godot 4 |
+| Élément | Version ou choix |
 |---|---|
-| Licence | **MIT : 100 % open source**, sans redevance |
-| Tourne sur une puce intégrée | **Oui**, éditeur comme jeu |
-| Pour Claude Code | **Excellent** : scènes (`.tscn`), ressources (`.tres`), shaders et réglages sont des **fichiers texte** ; tout se pilote en ligne de commande |
-| Performance maximale | Code critique en **C++ via GDExtension** |
-| Limite connue | Le streaming de grands mondes et les foules ne sont pas intégrés : **on les code nous-mêmes en C++** |
+| Godot | 4.7.2 stable |
+| Terrain3D | 1.1.0 |
+| Rendu | Forward+ ; Vulkan et D3D12 évalués |
+| Physique cible | Jolt |
+| Mise à l'échelle | FSR 2, rendu interne à 67 % |
+| Résolution cible | 1 920 × 1 080 |
+| Plateforme minimale | Windows, Intel Arc intégrée |
+| Langage principal | GDScript typé statiquement |
+| Chemins chauds futurs | C++ via GDExtension uniquement si une mesure le justifie |
 
-**Conséquence importante :** la machine de développement **est** la configuration minimale. Si le jeu tourne bien dessus, il tournera bien chez presque tout le monde.
+Les versions sont définies dans `Tools/versions.json`. Elles ne changent pas sans décision explicite.
 
-## Direction visuelle qui découle de ce choix
+## Architecture du premier jalon
 
-On ne vise pas le photoréalisme d'Assassin's Creed. On vise un **style stylisé haut de gamme** : lumière très travaillée, couleurs fortes, matières peintes. C'est beau, ça vieillit bien, et ça reste léger (voir `03-game-design.md`, Direction artistique).
+```text
+Reboot/
+└── Terrain3DValidation/       Prototype isolé du ticket #62
+    ├── project.godot
+    ├── main.gd               Génération, parcours, collisions et mesures
+    ├── main.tscn
+    ├── run-validation.ps1    Import, export et test d'un moteur de rendu
+    └── README.md             Protocole et budgets
 
-## La stack
-
-| Besoin | Outil | Licence |
-|---|---|---|
-| Moteur | **Godot 4** (dernière version stable, version figée pour le projet) | MIT |
-| Gameplay | **GDScript typé statiquement** (types obligatoires partout) | — |
-| Code critique (foules, streaming, génération, simulation) | **C++ via GDExtension** (`godot-cpp`) | MIT |
-| Compilation C++ | **Visual Studio Build Tools** (compilateur MSVC seul) + **SCons** (Python) | Gratuit / MIT |
-| Physique | **Jolt** (intégré à Godot) | MIT |
-| Terrains | **Terrain3D** (plugin) : grands terrains, niveaux de détail, végétation instanciée | MIT |
-| Dialogues | **Dialogue Manager** (plugin) : dialogues en fichiers texte | MIT |
-| Tests automatisés | **GUT** (plugin), en ligne de commande | MIT |
-| Modèles 3D | **Blender** en ligne de commande (scripts Python) | GPL |
-| Personnages humains | **MPFB** (MakeHuman pour Blender) : génération de personnages par script | Sorties CC0 |
-| Textures, ciels | **Poly Haven** | CC0 |
-| Modèles, animaux, animations | **Quaternius**, **Kenney** ; éventuellement **Mixamo** (téléchargement manuel) | CC0 / gratuit |
-| Sons | **Freesound** (filtre CC0) | CC0 |
-| Versionnage | **Git + Git LFS** | Open source |
-| Agent | **Claude Code** | — |
-
-L'installation est décrite dans `00-installation.md` et automatisée par `Tools/installer.ps1`.
-
-## Rendu et optimisation pour une puce intégrée
-
-| Sujet | Choix |
-|---|---|
-| Moteur de rendu | **Forward+** (Vulkan ou Direct3D 12) |
-| Résolution | Rendu interne mis à l'échelle avec **FSR 2** |
-| Lumière globale | Éclairage du ciel + **SSAO/SSIL** réglables ; **VoxelGI** pour les intérieurs importants ; pas de SDFGI par défaut (trop coûteux) |
-| Ombres | Une lumière directionnelle (soleil/lune) avec cascades réglées au plus juste ; lumières locales sans ombre sauf exception |
-| Brouillard et poussière | Brouillard volumétrique de faible résolution, ou brouillard de profondeur selon la qualité choisie |
-| Géométrie | **Niveaux de détail automatiques** + **imposteurs** pour le lointain ; **MultiMeshInstance3D** pour tout ce qui se répète (végétation, pierres, tuiles, foule lointaine) |
-| Occlusion | **Occlusion culling** dans les médinas (les murs cachent énormément) |
-| Personnages | Trois niveaux : proches (squelette complet), moyens (squelette simplifié, animation à fréquence réduite), lointains (**textures d'animation de sommets** en MultiMesh) |
-| Matériaux | Peu de matériaux, partagés ; **atlas de textures** ; shaders stylisés simples |
-
-## Ce qu'on code nous-mêmes en C++ (GDExtension)
-
-| Système | Pourquoi |
-|---|---|
-| **Streaming du monde par cellules** | Charger et décharger les morceaux de région en tâche de fond (chargement asynchrone), selon la position et la vitesse du joueur (galop) |
-| **Simulation des foules** | Des centaines de PNJ en données compactes (orientées données), mis à jour par paquets, sur plusieurs cœurs |
-| **Routines des PNJ** | Emplois du temps évalués en masse, pas un script par PNJ et par image |
-| **Génération procédurale** | Médinas, dunes, végétation, construites par des règles, rapides et reproductibles (même graine = même résultat) |
-| **Locomotion du cheval** | Suivi du relief, allures et anticipation des obstacles |
-
-Le reste (missions, dialogues, interface, logique de jeu) est en GDScript typé, sauf si une mesure montre qu'il doit passer en C++.
-
-## Architecture du projet
-
-```
-IbnKhaldoun/
-├── CLAUDE.md                 # Consignes pour Claude Code
-├── Docs/                     # Ce dossier de conception
-├── Game/                     # Le projet Godot
-│   ├── project.godot
-│   ├── addons/               # Terrain3D, Dialogue Manager, GUT (installés aux versions figées, non versionnés)
-│   ├── bin/                  # Extension C++ compilée + ibn.gdextension
-│   ├── core/                 # Démarrage, sauvegarde, chargement des données
-│   ├── player/               # Personnage, caméra, contrôles
-│   ├── horse/                # Monture
-│   ├── missions/             # Système de quêtes générique
-│   ├── dialogue/             # Dialogues
-│   ├── asabiyya/             # Groupes et relations
-│   ├── carnet/               # Observations, idées, livrets, Codex
-│   ├── world/                # Régions, cycle jour/nuit, météo, voyages
-│   ├── npc/                  # PNJ, routines, foules (interface vers le C++)
-│   ├── ui/                   # Interface
-│   ├── data/                 # JSON : cartes, entrées, missions, dialogues, idées, livrets, groupes, manifestes de ressources
-│   ├── assets/               # Ressources importées
-│   ├── tests/                # Tests GUT (unit/), budgets de performance (perf/budgets/)
-│   └── tools/builders/       # Constructeurs de scènes (build_<carte>.gd), lancés par le pipeline
-├── Extensions/               # C++ (GDExtension)
-│   ├── godot-cpp/
-│   └── src/                  # streaming, foules, génération, cheval
-├── Scripts/
-│   ├── Pipeline/             # Compiler, tester, mesurer, capturer, exporter (PowerShell)
-│   └── Blender/              # Génération et retouche des modèles
-├── Tools/                    # installer.ps1, dependances.ps1, versions.json (figées) ; Godot, venv et outils.json (locaux)
-├── .claude/                  # Agents, skills, hooks et réglages de Claude Code
-└── Import/                   # Ressources téléchargées à la main, en attente d'import
+Docs/                         Sources de vérité et conception durable
+Game/                         Ancien projet, non réutilisé automatiquement
+Extensions/                   Anciennes extensions, non réutilisées automatiquement
+Scripts/                      Ancien pipeline, consultable mais non contractuel pour le reboot
+Tools/                        Outils et versions figées partagés
 ```
 
-### Principe clé : tout est piloté par les données
-Les missions, les dialogues, le Codex, les idées, les livrets et les groupes ne sont **jamais codés en dur**. Ils sont décrits dans des fichiers texte, chargés par des systèmes génériques. Claude Code peut donc écrire une mission complète sans toucher au code.
+## Responsabilités de Terrain3D
 
-Exemple de mission (format à finaliser au MVP 6) :
+Terrain3D doit gérer :
 
-```json
-{
-  "id": "tunis_01_les_toits",
-  "acte": 1,
-  "annee": 1347,
-  "type": "principale",
-  "statut_historique": "F",
-  "objectifs": [
-    { "type": "poursuivre", "cible": "pnj_rachid_jeune", "zone": "tunis_toits_souk" },
-    { "type": "dialogue", "cible": "dlg_rachid_figues" }
-  ],
-  "consequences": { "relation": { "pnj_rachid_jeune": 5 } },
-  "debloque": { "observations": ["obs_tunis_souk_matin"] }
-}
+- le relief de 4 × 4 km ;
+- les niveaux de détail ;
+- les textures de sol ;
+- les collisions autour du joueur ;
+- l'instanciation future de la végétation et des rochers.
+
+Le relief est déterministe : une même graine et une même version doivent produire le même terrain. Aucun travail lourd ni allocation évitable ne doit être effectué à chaque image.
+
+## Pipeline du prototype
+
+Depuis `Reboot/Terrain3DValidation/` :
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\run-validation.ps1 -Renderer vulkan -ToolchainRoot C:\Projets\IbnKhaldoun
+powershell -NoProfile -ExecutionPolicy Bypass -File .\run-validation.ps1 -Renderer d3d12 -ToolchainRoot C:\Projets\IbnKhaldoun
 ```
 
-## Tout par Claude Code : le pipeline
+Chaque exécution copie localement Terrain3D, importe le projet, produit un export Windows, lance le parcours automatique et écrit dans `reports/` :
 
-**Principe :** le porteur du projet ne manipule rien dans l'éditeur. Claude Code fait tout par du code et des scripts. **Seule exception autorisée : certains téléchargements de ressources graphiques.**
+- un rapport JSON ;
+- le journal Godot ;
+- une capture 1 920 × 1 080.
 
-### Les scripts sont la source de vérité
-- Les scènes et ressources Godot sont du **texte** : Claude Code peut les lire et les écrire directement.
-- Les scènes complexes (villes, terrains, placement de végétation) sont **construites par des scripts** dans `Game/tools/builders/` (à partir des données de `Game/data/<carte>/`), et doivent pouvoir être **entièrement recréées** en relançant leur script.
-- Les modèles 3D créés ou retouchés le sont par des **scripts Blender** dans `Scripts/Blender/`.
+Les artefacts générés ne sont pas versionnés.
 
-### Comment Claude Code pilote Godot
-| Besoin | Méthode |
-|---|---|
-| Importer les ressources | `godot --headless --import` |
-| Construire une scène par script | `godot --headless --script res://tools/builders/build_<carte>.gd` (assemble la scène depuis ses données et l'enregistre) |
-| Compiler le C++ | `scons` dans `Extensions/` |
-| Tester | GUT en ligne de commande (`godot --headless -s addons/gut/gut_cmdln.gd`) |
-| Mesurer les performances | Scène de mesure qui joue un parcours scripté et écrit un rapport CSV (images par seconde, temps par image, mémoire, appels de dessin) |
-| Vérifier l'image | Captures d'écran automatiques depuis des points de vue fixes ; Claude Code les regarde et corrige |
-| Enregistrer une vidéo | Mode Movie Maker de Godot (`--write-movie`) sur un parcours scripté |
-| Créer la version jouable | `godot --headless --export-release "Windows Desktop"` (les plugins ne sont inclus dans l'export qu'à partir du MVP qui les utilise : `exclude_filter` de `Game/export_presets.cfg`) |
+## Budgets du ticket #62
 
-Toutes ces commandes sont regroupées dans des scripts PowerShell de `Scripts/Pipeline/`, et les chemins des outils sont lus dans `Tools/outils.json`.
+| Mesure | Limite |
+|---|---:|
+| Temps d'image p99 | 16,6 ms maximum |
+| Image isolée après préchauffage | moins de 50 ms |
+| Appels de rendu | 300 maximum |
+| Mémoire vidéo du prototype | 512 Mio maximum |
+| Collisions manquées | 0 |
+| Erreurs Godot, crashs ou corruption | 0 |
+| Durée de validation | 30 secondes par moteur de rendu après 5 s de préchauffage (décision du porteur du projet, 21/11/2026) |
 
-### Parcours du joueur (`route_joueur.json`)
-Les mesures et les vidéos peuvent suivre deux sortes de parcours (paramètre `-Parcours` de `mesurer.ps1` et `video.ps1`) :
-- `points_de_vue` (par défaut) : la caméra glisse d'un point de vue à l'autre (`Game/data/<carte>/viewpoints.json`) ;
-- `joueur` : **le joueur marche vraiment**, piloté par les actions d'entrée (`move_forward`, `move_back`, `move_left`, `move_right` avec une intensité, comme un stick analogique, calculée par rapport à la caméra active ; `walk_slow` ou `sprint` maintenus selon l'allure), le long de `Game/data/<carte>/route_joueur.json`. Les mesures (`resume.json`, `images.csv`, budgets) sont les mêmes ; le résumé indique le mode (`walk`), le parcours, son état, les points atteints, la distance marchée et la durée. La mesure dure exactement le parcours ; la vidéo aussi, sauf si `-Duree` l'écourte.
-- Le champ facultatif `carrier` vaut `player` par défaut. Avec `horse`, le pipeline monte immédiatement Barq, suit le nœud du groupe `horse` et applique les mêmes commandes relatives à la caméra ; l'allure `run` maintient alors le sprint de Barq. Le parcours de charge de Tunis est `res://data/desert_jeu/route_barq.json`.
+Le rapport doit aussi conserver les temps CPU disponibles, la RAM résidente, les primitives et l'identité du GPU. Godot 4.7 n'expose pas le temps GPU par image : décision documentée pour #62, le temps d'image total (moyenne, p99, pire image) sert de mesure de référence.
 
-Le joueur est le **seul** nœud du groupe `player` (seul un `Node3D` est supposé). Échecs explicites, avec la position du joueur : joueur absent ou en double, aucune caméra active, action d'entrée manquante, **joueur bloqué** (la distance au prochain point ne diminue plus), joueur sorti de la scène, durée maximale dépassée. Toutes les actions pressées sont relâchées à la fin.
+## Règles pour le socle neuf
 
-```json
-{
-  "description": "Tour de la colline par le sentier, puis descente en courant.",
-  "start_position": [0.0, 12.5, 0.0],
-  "arrival_radius_m": 0.6,
-  "stall_time_s": 2.0,
-  "stall_min_progress_m": 0.25,
-  "max_duration_s": 300.0,
-  "waypoints": [
-    { "id": "sentier", "position": [40.0, -12.0], "gait": "walk" },
-    { "id": "sommet", "position": [65.0, 20.0], "gait": "walk_slow" },
-    { "id": "descente", "position": [10.0, 60.0], "gait": "run" }
-  ]
-}
-```
+- Aucune dépendance implicite au dossier `Game/` historique.
+- Toute réutilisation est examinée composant par composant après #68.
+- Les scènes complexes sont générées par script à partir de données versionnées.
+- GDScript reste typé et formaté ; le C++ est réservé aux chemins chauds démontrés par profilage.
+- Les tests, budgets, captures et exports doivent être exécutables par une commande unique.
+- La cible 60 images par seconde dans le pire cas n'est jamais assouplie pour faire passer un test.
 
-| Clé | Rôle |
-|---|---|
-| `description` | Texte libre (obligatoire). |
-| `start_position` | Facultatif : `[x, y, z]` où le joueur est placé avant le préchauffage ; sinon il part d'où la scène l'a mis. |
-| `arrival_radius_m` | Distance horizontale à laquelle un point de passage est atteint (0,05 à 20 m). |
-| `stall_time_s`, `stall_min_progress_m` | Blocage : la distance au prochain point doit diminuer d'au moins `stall_min_progress_m` toutes les `stall_time_s` secondes (0,1 à 60 s ; 0,01 à 20 m). |
-| `max_duration_s` | Durée maximale du parcours (au plus 900 s) ; elle dimensionne la mémoire des mesures, réservée avant de commencer. |
-| `waypoints` | 1 à 10 000 points : `id` unique (utilisable comme nom de fichier), `position` horizontale `[x, z]` (la hauteur est celle du sol), `gait` = allure du segment qui **mène** à ce point : `walk_slow`, `walk` ou `run`. |
+## Décisions remplacées
 
-### Les seules manipulations manuelles
-| Manipulation | Quand |
-|---|---|
-| Accepter la fenêtre Windows « Autoriser cette application à apporter des modifications » pendant l'installation | Une seule fois |
-| Télécharger une ressource qui demande un compte (par exemple Mixamo) | Rarement, quand Claude Code le demande |
-| Jouer et donner son avis sur le ressenti | À chaque MVP |
-
-Les ressources libres (Poly Haven, Quaternius, Kenney…) sont **téléchargées par Claude Code lui-même** quand c'est possible. Sinon :
-1. Claude Code tient à jour `Docs/ressources-a-telecharger.md` (nom, lien, licence, raison, dossier de destination).
-2. Le porteur du projet télécharge et dépose les fichiers dans `Import/`.
-3. Claude Code les importe, les range, les configure (niveaux de détail, collisions, compression) et vérifie par capture d'écran.
-
-## Décision : terrain par tuiles de maillages au lieu de Terrain3D (MVP 1, carte « collines »)
-
-Terrain3D v1.1.0 (versions figées) a été essayé avec Godot 4.7.2. La **construction** par script fonctionne (régions, hauteurs, textures, collisions), mais le plugin **fait planter le moteur dès les premières images rendues** (signal 11 suivi de « propagate_notification() … caller thread ») : reproduit avec un terrain vide, avec la bibliothèque de débogage comme de production, avec le modèle de rendu monofil, avec les shaders légers fournis, sous Vulkan logiciel (lavapipe), la configuration de la CI Linux qui produit captures, mesures et vidéo. Sans cette vérification, un terrain ne peut pas être livré. Le plugin reste installé et figé ; à réessayer quand une version compatible avec Godot 4.7 sera publiée (décision du porteur du projet, car changer une version figée l'exige).
-
-Solution retenue, entièrement par script (`Game/world/collines/`) :
-
-| Élément | Choix |
-|---|---|
-| Relief | Bruit de graine fixe, calculé au moment de la construction (même graine, même résultat) |
-| Maillage | 64 tuiles de 128 m, quatre niveaux de détail par tuile (pas de 1, 2, 4 et 8 m), choisis par les plages de visibilité du moteur (aucun script par image), jupes contre les fissures |
-| Texture | Un shader à deux surfaces (sable, pierre) mélangées par une carte de contrôle (pente et altitude), normales lues dans une carte du relief : identiques à tous les niveaux de détail |
-| Collisions | Une seule forme de carte de hauteurs (couche 1) |
-| Surfaces | `surface_at()` lit la carte de contrôle en O(1) |
-
-## Budget de performance
-
-| Cible | Résolution | Fréquence |
-|---|---|---|
-| **Machine de développement = configuration minimale** (Intel Core Ultra 7, puce Intel Arc intégrée) | 1080p (rendu interne mis à l'échelle par FSR 2) | **60 i/s dans le pire cas** |
-| PC avec carte graphique dédiée | 1440p à 4K, qualité maximale | 60 i/s et plus |
-
-**Ces objectifs sont tenus dans le pire cas, pas en moyenne.**
-
-Règles :
-- **Aucun raccourci, aucune optimisation repoussée à plus tard** (voir la règle absolue de `CLAUDE.md`).
-- Chaque système a son **test de charge** qui reproduit son pire cas (foule maximale, galop en zone dense, tous les systèmes actifs, sauvegarde après 100 heures de jeu).
-- Les performances sont mesurées **à chaque fonctionnalité**, sur la machine de développement.
-- Budgets par image définis et vérifiés : appels de dessin, triangles, mémoire des textures, temps de script et temps du C++.
-
-## Limites à connaître
-
-- La qualité visuelle dépend des **ressources libres disponibles** et de la **qualité des règles de génération** : Claude Code les choisit, les génère et les assemble, mais n'égale pas une équipe d'artistes.
-- Le **streaming de monde** et les **foules** sont des systèmes à construire nous-mêmes : ce sont les deux plus gros chantiers techniques.
-- Le **ressenti de jeu** ne peut être jugé que par un humain qui joue.
-- Si une opération semble impossible par script, Claude Code doit **le dire et proposer une solution par le code**, et ne jamais la confier au porteur du projet sans le signaler.
+L'ancienne décision d'abandonner Terrain3D reposait sur un crash du rendu logiciel Linux de l'ancien pipeline. Elle ne gouverne plus le projet : le reboot évalue Terrain3D nativement sous Windows sur la machine cible. Les documents et mesures de cette période sont conservés dans `Docs/archive/` uniquement pour l'historique.

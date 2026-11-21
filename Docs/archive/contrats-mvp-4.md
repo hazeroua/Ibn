@@ -9,7 +9,7 @@
 Le joueur arrive du désert, laisse Barq à la porte, entre à pied dans une première rue de médina,
 visite une maison, une boutique et une petite mosquée, interagit avec le décor, atteint une terrasse
 et revient à son cheval. La ville tient 60 i/s à 1080p sur Intel Arc dans les pires cas définis dans
-[`06-roadmap-mvp.md`](06-roadmap-mvp.md).
+[`roadmap-mvp-legacy.md`](roadmap-mvp-legacy.md).
 
 ## Données communes
 
