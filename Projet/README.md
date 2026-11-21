@@ -1,11 +1,11 @@
-# Projet — socle du reboot Terrain3D
+# Projet — le jeu
 
-Nouveau projet Godot du jeu, créé par le ticket [#63](https://github.com/hazeroua/Ibn/issues/63). Il ne dépend d'aucun fichier de l'ancien dossier `Game/`.
+Projet Godot du jeu, créé par le ticket [#63](https://github.com/hazeroua/Ibn/issues/63). Il ne dépend d'aucun fichier de l'ancien dossier `Game/`.
 
 ## Essayer
 
-- `valider.bat` : commande unique. Elle installe Terrain3D et GUT aux versions figées, analyse le GDScript, importe le projet, lance les tests, exporte le jeu Windows, puis mesure la scène de test sur la machine et la compare à son budget.
-- `lancer.bat` : lance le dernier export. La scène de test s'ouvre directement, avec une caméra libre :
+- `valider.bat` : commande unique. Elle installe Terrain3D et GUT aux versions figées, télécharge et vérifie les textures libres, analyse le GDScript, importe le projet, construit les scènes, lance les tests, exporte le jeu Windows, puis mesure chaque scène sur la machine et la compare à son budget.
+- `lancer.bat` : lance le dernier export. Le Sahara s'ouvre directement, avec une caméra libre :
   - ZQSD ou flèches : se déplacer ;
   - souris : regarder ;
   - Maj : aller très vite ;
@@ -13,28 +13,46 @@ Nouveau projet Godot du jeu, créé par le ticket [#63](https://github.com/hazer
   - A ou Ctrl : descendre ;
   - Échap : libérer la souris.
 
-Options de `valider.bat` : `-Renderer d3d12`, `-DurationSeconds 60`, `-Scene <id>`, `-SansMesure`.
+Options de `valider.bat` : `-Scene <id>` (par défaut, toutes les scènes du catalogue), `-Renderer d3d12`, `-DurationSeconds 60`, `-SansMesure`.
 
 ## Organisation
 
 ```text
 Projet/
-├── project.godot         Forward+, Vulkan, Jolt, 1080p, FSR 2 à 67 %
+├── project.godot           Forward+, Vulkan, Jolt, 1080p, FSR 2 à 67 %
 ├── core/
-│   ├── boot/             Démarrage, options de lancement, catalogue des scènes
-│   ├── config/           Configuration graphique
-│   ├── data/             Lecture et validation des JSON
-│   ├── input/            Actions clavier, souris et manette
-│   ├── log/              Journal (user://logs/ibn.log)
-│   └── perf/             Mesure automatique, statistiques, budgets
-├── world/terrain_test/   Scène de test Terrain3D (4 × 4 km)
-├── data/                 Toutes les données : config, scènes, budgets
-├── tests/unit/           Tests GUT
-├── outils/valider.ps1    Pipeline complet
-├── addons/               Terrain3D et GUT, installés par le pipeline (non versionnés)
-├── build/                Export Windows (non versionné)
-└── rapports/             Journaux, rapports JSON et captures (non versionnés)
+│   ├── boot/               Démarrage, options de lancement, catalogue des scènes
+│   ├── config/             Configuration graphique
+│   ├── data/               Lecture et validation des JSON, manifeste des ressources
+│   ├── input/              Actions clavier, souris et manette
+│   ├── log/                Journal (user://logs/ibn.log)
+│   └── perf/               Mesure automatique, statistiques, budgets
+├── world/
+│   ├── common/             Éclairage, aide, corps de test des collisions
+│   ├── sahara/             Sahara : réglages, générateur, sols, constructeur, scène
+│   └── terrain_test/       Scène de test du socle (#63)
+├── data/                   Toutes les données : config, scènes, budgets, ressources
+├── tests/unit/             Tests GUT
+├── outils/                 valider.ps1 (pipeline) et construire.gd (constructeurs)
+├── ressources/telechargees/  Textures téléchargées (non versionnées)
+├── generated/              Régions Terrain3D et textures construites (non versionnées)
+├── addons/, build/, rapports/  Dépendances, export et rapports (non versionnés)
+└── README.md
 ```
+
+## Le Sahara (ticket #64)
+
+Carte de 4 × 4 km construite par `world/sahara/sahara_builder.gd` à partir de `data/sahara/sahara.json` :
+
+- **reg** (plaine de gravier) au nord-ouest, ondulé, avec des voiles de sable et des plaques de terre sèche ;
+- **erg** (champ de dunes) au sud-est : dunes transversales poussées par un vent de nord-est (face au vent douce, face sous le vent à environ 30°), dunes secondaires, crêtes irrégulières ;
+- **repères** visibles de loin : la Gara de l'Ouest (plateau en gradins de 115 m), la Crête de l'Est, le Grand et le Petit Piton, la Grande Dune (dune étoilée de 105 m) ;
+- **oueds** secs : l'oued principal et l'oued de la Gara, lits de terre craquelée, berges adoucies, dunes effacées à leur approche ;
+- **sols** : sable, terre sèche, gravier, roche (textures Poly Haven CC0), choisis par sommet selon la zone et la pente, avec une teinte à grande échelle, une variation « macro » et une rotation aléatoire des textures contre la répétition.
+
+Le constructeur refuse un relief dont une cellule praticable est trop tordue pour la grille de 2 m (`max_walkable_twist_meters`) : la surface affichée et la surface de collision ne coupent pas les cellules de la même façon, et l'écart entre les deux ne dépasse jamais cette valeur là où l'on marche.
+
+Textures : `data/ressources.json` (adresses, licence) et `data/ressources.lock.json` (empreintes SHA-256 enregistrées au premier téléchargement, vérifiées ensuite).
 
 ## Lancement en ligne de commande
 
@@ -44,12 +62,14 @@ IbnKhaldoun.exe -- [--scene=<id>] [--measure --report-dir=<dossier> [--duration=
 
 Codes de sortie : 0 = réussi, 1 = erreur de configuration ou d'exécution, 2 = budget dépassé.
 
-## Pires cas couverts par la scène de test
+En mesure, le Sahara fait d'abord une tournée de captures (`vue_*.png` : vue générale, erg au sol, oued, gara, reg), puis un parcours de collision : une capsule de personnage marche, court puis file à 70 m/s sur une boucle qui traverse dunes, oued et éboulis, caméra en poursuite.
 
-- terrain complet de 4 096 × 4 096 m à 2 m entre sommets, 16 régions de 1 024 m ;
-- déplacement continu à 70 m/s, soit environ quatre fois un galop, en mesure automatique comme en caméra libre ;
-- collisions dynamiques autour de la caméra, vérifiées une fois par seconde ;
+## Pires cas couverts
+
+- terrain complet de 4 096 × 4 096 m à 2 m entre sommets, 16 régions de 1 024 m, quatre sols ;
+- déplacement à 70 m/s (environ quatre fois un galop) au ras du sol, collisions reconstruites en continu autour du corps ;
+- collisions à pied et à 70 m/s sur le vrai terrain, dans les tests GUT et pendant la mesure : aucune traversée, aucun blocage ;
 - rendu 1 920 × 1 080 avec FSR 2 à 67 %, synchronisation verticale coupée pendant la mesure ;
-- aucune allocation par image dans la sonde de mesure ni dans la caméra.
+- aucune allocation par image dans la sonde de mesure, la caméra et le corps de test.
 
-Budget : `data/budgets/terrain_test.json`.
+Budgets : `data/budgets/<scène>.json`.

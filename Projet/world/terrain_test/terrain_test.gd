@@ -34,7 +34,7 @@ func _ready() -> void:
 	var route_data: Dictionary = JsonData.read_dictionary(data, "measure_route", errors, "terrain_test.json")
 	var help_text: String = JsonData.read_string(data, "help_text", errors, "terrain_test.json")
 	if errors.is_empty():
-		_create_environment(environment_data, errors)
+		SceneEnvironment.build(self, environment_data, errors, "terrain_test.json › environment")
 		_create_terrain(terrain_data, errors)
 	if errors.is_empty():
 		_create_camera(camera_data, errors)
@@ -52,7 +52,7 @@ func _ready() -> void:
 		_ray_query.collide_with_areas = false
 		_move_along_route()
 	else:
-		_create_help(help_text)
+		SceneEnvironment.add_help(self, help_text)
 		set_process(false)
 		set_physics_process(false)
 	(
@@ -97,29 +97,6 @@ func _physics_process(delta: float) -> void:
 	_probe.report_metric("collision_failures", _collision_failures)
 
 
-func _create_environment(data: Dictionary, errors: PackedStringArray) -> void:
-	var context: String = "terrain_test.json › environment"
-	var environment: Environment = Environment.new()
-	environment.background_mode = Environment.BG_COLOR
-	environment.background_color = JsonData.read_color(data, "sky_color", errors, context)
-	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	environment.ambient_light_color = JsonData.read_color(data, "ambient_color", errors, context)
-	environment.ambient_light_energy = JsonData.read_number(data, "ambient_energy", errors, context)
-	var world_environment: WorldEnvironment = WorldEnvironment.new()
-	world_environment.environment = environment
-	add_child(world_environment)
-
-	var sun_data: Dictionary = JsonData.read_dictionary(data, "sun", errors, context)
-	var sun: DirectionalLight3D = DirectionalLight3D.new()
-	sun.name = "Sun"
-	sun.rotation_degrees = JsonData.read_vector3(sun_data, "rotation_degrees", errors, context + " › sun")
-	sun.light_energy = JsonData.read_number(sun_data, "energy", errors, context + " › sun")
-	sun.shadow_enabled = true
-	sun.shadow_bias = JsonData.read_number(sun_data, "shadow_bias", errors, context + " › sun")
-	sun.shadow_normal_bias = JsonData.read_number(sun_data, "shadow_normal_bias", errors, context + " › sun")
-	add_child(sun)
-
-
 func _create_terrain(data: Dictionary, errors: PackedStringArray) -> void:
 	var context: String = "terrain_test.json › terrain"
 	if not ClassDB.class_exists(&"Terrain3D"):
@@ -149,9 +126,10 @@ func _create_terrain(data: Dictionary, errors: PackedStringArray) -> void:
 	_terrain.name = "Terrain3D"
 	# Les textures sont créées en mémoire : rien à libérer côté éditeur.
 	_terrain.free_editor_textures = false
-	_terrain.region_size = region_size as Terrain3D.RegionSize
 	_terrain.vertex_spacing = spacing
 	add_child(_terrain)
+	# La taille de région n'est prise en compte qu'une fois le terrain dans l'arbre.
+	_terrain.change_region_size(region_size as Terrain3D.RegionSize)
 	_terrain.material.world_background = Terrain3DMaterial.NONE
 	_terrain.material.auto_shader_enabled = false
 	_terrain.assets.set_texture_asset(0, _create_ground_texture(ground_color, ground_roughness, uv_scale))
@@ -218,18 +196,3 @@ func _move_along_route() -> void:
 	var look_target: Vector3 = ground_position + Vector3(-sin(angle), 0.0, cos(angle)) * _route_look_ahead_meters
 	look_target.y = _terrain.data.get_height(look_target) + _route_height_meters * 0.25
 	_camera.look_toward(look_target)
-
-
-func _create_help(text: String) -> void:
-	var layer: CanvasLayer = CanvasLayer.new()
-	layer.name = "Help"
-	var label: Label = Label.new()
-	label.text = text
-	label.add_theme_color_override(&"font_color", Color(1.0, 1.0, 1.0, 0.85))
-	label.add_theme_color_override(&"font_shadow_color", Color(0.0, 0.0, 0.0, 0.6))
-	label.add_theme_constant_override(&"shadow_offset_x", 1)
-	label.add_theme_constant_override(&"shadow_offset_y", 1)
-	label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT, Control.PRESET_MODE_MINSIZE, 24)
-	label.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	layer.add_child(label)
-	add_child(layer)

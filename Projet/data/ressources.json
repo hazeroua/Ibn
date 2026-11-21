@@ -1,0 +1,53 @@
+{
+  "description": "Ressources libres téléchargées par Projet/outils/valider.ps1 dans Projet/ressources/telechargees/<clé>/. Les empreintes SHA-256 sont figées dans ressources.lock.json au premier téléchargement puis vérifiées à chaque validation.",
+  "textures": {
+    "sable": {
+      "source": "Poly Haven",
+      "asset": "sandy_gravel_02",
+      "page": "https://polyhaven.com/a/sandy_gravel_02",
+      "licence": "CC0 1.0",
+      "files": {
+        "albedo": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/sandy_gravel_02/sandy_gravel_02_diff_2k.jpg",
+        "normal": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/sandy_gravel_02/sandy_gravel_02_nor_gl_2k.jpg",
+        "roughness": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/sandy_gravel_02/sandy_gravel_02_rough_2k.jpg",
+        "height": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/sandy_gravel_02/sandy_gravel_02_disp_2k.png"
+      }
+    },
+    "terre_seche": {
+      "source": "Poly Haven",
+      "asset": "mud_cracked_dry_riverbed_002",
+      "page": "https://polyhaven.com/a/mud_cracked_dry_riverbed_002",
+      "licence": "CC0 1.0",
+      "files": {
+        "albedo": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/mud_cracked_dry_riverbed_002/mud_cracked_dry_riverbed_002_diff_2k.jpg",
+        "normal": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/mud_cracked_dry_riverbed_002/mud_cracked_dry_riverbed_002_nor_gl_2k.jpg",
+        "roughness": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/mud_cracked_dry_riverbed_002/mud_cracked_dry_riverbed_002_rough_2k.jpg",
+        "height": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/mud_cracked_dry_riverbed_002/mud_cracked_dry_riverbed_002_disp_2k.png"
+      }
+    },
+    "reg": {
+      "source": "Poly Haven",
+      "asset": "sand_01",
+      "page": "https://polyhaven.com/a/sand_01",
+      "licence": "CC0 1.0",
+      "files": {
+        "albedo": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/sand_01/sand_01_diff_2k.jpg",
+        "normal": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/sand_01/sand_01_nor_gl_2k.jpg",
+        "roughness": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/sand_01/sand_01_rough_2k.jpg",
+        "height": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/sand_01/sand_01_disp_2k.png"
+      }
+    },
+    "roche": {
+      "source": "Poly Haven",
+      "asset": "red_laterite_soil_stones",
+      "page": "https://polyhaven.com/a/red_laterite_soil_stones",
+      "licence": "CC0 1.0",
+      "files": {
+        "albedo": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/red_laterite_soil_stones/red_laterite_soil_stones_diff_2k.jpg",
+        "normal": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/red_laterite_soil_stones/red_laterite_soil_stones_nor_gl_2k.jpg",
+        "roughness": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/red_laterite_soil_stones/red_laterite_soil_stones_rough_2k.jpg",
+        "height": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/red_laterite_soil_stones/red_laterite_soil_stones_disp_2k.png"
+      }
+    }
+  }
+}

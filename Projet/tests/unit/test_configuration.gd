@@ -73,3 +73,50 @@ func test_json_parse_errors_are_reported() -> void:
 	assert_false(JsonData.parse_text("{ broken", "test").error.is_empty())
 	assert_false(JsonData.parse_text("[1, 2]", "test").error.is_empty())
 	assert_eq(JsonData.parse_text('{"a": 1}', "test").data, {"a": 1.0})
+
+
+func test_shipped_resource_manifest_is_valid_and_covers_the_sahara() -> void:
+	var manifest: ResourceManifest = ResourceManifest.load_shipped()
+	assert_true(manifest.errors.is_empty(), str(manifest.errors))
+	var scene: Dictionary = JsonData.load_dictionary("res://data/sahara/sahara.json")["scene"]
+	for texture: Dictionary in scene["textures"]:
+		assert_true(manifest.has_texture(texture["resource"]), texture["resource"])
+	assert_eq(manifest.local_path("sable", "albedo"), "res://ressources/telechargees/sable/sandy_gravel_02_diff_2k.jpg")
+
+
+func test_resource_lock_holds_sha256_fingerprints() -> void:
+	var lock: Dictionary = JsonData.load_dictionary(ResourceManifest.LOCK_PATH)
+	assert_true(lock.has("files"))
+	var manifest: ResourceManifest = ResourceManifest.load_shipped()
+	var known_urls: Dictionary = {}
+	for key: String in manifest.texture_keys():
+		for map_name: String in ResourceManifest.TEXTURE_MAPS:
+			known_urls[manifest.url(key, map_name)] = true
+	for url: String in lock["files"]:
+		assert_true(known_urls.has(url), "empreinte orpheline : " + url)
+		var fingerprint: String = lock["files"][url]
+		assert_eq(fingerprint.length(), 64, url)
+		assert_true(fingerprint.is_valid_hex_number(), url)
+
+
+func test_rejected_licence_and_insecure_urls() -> void:
+	var data: Dictionary = {
+		"textures":
+		{
+			"x":
+			{
+				"source": "Ailleurs",
+				"page": "http://exemple",
+				"licence": "Tous droits réservés",
+				"files": {"albedo": "http://a", "normal": "https://b", "roughness": "https://c", "height": "https://d"},
+			},
+		},
+	}
+	assert_eq(ResourceManifest.from_dictionary(data).errors.size(), 2)
+
+
+func test_catalog_declares_the_sahara_builder() -> void:
+	var catalog: SceneCatalog = SceneCatalog.from_dictionary(JsonData.load_dictionary("res://data/config/boot.json"))
+	assert_eq(catalog.default_scene_id, "sahara")
+	assert_eq(catalog.builder_path("sahara"), "res://world/sahara/sahara_builder.gd")
+	assert_eq(catalog.builder_path("terrain_test"), "")

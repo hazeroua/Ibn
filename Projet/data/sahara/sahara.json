@@ -1,0 +1,204 @@
+{
+  "generation": {
+    "seed": 1352,
+    "map_size_meters": 4096,
+    "vertex_spacing_meters": 2.0,
+    "region_size": 512,
+    "max_walkable_twist_meters": 0.3,
+    "edge_blend_meters": 250.0,
+    "walkable_slope_degrees": 45.0,
+    "base": {
+      "height_meters": 40.0,
+      "tilt_meters": 14.0,
+      "tilt_direction": [1.0, 0.15],
+      "undulation": { "amplitude_meters": 7.0, "wavelength_meters": 900.0 },
+      "roughness": { "amplitude_meters": 0.8, "wavelength_meters": 60.0 }
+    },
+    "erg": {
+      "coverage_wavelength_meters": 1800.0,
+      "threshold": 0.0,
+      "transition": 0.22,
+      "bias_direction": [0.7, 0.7],
+      "bias_strength": 0.45,
+      "sheet_height_meters": 8.0,
+      "dunes": [
+        {
+          "wavelength_meters": 240.0,
+          "amplitude_meters": 24.0,
+          "wind_degrees": 135.0,
+          "windward_fraction": 0.72,
+          "warp_meters": 60.0,
+          "warp_wavelength_meters": 700.0,
+          "crest_variation": 0.45
+        },
+        {
+          "wavelength_meters": 70.0,
+          "amplitude_meters": 2.5,
+          "wind_degrees": 165.0,
+          "windward_fraction": 0.68,
+          "warp_meters": 22.0,
+          "warp_wavelength_meters": 240.0,
+          "crest_variation": 0.6
+        }
+      ]
+    },
+    "massifs": [
+      {
+        "name": "Gara de l'Ouest",
+        "kind": "mesa",
+        "center": [-1250.0, -1150.0],
+        "radii": [280.0, 200.0],
+        "angle_degrees": 20.0,
+        "height_meters": 115.0,
+        "cliff_fraction": 0.26,
+        "terraces": 3,
+        "edge_noise": 0.12,
+        "talus_meters": 20.0
+      },
+      {
+        "name": "Crête de l'Est",
+        "kind": "ridge",
+        "center": [1250.0, -1200.0],
+        "radii": [560.0, 120.0],
+        "angle_degrees": -30.0,
+        "height_meters": 80.0,
+        "cliff_fraction": 0.3,
+        "terraces": 0,
+        "edge_noise": 0.2,
+        "talus_meters": 15.0
+      },
+      {
+        "name": "Grand Piton",
+        "kind": "inselberg",
+        "center": [-350.0, 650.0],
+        "radii": [130.0, 110.0],
+        "angle_degrees": 0.0,
+        "height_meters": 95.0,
+        "cliff_fraction": 0.3,
+        "terraces": 0,
+        "edge_noise": 0.15,
+        "talus_meters": 12.0
+      },
+      {
+        "name": "Petit Piton",
+        "kind": "inselberg",
+        "center": [-120.0, 820.0],
+        "radii": [100.0, 90.0],
+        "angle_degrees": 35.0,
+        "height_meters": 75.0,
+        "cliff_fraction": 0.3,
+        "terraces": 0,
+        "edge_noise": 0.15,
+        "talus_meters": 10.0
+      }
+    ],
+    "star_dunes": [
+      {
+        "name": "Grande Dune",
+        "center": [1150.0, 1050.0],
+        "radius_meters": 380.0,
+        "height_meters": 105.0,
+        "arms": 4,
+        "twist": 0.6
+      }
+    ],
+    "wadis": [
+      {
+        "name": "Oued principal",
+        "floor_half_width_meters": 14.0,
+        "bank_width_meters": 32.0,
+        "depth_meters": 7.0,
+        "points": [
+          [600.0, -1900.0], [420.0, -1500.0], [150.0, -1150.0], [-150.0, -900.0], [-500.0, -700.0],
+          [-800.0, -350.0], [-1150.0, -150.0], [-1500.0, 50.0], [-1900.0, 120.0]
+        ]
+      },
+      {
+        "name": "Oued de la Gara",
+        "floor_half_width_meters": 7.0,
+        "bank_width_meters": 20.0,
+        "depth_meters": 4.5,
+        "points": [[-900.0, -1500.0], [-850.0, -1150.0], [-700.0, -850.0], [-560.0, -720.0]]
+      }
+    ],
+    "surface": {
+      "rock_slope_degrees": [30.0, 40.0],
+      "earth_patch_wavelength_meters": 260.0,
+      "earth_patch_coverage": 0.22,
+      "sand_sheet_wavelength_meters": 420.0,
+      "sand_sheet_coverage": 0.35
+    },
+    "color": {
+      "variation_wavelength_meters": 650.0,
+      "variation_strength": 0.09,
+      "erg_tint": "#ffead2",
+      "reg_tint": "#ffe9d2",
+      "wadi_tint": "#e9dfd2",
+      "rock_tint": "#ead9c8"
+    }
+  },
+  "scene": {
+    "terrain": {
+      "mesh_lods": 7,
+      "mesh_size": 48,
+      "collision": { "radius": 96, "shape_size": 16 },
+      "macro_variation": {
+        "color_1": "#fbf2e6",
+        "color_2": "#e9dccb",
+        "slope": 0.333,
+        "noise_1_scale": 0.04,
+        "noise_2_scale": 0.076,
+        "noise_wavelength_pixels": 256
+      },
+      "dual_scaling": { "texture": "sand", "reduction": 0.3, "near_meters": 170.0, "far_meters": 250.0 },
+      "blend_sharpness": 0.87
+    },
+    "textures": [
+      { "ground": "sand", "resource": "sable", "uv_scale": 0.08, "detiling_rotation": 0.35, "detiling_shift": 0.25, "normal_depth": 1.0, "roughness": 0.0 },
+      { "ground": "earth", "resource": "terre_seche", "uv_scale": 0.12, "detiling_rotation": 0.5, "detiling_shift": 0.3, "normal_depth": 1.0, "roughness": 0.0 },
+      { "ground": "gravel", "resource": "reg", "uv_scale": 0.2, "detiling_rotation": 0.5, "detiling_shift": 0.3, "normal_depth": 1.0, "roughness": 0.0 },
+      { "ground": "rock", "resource": "roche", "uv_scale": 0.06, "detiling_rotation": 0.4, "detiling_shift": 0.25, "normal_depth": 1.2, "roughness": 0.0 }
+    ],
+    "environment": {
+      "sky_color": "#7fb0d8",
+      "ambient_color": "#c9c3b8",
+      "ambient_energy": 0.7,
+      "sun": { "rotation_degrees": [-48.0, -35.0, 0.0], "energy": 1.3, "shadow_bias": 0.1, "shadow_normal_bias": 1.6 }
+    },
+    "camera": {
+      "far": 6000.0,
+      "spawn": [-300.0, 0.0, -420.0],
+      "spawn_height_above_ground": 4.0,
+      "look_at": [-1250.0, 0.0, -1150.0],
+      "free": {
+        "walk_speed": 6.0,
+        "sprint_speed": 70.0,
+        "mouse_sensitivity": 0.0025,
+        "stick_sensitivity": 2.5,
+        "min_height_above_ground": 1.7
+      }
+    },
+    "viewpoints": [
+      { "name": "vue_generale", "position": [0.0, 0.0, 1900.0], "height_above_ground": 380.0, "look_at": [0.0, 0.0, -400.0] },
+      { "name": "erg_au_sol", "position": [700.0, 0.0, 600.0], "height_above_ground": 1.7, "look_at": [1150.0, 0.0, 1050.0] },
+      { "name": "oued", "position": [-650.0, 0.0, -520.0], "height_above_ground": 1.7, "look_at": [-1150.0, 0.0, -150.0] },
+      { "name": "gara", "position": [-850.0, 0.0, -820.0], "height_above_ground": 1.7, "look_at": [-1250.0, 0.0, -1150.0] },
+      { "name": "reg_vers_pitons", "position": [-700.0, 0.0, 250.0], "height_above_ground": 1.7, "look_at": [-350.0, 0.0, 650.0] }
+    ],
+    "viewpoint_seconds": 1.0,
+    "measure_route": {
+      "loop": [
+        [-300.0, -420.0], [-650.0, -520.0], [-900.0, -900.0], [-450.0, 200.0], [200.0, 500.0],
+        [800.0, 700.0], [900.0, 1500.0], [1600.0, 600.0], [600.0, -300.0], [-300.0, -420.0]
+      ],
+      "phases": [
+        { "name": "marche", "speed_meters_per_second": 1.6, "duration_fraction": 0.15 },
+        { "name": "course", "speed_meters_per_second": 6.0, "duration_fraction": 0.15 },
+        { "name": "pleine_vitesse", "speed_meters_per_second": 70.0, "duration_fraction": 0.7 }
+      ],
+      "body": { "radius_meters": 0.35, "height_meters": 1.8, "max_slope_degrees": 50.0 },
+      "chase_camera": { "distance_meters": 7.0, "height_meters": 2.5, "smoothing": 8.0 }
+    },
+    "help_text": "Sahara — terrain de 4 × 4 km\nZQSD ou flèches : se déplacer   Souris : regarder   Maj : très vite\nE / Espace : monter   A / Ctrl : descendre   Échap : libérer la souris"
+  }
+}
