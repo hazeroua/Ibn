@@ -1,6 +1,6 @@
 ---
 name: valider
-description: Lance la chaîne de vérification du reboot Terrain3D et corrige jusqu'au vert. Pour le ticket #62, valide le prototype sous Vulkan et D3D12 ; après #63, suit le pipeline documenté du nouveau socle.
+description: Lance la chaîne de vérification du reboot Terrain3D et corrige jusqu'au vert. Commande unique : `Projet/valider.bat`.
 ---
 # Valider le reboot
 
@@ -25,9 +25,21 @@ Contrôler pour chaque moteur :
 - matériel Intel Arc attendu ;
 - capture 1 920 × 1 080 ouverte et relue visuellement.
 
-## Après le ticket #63
+## Depuis le ticket #63 — commande unique
 
-Le ticket #63 doit créer une commande unique de validation et la documenter dans `Docs/05-technologies.md`. Tant que cette commande n'existe pas, l'ancien pipeline ne constitue pas une preuve du reboot.
+```powershell
+Projet\valider.bat
+```
+
+Équivalent : `powershell -NoProfile -ExecutionPolicy Bypass -File Projet\outils\valider.ps1 [-Scene <id>] [-Renderer vulkan|d3d12] [-DurationSeconds 30]`.
+
+Étapes : dépendances figées (Terrain3D, GUT), gdlint et gdformat, import, tests GUT, export Windows, mesure de la scène sur le GPU, capture, comparaison à `Projet/data/budgets/<scène>.json`. Le script s'arrête à la première erreur ou ligne `ERROR:` d'un journal.
+
+Contrôler ensuite :
+
+- `Projet/rapports/derniere-validation.txt` se termine par « VALIDATION RÉUSSIE » ;
+- `rapport.json` : `budgets_passed: true`, matériel Intel Arc ;
+- `capture.png` (1 920 × 1 080) ouverte et relue visuellement.
 
 ## Règles
 

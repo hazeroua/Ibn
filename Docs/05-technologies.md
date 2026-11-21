@@ -2,9 +2,7 @@
 
 ## État actuel
 
-Le seul socle actif du reboot est le prototype `Reboot/Terrain3DValidation/`. Le projet historique dans `Game/`, ses extensions C++ et ses scènes restent présents pour consultation, mais ne sont pas des dépendances autorisées du nouveau projet.
-
-Le ticket #63 déterminera l'emplacement définitif du nouveau projet Godot après validation complète de Terrain3D.
+Le jeu se trouve dans `Projet/`, socle créé par le ticket #63. Le prototype `Reboot/Terrain3DValidation/` du ticket #62 est conservé comme référence de mesure. Le projet historique dans `Game/`, ses extensions C++ et ses scènes restent présents pour consultation, mais ne sont pas des dépendances autorisées du nouveau projet.
 
 ## Versions figées
 
@@ -12,8 +10,8 @@ Le ticket #63 déterminera l'emplacement définitif du nouveau projet Godot apr�
 |---|---|
 | Godot | 4.7.2 stable |
 | Terrain3D | 1.1.0 |
-| Rendu | Forward+ ; Vulkan et D3D12 évalués |
-| Physique cible | Jolt |
+| Rendu | Forward+ sous Vulkan (choisi au ticket #62) |
+| Physique | Jolt |
 | Mise à l'échelle | FSR 2, rendu interne à 67 % |
 | Résolution cible | 1 920 × 1 080 |
 | Plateforme minimale | Windows, Intel Arc intégrée |
@@ -22,23 +20,40 @@ Le ticket #63 déterminera l'emplacement définitif du nouveau projet Godot apr�
 
 Les versions sont définies dans `Tools/versions.json`. Elles ne changent pas sans décision explicite.
 
-## Architecture du premier jalon
+## Architecture
 
 ```text
-Reboot/
-└── Terrain3DValidation/       Prototype isolé du ticket #62
-    ├── project.godot
-    ├── main.gd               Génération, parcours, collisions et mesures
-    ├── main.tscn
-    ├── run-validation.ps1    Import, export et test d'un moteur de rendu
-    └── README.md             Protocole et budgets
+Projet/                       Le jeu (Godot 4.7.2, Terrain3D 1.1.0)
+├── project.godot             Forward+, Vulkan, Jolt, 1080p, FSR 2 à 67 %
+├── core/
+│   ├── boot/                 Démarrage, options de lancement, catalogue des scènes
+│   ├── config/               Configuration graphique (data/config/graphics.json)
+│   ├── data/                 Lecture et validation des JSON
+│   ├── input/                Actions clavier, souris, manette (data/config/input.json)
+│   ├── log/                  Journal du jeu (user://logs/ibn.log)
+│   └── perf/                 Sonde de mesure, statistiques d'image, budgets
+├── world/<scène>/            Scènes construites par script depuis data/<scène>/
+├── data/                     Toutes les données ; budgets dans data/budgets/<scène>.json
+├── tests/unit/               Tests GUT
+├── outils/valider.ps1        Pipeline complet (lancé par valider.bat)
+├── addons/, build/, rapports/   Générés, non versionnés
+└── README.md                 Organisation, commandes et pires cas
 
+Reboot/Terrain3DValidation/   Prototype du ticket #62, référence de mesure
 Docs/                         Sources de vérité et conception durable
-Game/                         Ancien projet, non réutilisé automatiquement
-Extensions/                   Anciennes extensions, non réutilisées automatiquement
-Scripts/                      Ancien pipeline, consultable mais non contractuel pour le reboot
+Game/, Extensions/, Scripts/  Ancien projet, non réutilisé automatiquement
 Tools/                        Outils et versions figées partagés
 ```
+
+### Démarrage
+
+`core/boot/boot.tscn` est la scène principale. Elle lit les options passées après `--`, applique `data/config/graphics.json` et `data/config/input.json`, puis ouvre la scène demandée du catalogue `data/config/boot.json` (scène par défaut : `terrain_test`). Toute donnée invalide est signalée par une erreur explicite et ferme le jeu avec le code 1.
+
+```text
+IbnKhaldoun.exe -- [--scene=<id>] [--measure --report-dir=<dossier> [--duration=30] [--warmup=5]]
+```
+
+En mode `--measure`, la sonde `PerformanceProbe` attend que la scène soit prête, laisse passer le préchauffage, enregistre une capture, mesure chaque image sans allocation (histogramme préalloué de 0,1 ms), écrit `rapport.json`, le compare au budget de la scène et ferme le jeu : code 0 si le budget est respecté, 2 sinon. Les scènes ajoutent leurs propres mesures (par exemple les collisions manquées) avec `report_metric`.
 
 ## Responsabilités de Terrain3D
 
@@ -52,7 +67,26 @@ Terrain3D doit gérer :
 
 Le relief est déterministe : une même graine et une même version doivent produire le même terrain. Aucun travail lourd ni allocation évitable ne doit être effectué à chaque image.
 
-## Pipeline du prototype
+## Pipeline : commande unique
+
+```powershell
+Projet\valider.bat [-Scene terrain_test] [-Renderer vulkan|d3d12] [-DurationSeconds 30] [-SansMesure]
+```
+
+Étapes, avec arrêt à la première erreur ou à la première ligne `ERROR:` d'un journal :
+
+1. installation de Terrain3D et GUT aux versions de `Tools/versions.json` ;
+2. gdlint et gdformat (140 colonnes) ;
+3. import du projet ;
+4. tests GUT ;
+5. export Windows dans `Projet/build/` ;
+6. mesure de la scène sur le GPU de la machine, capture et comparaison au budget.
+
+Résultats : `Projet/rapports/<scène>/<date>-<moteur>/` (journaux, `rapport.json`, `capture.png`) et `Projet/rapports/derniere-validation.txt`.
+
+Aucune extension C++ n'existe encore dans `Projet/`. La première extension justifiée par une mesure créera `Projet/extensions/<nom>/` et ajoutera sa compilation au pipeline.
+
+## Pipeline du prototype #62
 
 Depuis `Reboot/Terrain3DValidation/` :
 
@@ -69,7 +103,11 @@ Chaque exécution copie localement Terrain3D, importe le projet, produit un expo
 
 Les artefacts générés ne sont pas versionnés.
 
-## Budgets du ticket #62
+## Budgets
+
+Le budget de chaque scène est dans `Projet/data/budgets/<scène>.json`. Celui de `terrain_test` reprend les limites du ticket #62 et ajoute un temps de démarrage maximal de 5 secondes.
+
+### Budgets du ticket #62
 
 | Mesure | Limite |
 |---|---:|

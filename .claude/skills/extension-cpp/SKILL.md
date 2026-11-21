@@ -1,13 +1,13 @@
 ---
 name: extension-cpp
-description: Prépare une GDExtension C++ seulement après que #63 a défini le nouveau socle et qu'un profilage a prouvé le besoin. Ne réutilise jamais automatiquement l'ancienne extension.
+description: Prépare une GDExtension C++ dans `Projet/` seulement si un profilage a prouvé le besoin. Ne réutilise jamais automatiquement l'ancienne extension.
 ---
 # Extension C++ (GDExtension)
 
 ## Porte d'entrée
 
 - Avant #63 : ne créer ni modifier aucune extension pour le reboot.
-- Après #63 : utiliser uniquement les chemins, commandes de compilation et tests inscrits dans `Docs/05-technologies.md`.
+- Après #63 : `Projet/` n'a encore aucune extension. La première extension justifiée par une mesure crée `Projet/extensions/<nom>/` et son étape de compilation dans `Projet/outils/valider.ps1`, puis met à jour `Docs/05-technologies.md`.
 - L'ancienne extension est consultable, mais aucune classe ni macro ne doit être copiée sans revue et mesure explicites.
 - La version de godot-cpp reste figée dans `Tools/versions.json` jusqu'à une décision contraire.
 

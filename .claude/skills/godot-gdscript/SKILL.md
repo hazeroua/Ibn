@@ -1,22 +1,23 @@
 ---
 name: godot-gdscript
-description: Conventions Godot 4.7 et GDScript typé du reboot Terrain3D. Avant #63, ne travaille que dans le prototype de validation ; après #63, suit la structure documentée du nouveau socle.
+description: Conventions Godot 4.7 et GDScript typé du reboot Terrain3D. Le projet actif est `Projet/`.
 ---
 # Godot et GDScript dans ce projet
 
 ## Version et chemins
 - Godot **figé** (`Tools/versions.json`, chemins dans `Tools/outils.json`). Ne jamais changer de version sans décision explicite.
-- Avant la fermeture de #63, le seul projet actif est `Reboot/Terrain3DValidation/`.
+- Le projet actif est `Projet/` (structure dans `Projet/README.md`).
 - `Game/` est l'ancien projet : ne pas y ajouter de code pour le reboot.
 - Ne jamais lancer l'éditeur pour modifier manuellement une scène : tout doit rester reproductible par texte, données ou script.
 
-## Commandes actives pour #62
+## Commandes
 
-Utiliser `run-validation.ps1` sous Vulkan et D3D12, conformément à la skill `valider`. Le ticket #63 devra documenter les commandes définitives d'import, de test, de construction et de lancement avant tout nouveau développement GDScript.
+Tout passe par `Projet/valider.bat` (skill `valider`). Le jeu démarre sur `core/boot/boot.tscn`, qui lit `data/config/` puis ouvre la scène du catalogue `data/config/boot.json` (`-- --scene=<id>`).
 
 ## Règles de code
 - **Typage statique partout** (`untyped_declaration` est une erreur) : variables, paramètres, retours, variables de boucle (`for x: int in …`). `:=` est accepté.
-- Les données et leur chargeur seront définis par #63 ; ne pas reprendre automatiquement le chargeur de l'ancien projet.
+- Données : JSON dans `Projet/data/`, lues avec `JsonData` (`core/data/json_data.gd`) et validées à la lecture (erreurs explicites, jamais de valeur par défaut silencieuse).
+- Journal : `GameLog.info/warning/error(catégorie, message)` ; `GameLog.error` fait échouer la validation.
 - Pas de `_process` sans nécessité ; jamais d'allocation ni de recherche linéaire par image dans les systèmes nombreux (→ C++).
 - Formatage : `python -m gdtoolkit.formatter --line-length 140` ; analyse : `python -m gdtoolkit.linter` (le Python des outils est dans `Tools/outils.json` → `scons.python`).
 - Textes affichés au joueur en français et traduisibles ; noms de code en anglais.

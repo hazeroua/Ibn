@@ -1,0 +1,9 @@
+max-line-length: 140
+max-file-lines: 1000
+max-public-methods: 20
+max-returns: 12
+tab-characters: 1
+excluded_directories: !!set
+  .git: null
+  .godot: null
+  addons: null

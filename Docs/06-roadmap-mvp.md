@@ -6,7 +6,7 @@ Cette feuille de route remplace les anciens MVP. Le projet repart de zéro et av
 
 - Terrain3D est la fondation du monde extérieur.
 - Le nouveau socle ne dépend pas du code de l'ancien jeu.
-- L'ancien dossier `Game/` est une archive tant que le ticket 2 n'a pas créé le nouveau projet définitif.
+- L'ancien dossier `Game/` est une archive ; le jeu se trouve dans `Projet/`.
 - Chaque ticket produit une scène essayable, des tests, des mesures et une commande reproductible.
 - Un ticket n'est fermé que lorsque tous ses critères d'acceptation sont vérifiés.
 - Les tickets 3 et 4 peuvent avancer en parallèle après le ticket 2. Tous les autres suivent leurs dépendances.
@@ -15,8 +15,8 @@ Cette feuille de route remplace les anciens MVP. Le projet repart de zéro et av
 
 | Ordre | Ticket | État au 21 novembre 2026 | Résultat attendu |
 |---:|---|---|---|
-| 1 | [#62 — Valider Terrain3D](https://github.com/hazeroua/Ibn/issues/62) | En cours | Décision mesurée Vulkan/D3D12 sur la machine cible |
-| 2 | [#63 — Créer le socle neuf](https://github.com/hazeroua/Ibn/issues/63) | Bloqué par #62 | Nouveau projet Godot indépendant de l'ancien code |
+| 1 | [#62 — Valider Terrain3D](https://github.com/hazeroua/Ibn/issues/62) | Terminé (Vulkan retenu) | Décision mesurée Vulkan/D3D12 sur la machine cible |
+| 2 | [#63 — Créer le socle neuf](https://github.com/hazeroua/Ibn/issues/63) | Terminé : socle `Projet/` | Nouveau projet Godot indépendant de l'ancien code |
 | 3 | [#64 — Construire le terrain saharien](https://github.com/hazeroua/Ibn/issues/64) | Bloqué par #63 | Dunes, zones rocheuses et oueds sur 4 × 4 km |
 | 4 | [#65 — Refaire le personnage et la caméra](https://github.com/hazeroua/Ibn/issues/65) | Bloqué par #63 | Déplacement troisième personne neuf et stable |
 | 5 | [#66 — Définir l'identité visuelle](https://github.com/hazeroua/Ibn/issues/66) | Bloqué par #63 et #64 | Lumière, ciel, brume, vent et poussière |
