@@ -1,0 +1,28 @@
+; Prototype isolé de validation de Terrain3D.
+config_version=5
+
+[application]
+
+config/name="Ibn Khaldoun — validation Terrain3D"
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.7", "Forward Plus")
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/vsync/vsync_mode=0
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+renderer/rendering_method.mobile="gl_compatibility"
+scaling_3d/mode=2
+scaling_3d/scale=0.67
+anti_aliasing/quality/msaa_3d=0
+textures/vram_compression/import_etc2_astc=false
+
