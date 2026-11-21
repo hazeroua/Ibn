@@ -1,6 +1,6 @@
 # Reprise du projet autour de Terrain3D
 
-Décision du 21 novembre 2026 : le projet est repris sur une base neuve, avec Terrain3D comme fondation du monde extérieur. L'ancien projet reste conservé tant que le nouveau socle n'a pas été validé. Aucun fichier existant n'est supprimé ou déplacé pendant cette phase.
+Décision du 21 novembre 2026 : le projet est reconstruit depuis zéro sur une base neuve, avec Terrain3D comme fondation du monde extérieur. L'ancien projet reste conservé uniquement comme archive et source éventuelle d'éléments sélectionnés après validation du nouveau socle. Aucun fichier existant n'est supprimé ou déplacé pendant cette phase.
 
 ## Objectif du premier jalon
 
@@ -19,7 +19,7 @@ Le premier jalon ne comprend ni Tunis, ni foule, ni missions historiques complex
 
 ## Tickets du jalon « Reboot Terrain3D »
 
-### 1. Valider Terrain3D sur la machine cible
+### 1. [Valider Terrain3D sur la machine cible](https://github.com/hazeroua/Ibn/issues/62)
 
 Créer un projet Godot minimal séparé, installer Terrain3D 1.1.0, générer un terrain de 4 × 4 km, activer collisions et niveaux de détail, puis vérifier l'éditeur, le jeu, l'export Windows et une session de déplacement de 30 minutes.
 
@@ -31,7 +31,7 @@ Critères d'acceptation :
 - mesure du temps CPU, du temps GPU, de la mémoire et des images par seconde ;
 - décision écrite : continuer avec Terrain3D ou arrêter le reboot avant d'investir davantage.
 
-### 2. Créer le socle neuf du projet
+### 2. [Créer le socle neuf du projet](https://github.com/hazeroua/Ibn/issues/63)
 
 Créer le nouveau projet Godot autour de Terrain3D avec démarrage, configuration graphique, entrées, journalisation, tests, export Windows et pipeline de validation. Conserver l'ancien projet sans le modifier.
 
@@ -43,7 +43,7 @@ Critères d'acceptation :
 - versions de Godot et Terrain3D figées ;
 - aucune dépendance au code de l'ancien jeu.
 
-### 3. Construire le terrain saharien
+### 3. [Construire le terrain saharien](https://github.com/hazeroua/Ibn/issues/64)
 
 Créer un terrain de 4 × 4 km composé de dunes, zones pierreuses, oueds secs et reliefs rocheux, avec des transitions naturelles et des repères visuels permettant de s'orienter.
 
@@ -55,7 +55,7 @@ Critères d'acceptation :
 - collisions stables à pied et à vitesse élevée ;
 - niveaux de détail sans trous ni sauts visibles gênants.
 
-### 4. Refaire le personnage et la caméra
+### 4. [Refaire le personnage et la caméra](https://github.com/hazeroua/Ibn/issues/65)
 
 Créer un contrôleur troisième personne neuf pour la marche, la course, les pentes et les collisions, accompagné d'une caméra fluide adaptée aux dunes et aux zones rocheuses.
 
@@ -67,7 +67,7 @@ Critères d'acceptation :
 - animation et sons de pas liés au type de sol ;
 - aucun code repris de l'ancien contrôleur sans validation explicite.
 
-### 5. Définir l'identité visuelle du Sahara
+### 5. [Définir l'identité visuelle du Sahara](https://github.com/hazeroua/Ibn/issues/66)
 
 Créer la lumière, le ciel, la brume sèche, le vent et la poussière dans un style stylisé haut de gamme, lisible sur la machine cible.
 
@@ -78,7 +78,7 @@ Critères d'acceptation :
 - effet de chaleur et poussière sans dégrader la lisibilité ;
 - budget GPU respecté dans le pire point de vue du terrain.
 
-### 6. Ajouter rochers, végétation et oasis
+### 6. [Ajouter rochers, végétation et oasis](https://github.com/hazeroua/Ibn/issues/67)
 
 Utiliser le système d'instanciation de Terrain3D pour répartir rochers, herbes sèches, arbustes et palmiers, puis construire une petite oasis servant de destination au joueur.
 
@@ -89,7 +89,7 @@ Critères d'acceptation :
 - eau, rive et palmeraie visuellement cohérentes ;
 - densité maximale testée sans allocations par image ni chute sous le budget.
 
-### 7. Livrer la première boucle jouable
+### 7. [Livrer la première boucle jouable](https://github.com/hazeroua/Ibn/issues/68)
 
 Assembler le terrain, le personnage, l'ambiance et l'oasis dans un parcours de dix minutes : partir d'un camp, s'orienter grâce au paysage, atteindre l'oasis et revenir.
 
