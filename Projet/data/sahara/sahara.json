@@ -193,6 +193,6 @@
       "body": { "radius_meters": 0.35, "height_meters": 1.8, "max_slope_degrees": 50.0 },
       "chase_camera": { "distance_meters": 7.0, "height_meters": 2.5, "smoothing": 8.0 }
     },
-    "help_text": "Sahara — terrain de 4 × 4 km\nZQSD ou flèches : se déplacer   Souris : regarder   Maj : très vite\nE / Espace : monter   A / Ctrl : descendre   T : matin, midi, fin de journée   Échap : libérer la souris"
+    "help_text": "Sahara — terrain de 4 × 4 km\nZQSD ou flèches : marcher   Maj : courir   Ctrl : marche lente   Espace : sauter\nSouris : regarder   Molette : rapprocher la caméra   T : matin, midi, fin de journée   Échap : libérer la souris"
   }
 }

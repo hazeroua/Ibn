@@ -84,6 +84,34 @@
         { "type": "key", "key": "T" },
         { "type": "joypad_button", "button": 3 }
       ]
+    },
+    "walk_slow": {
+      "deadzone": 0.5,
+      "events": [
+        { "type": "key", "key": "Ctrl" },
+        { "type": "joypad_button", "button": 9 }
+      ]
+    },
+    "jump": {
+      "deadzone": 0.5,
+      "events": [
+        { "type": "key", "key": "Space" },
+        { "type": "joypad_button", "button": 0 }
+      ]
+    },
+    "camera_zoom_in": {
+      "deadzone": 0.5,
+      "events": [
+        { "type": "mouse_button", "button": "wheel_up" },
+        { "type": "joypad_button", "button": 11 }
+      ]
+    },
+    "camera_zoom_out": {
+      "deadzone": 0.5,
+      "events": [
+        { "type": "mouse_button", "button": "wheel_down" },
+        { "type": "joypad_button", "button": 12 }
+      ]
     }
   }
 }

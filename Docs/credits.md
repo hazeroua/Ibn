@@ -26,8 +26,14 @@ Ce document liste toutes les ressources tierces livrées avec le jeu (`Projet/`)
 | Red Laterite Soil Stones | Poly Haven | CC0 1.0 | Roche |
 | Particle Pack 1.1 (`smoke_07`, `dirt_02`, `circle_05`) | Kenney (kenney.nl), empaqueté pour Godot par Hugo Locurcio (Calinou) | CC0 1.0 | Poussière |
 
+## Modèles et animations
+
+| Ressource | Auteur | Licence | Utilisation |
+|---|---|---|---|
+| Universal Animation Library (version Standard, copie glTF de J-Ponzo) | Quaternius | CC0 1.0 | Mannequin et animations du personnage joueur |
+
 Les adresses exactes et les empreintes SHA-256 sont dans `Projet/data/ressources.json` et `Projet/data/ressources.lock.json`. La version et l'empreinte de Sky3D sont dans `Tools/versions.json`.
 
 ## Texte de crédits à reprendre dans le jeu
 
-> Terrain3D et Sky3D par Tokisan Games (licence MIT). « The Milky Way panorama » par ESO/S. Brunier, sous licence CC BY 4.0, utilisée dans ses formes originale et modifiée. Textures Poly Haven (CC0). Particle Pack de Kenney (CC0). Réalisé avec Godot Engine (licence MIT).
+> Terrain3D et Sky3D par Tokisan Games (licence MIT). « The Milky Way panorama » par ESO/S. Brunier, sous licence CC BY 4.0, utilisée dans ses formes originale et modifiée. Textures Poly Haven (CC0). Particle Pack de Kenney (CC0). Personnage et animations : Universal Animation Library de Quaternius (CC0). Réalisé avec Godot Engine (licence MIT).

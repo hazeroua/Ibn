@@ -110,13 +110,17 @@ function Sync-Resources {
     $Count = 0
     $Wanted = @{}
     $DownloadRoot = Join-Path $ProjectRoot 'ressources/telechargees'
-    # Liste (clé, adresse) : quatre cartes par texture, une adresse par fichier isolé.
+    # Liste (dossier, adresse) : quatre cartes par texture, une adresse par fichier isolé.
     $Entries = @()
     foreach ($Texture in $Manifest.textures.PSObject.Properties) {
         foreach ($File in $Texture.Value.files.PSObject.Properties) { $Entries += , @($Texture.Name, [string]$File.Value) }
     }
     if ($Manifest.PSObject.Properties['fichiers']) {
-        foreach ($Single in $Manifest.fichiers.PSObject.Properties) { $Entries += , @($Single.Name, [string]$Single.Value.url) }
+        foreach ($Single in $Manifest.fichiers.PSObject.Properties) {
+            # « dossier » garde côte à côte les fichiers d'une même source (glTF et son .bin).
+            $Folder = if ($Single.Value.PSObject.Properties['dossier']) { [string]$Single.Value.dossier } else { $Single.Name }
+            $Entries += , @($Folder, [string]$Single.Value.url)
+        }
     }
     foreach ($Entry in $Entries) {
         $Key = $Entry[0]
@@ -169,6 +173,108 @@ function Sync-Resources {
         [IO.File]::WriteAllText($LockPath, $Text, $Utf8)
     }
     Write-Host "  $Count fichiers vérifiés, $Recorded empreintes nouvelles, $Removed retirées"
+}
+
+# Prépare le personnage joueur avec Blender (outils/blender/preparer_personnage.py) à partir
+# de sa source téléchargée : generated/personnages/<id>/<id>.glb et ses réglages d'import.
+# Rien n'est refait si le résultat est à jour (empreinte du script, du manifeste, de la
+# source et de la version de Blender).
+function Get-TextHash([string]$Text) {
+    $Algorithm = [Security.Cryptography.SHA256]::Create()
+    try { $Bytes = $Algorithm.ComputeHash([Text.Encoding]::UTF8.GetBytes($Text)) }
+    finally { $Algorithm.Dispose() }
+    return ([BitConverter]::ToString($Bytes) -replace '-', '').ToLowerInvariant()
+}
+
+function Get-FileSha([string]$Path) {
+    return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+}
+
+function Resolve-Blender($Tools) {
+    $Property = $Tools.PSObject.Properties['blender']
+    if ($Property -and $Property.Value -and $Property.Value.chemin -and (Test-Path -LiteralPath $Property.Value.chemin)) {
+        return [string]$Property.Value.chemin
+    }
+    $Command = Get-Command 'blender' -ErrorAction SilentlyContinue
+    if ($Command) { return $Command.Source }
+    throw 'Blender introuvable : relancez Tools/installer.ps1 (il installe Blender et note son chemin dans Tools/outils.json).'
+}
+
+function Invoke-Blender([string]$Blender, [string[]]$Arguments, [string]$LogPath) {
+    $Previous = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $Output = @(& $Blender @Arguments 2>&1 | ForEach-Object { "$_" })
+        $Code = $LASTEXITCODE
+    }
+    finally { $ErrorActionPreference = $Previous }
+    [IO.File]::WriteAllLines($LogPath, [string[]]$Output, $Utf8)
+    $Failures = @($Output | Where-Object { $_ -match '^(ERREUR preparer_personnage|Traceback|Error: )' })
+    if ($Failures.Count -gt 0) { throw "Blender a signalé une erreur (journal : $LogPath) :`n$($Failures -join "`n")" }
+    if ($Code -ne 0) { throw "Blender s'est terminé avec le code $Code (journal : $LogPath)." }
+}
+
+function Write-CharacterImportSettings([string]$Glb) {
+    $Wanted = @(
+        'meshes/ensure_tangents=false', 'meshes/generate_lods=true', 'meshes/create_shadow_meshes=true', 'meshes/light_baking=0',
+        'animation/import=true', 'animation/fps=30', 'animation/trimming=false', 'animation/remove_immutable_tracks=true',
+        'animation/import_rest_as_RESET=false',
+        'import_script/path="res://player/character_post_import.gd"'
+    )
+    $ImportPath = "$Glb.import"
+    if (Test-Path -LiteralPath $ImportPath) {
+        $Existing = @([IO.File]::ReadAllLines($ImportPath, $Utf8) | ForEach-Object { $_.Trim() })
+        if (@($Wanted | Where-Object { $Existing -notcontains $_ }).Count -eq 0) { return }
+    }
+    $Lines = @('[remap]', '', 'importer="scene"', 'importer_version=1', 'type="PackedScene"', '', '[params]', '') + $Wanted
+    [IO.File]::WriteAllLines($ImportPath, [string[]]$Lines, $Utf8)
+}
+
+function Build-Characters($Tools, [string]$RunRoot) {
+    $ManifestPath = Join-Path $ProjectRoot 'data/player/personnage.json'
+    $ScriptPath = Join-Path $ProjectRoot 'outils/blender/preparer_personnage.py'
+    $Resources = Read-Json (Join-Path $ProjectRoot 'data/ressources.json')
+    $Manifest = Read-Json $ManifestPath
+    $Blender = Resolve-Blender $Tools
+    $Previous = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try { $VersionOutput = @(& $Blender --background --factory-startup --version 2>&1 | ForEach-Object { "$_" }) }
+    finally { $ErrorActionPreference = $Previous }
+    $VersionLine = @($VersionOutput | Where-Object { $_ -match '^Blender \d' } | Select-Object -First 1)
+    if ($VersionLine.Count -eq 0) { throw "Version de Blender illisible : $($VersionOutput -join ' ')" }
+    $BlenderVersion = $VersionLine[0].Trim()
+    Write-Host "  $BlenderVersion"
+    foreach ($Character in $Manifest.characters) {
+        if ($Character.id -notmatch '^[a-z0-9_]+$') { throw "Identifiant de personnage invalide : « $($Character.id) »." }
+        $SourceDir = Join-Path $ProjectRoot "ressources/telechargees/$($Character.source_ressource)"
+        $SourceFile = Join-Path $SourceDir $Character.source_file
+        if (-not (Test-Path -LiteralPath $SourceFile)) { throw "Personnage $($Character.id) : source absente ($SourceFile)." }
+        $SourceHashes = @(Get-ChildItem -LiteralPath $SourceDir -File | Sort-Object Name | ForEach-Object { Get-FileSha $_.FullName })
+        $OutputDir = Join-Path $ProjectRoot "generated/personnages/$($Character.id)"
+        New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
+        $Glb = Join-Path $OutputDir "$($Character.id).glb"
+        $StampPath = "$Glb.empreinte"
+        $Stamp = Get-TextHash ("$(Get-FileSha $ScriptPath)|$(Get-FileSha $ManifestPath)|$($SourceHashes -join ',')|$BlenderVersion")
+        $UpToDate = (Test-Path -LiteralPath $Glb) -and (Test-Path -LiteralPath $StampPath) -and
+            ([IO.File]::ReadAllText($StampPath).Trim() -eq $Stamp)
+        if ($UpToDate) {
+            Write-Host "  $($Character.id) : à jour"
+        }
+        else {
+            if (Test-Path -LiteralPath $StampPath) { Remove-Item -LiteralPath $StampPath -Force }
+            $Report = Join-Path $RunRoot "personnage-$($Character.id).json"
+            $Arguments = @(
+                '--background', '--factory-startup', '--python-exit-code', '1', '--python', $ScriptPath, '--',
+                '--manifest', $ManifestPath, '--character', $Character.id,
+                '--source-dir', $SourceDir, '--output', $Glb, '--report', $Report
+            )
+            Invoke-Blender $Blender $Arguments (Join-Path $RunRoot "personnage-$($Character.id).log")
+            if (-not (Test-Path -LiteralPath $Glb)) { throw "Blender n'a pas produit $Glb." }
+            [IO.File]::WriteAllText($StampPath, $Stamp, $Utf8)
+            Write-Host "  $($Character.id) : préparé par Blender"
+        }
+        Write-CharacterImportSettings $Glb
+    }
 }
 
 function Invoke-Godot([string[]]$Arguments, [string]$LogPath, [string]$Label) {
@@ -256,15 +362,16 @@ try {
     Install-Addon 'gut' $Versions.plugins.gut $Downloads
     Install-Addon 'sky_3d' $Versions.plugins.sky_3d $Downloads
 
-    Write-Step '2/8 Ressources libres (data/ressources.json)'
+    Write-Step '2/8 Ressources libres (data/ressources.json) et personnage (Blender)'
     Sync-Resources
+    Build-Characters $Tools $RunRoot
 
     Write-Step '3/8 Analyse et mise en forme du GDScript'
     Push-Location $ProjectRoot
     try {
-        & $GdLint core world tests outils
+        & $GdLint core world player tests outils
         if ($LASTEXITCODE -ne 0) { throw 'gdlint a trouvé des problèmes.' }
-        & $GdFormat --check --line-length 140 core world tests outils
+        & $GdFormat --check --line-length 140 core world player tests outils
         if ($LASTEXITCODE -ne 0) { throw 'gdformat : des fichiers ne sont pas mis en forme.' }
     }
     finally { Pop-Location }

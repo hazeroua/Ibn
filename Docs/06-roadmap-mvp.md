@@ -18,7 +18,7 @@ Cette feuille de route remplace les anciens MVP. Le projet repart de zéro et av
 | 1 | [#62 — Valider Terrain3D](https://github.com/hazeroua/Ibn/issues/62) | Terminé (Vulkan retenu) | Décision mesurée Vulkan/D3D12 sur la machine cible |
 | 2 | [#63 — Créer le socle neuf](https://github.com/hazeroua/Ibn/issues/63) | Terminé : socle `Projet/` | Nouveau projet Godot indépendant de l'ancien code |
 | 3 | [#64 — Construire le terrain saharien](https://github.com/hazeroua/Ibn/issues/64) | Terminé : scène `sahara` | Dunes, zones rocheuses et oueds sur 4 × 4 km |
-| 4 | [#65 — Refaire le personnage et la caméra](https://github.com/hazeroua/Ibn/issues/65) | Bloqué par #63 | Déplacement troisième personne neuf et stable |
+| 4 | [#65 — Refaire le personnage et la caméra](https://github.com/hazeroua/Ibn/issues/65) | Premier personnage jouable livré (copie de la première version) ; personnage définitif confié au binôme | Déplacement troisième personne neuf et stable |
 | 5 | [#66 — Définir l'identité visuelle](https://github.com/hazeroua/Ibn/issues/66) | Terminé : atmosphère Sky3D, trois moments | Lumière, ciel, brume, vent et poussière |
 | 6 | [#67 — Ajouter rochers, végétation et oasis](https://github.com/hazeroua/Ibn/issues/67) | Bloqué par #63 et #64 | Oasis et instanciation du décor |
 | 7 | [#68 — Livrer la première boucle jouable](https://github.com/hazeroua/Ibn/issues/68) | Bloqué par #64 à #67 | Parcours camp–oasis–camp exporté sous Windows |

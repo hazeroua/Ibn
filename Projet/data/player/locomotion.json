@@ -1,0 +1,176 @@
+{
+  "description": "Réglages du déplacement du personnage joueur (res://player/player_character.gd). Unités : mètres, secondes, degrés. Les allures et les animations suivent le contrat de Docs/contrats-mvp-1.md.",
+  "body": {
+    "description": "Capsule de collision : pieds à l'origine du personnage, regard vers -Z. Couches de collision par numéro (2 = joueur, 1 = monde).",
+    "radius": 0.3,
+    "height": 1.75,
+    "collision_layers": [
+      2
+    ],
+    "collision_mask_layers": [
+      1,
+      3
+    ],
+    "safe_margin": 0.001
+  },
+  "physics": {
+    "description": "Gravité, pentes et glissement. La longueur d'accrochage au sol s'ajoute à la descente maximale d'une pente pendant l'image (vitesse × durée × tangente de l'angle maximal).",
+    "gravity": 9.81,
+    "terminal_fall_speed": 40.0,
+    "floor_max_angle_degrees": 45.0,
+    "floor_snap_base_length": 0.05,
+    "wall_min_slide_angle_degrees": 15.0,
+    "max_slides": 6,
+    "air_control": 0.15,
+    "teleport_distance": 2.0
+  },
+  "steps": {
+    "description": "Marches d'escalier : hauteur franchie sans saut (montée instantanée à la pose du pied sur la marche), descente maintenue au sol par l'accrochage. retry_delay : délai avant de retenter une marche après un échec (coins rentrants).",
+    "max_height": 0.3,
+    "min_height": 0.02,
+    "clearance": 0.01,
+    "surface_inset": 0.04,
+    "headroom_probe_distance": 0.1,
+    "retry_delay": 0.25
+  },
+  "input": {
+    "description": "Entrées : lissage du stick, seuil de déplacement, stick à moitié = marche lente (avec hystérésis), délai avant de considérer un arrêt.",
+    "smoothing_time": 0.08,
+    "move_threshold": 0.15,
+    "analog_walk_slow_max": 0.6,
+    "analog_hysteresis": 0.05,
+    "analog_min_speed_fraction": 0.5,
+    "idle_confirm_time": 0.1
+  },
+  "gaits": {
+    "description": "Allures. animation_reference_speed : vitesse (m/s) à laquelle l'animation de l'allure, jouée à vitesse normale, ne fait pas glisser les pieds.",
+    "walk_slow": {
+      "speed": 0.8,
+      "acceleration": 3.0,
+      "deceleration": 4.0,
+      "turn_rate_degrees": 300.0,
+      "stride_length": 0.69,
+      "animation_reference_speed": 0.8
+    },
+    "walk": {
+      "speed": 1.45,
+      "acceleration": 4.0,
+      "deceleration": 4.5,
+      "turn_rate_degrees": 360.0,
+      "stride_length": 0.97,
+      "animation_reference_speed": 1.45
+    },
+    "run": {
+      "speed": 4.6,
+      "acceleration": 7.0,
+      "deceleration": 8.0,
+      "turn_rate_degrees": 270.0,
+      "stride_length": 2.15,
+      "animation_reference_speed": 4.6
+    }
+  },
+  "turns": {
+    "description": "Virages marqués quand la direction voulue change brusquement : quart de tour (turn_left_90, turn_right_90) ou demi-tour (turn_180), décidé sur la direction brute du stick restée stable (confirm_time, stable_angle_degrees) ; angles mesurés entre le cap et la direction voulue.",
+    "turn_90_min_angle_degrees": 70.0,
+    "turn_180_min_angle_degrees": 140.0,
+    "turn_90_duration": 0.4,
+    "turn_180_duration": 0.6,
+    "turn_90_speed_factor": 0.55,
+    "turn_180_speed_factor": 0.0,
+    "deceleration": 10.0,
+    "cooldown": 0.2,
+    "confirm_time": 0.04,
+    "stable_angle_degrees": 20.0
+  },
+  "stops": {
+    "description": "Arrêts marqués (stop_walk, stop_run) : seulement si la vitesse dépasse une fraction de celle de l'allure. Durée = vitesse / décélération de l'allure, bornée.",
+    "min_speed_fraction": 0.6,
+    "min_duration": 0.25,
+    "max_duration": 0.8
+  },
+  "footsteps": {
+    "description": "Pas. Avec un modèle animé : un pas à chaque appui d'un pied dans l'animation jouée (animation_contacts : os des pieds ; appui = pied revenu à moins de height_m de son point le plus bas après s'être levé de lift_m ; deux appuis à moins de min_gap_s n'en font qu'un ; le même pied ne sonne pas deux fois de suite à moins de same_foot_min_gap_s (passage de la marche à l'arrêt, où l'animation d'arrêt repose le pied déjà posé) ; un appui ne sonne que si le personnage a parcouru au moins min_travel_m au sol depuis le précédent (contre un mur : aucun pas) ; échantillonnage des pistes, une fois au chargement). Sans modèle : un pas à chaque longueur de foulée parcourue au sol (stride_length des allures = distance parcourue par l'animation entre deux appuis). Rayon vers le bas sous le pied pour trouver le collisionneur.",
+    "first_step_fraction": 0.5,
+    "foot_lateral_offset": 0.11,
+    "ray_start_height": 0.3,
+    "ray_depth": 0.5,
+    "ray_collision_mask_layers": [
+      1
+    ],
+    "rest_speed": 0.05,
+    "stop_step_min_fraction": 0.3,
+    "animation_contacts": {
+      "foot_bones": [
+        "DEF-foot.L",
+        "DEF-foot.R"
+      ],
+      "height_m": 0.03,
+      "lift_m": 0.04,
+      "samples_per_second": 120.0,
+      "min_gap_s": 0.12,
+      "min_travel_m": 0.2,
+      "same_foot_min_gap_s": 0.5
+    }
+  },
+  "animation": {
+    "description": "Machine d'animation (bibliothèque « locomotion » du modèle) : fondus et bornes de la vitesse de lecture.",
+    "blend_time": 0.2,
+    "one_shot_blend_time": 0.12,
+    "speed_scale_min": 0.6,
+    "speed_scale_max": 1.5
+  },
+  "wading": {
+    "description": "Marche dans l'eau peu profonde : profondeur maximale franchissable (au-delà, une limite invisible bloque : pas de nage), multiplicateur de vitesse à cette profondeur (interpolé depuis 1 à la profondeur d'entrée), éclaboussure (une seule instance de particules réutilisée à chaque pas).",
+    "max_depth_m": 0.8,
+    "enter_depth_m": 0.03,
+    "speed_multiplier_at_max_depth": 0.55,
+    "smoothing_per_second": 8.0,
+    "splash": {
+      "amount": 24,
+      "lifetime_s": 0.6,
+      "explosiveness": 0.9,
+      "initial_speed_min": 1.0,
+      "initial_speed_max": 2.4,
+      "spread_degrees": 35.0,
+      "gravity": 9.0,
+      "scale_min": 0.6,
+      "scale_max": 1.2,
+      "particle_size_m": 0.07,
+      "color": "#d9edf2bf",
+      "min_speed": 0.6
+    }
+  },
+  "budgets": {
+    "description": "Budgets du test de charge (1 000 obstacles autour du joueur) : temps de calcul du déplacement d'une image, en millisecondes.",
+    "step_average_ms": 1.0,
+    "step_p95_ms": 2.0
+  },
+  "jump": {
+    "description": "Saut à pied (barre d'espace, bouton A). speed_mps : vitesse verticale au départ (hauteur ≈ v²/2g). coyote_s : délai pendant lequel on peut encore sauter après avoir quitté le sol ; buffer_s : un appui juste avant l'atterrissage est gardé ; landing_min_air_s : temps en l'air au-delà duquel l'atterrissage est joué ; landing_lock_s : durée de l'atterrissage pendant laquelle la course reprend en douceur.",
+    "speed_mps": 4.4,
+    "coyote_s": 0.12,
+    "buffer_s": 0.15,
+    "landing_min_air_s": 0.3,
+    "blend_s": 0.08
+  },
+  "impact": {
+    "description": "Le personnage réagit au monde. Choc : en courant contre un mur presque de face (angle au plus bump_max_angle_deg, vitesse au moins bump_min_speed_mps), il s'arrête net et recule le buste (animation bump, commandes bloquées pendant sa durée). Contre un mur à faible vitesse réelle (blocked_speed_mps), il cesse de marcher sur place (pose de repos). Roulade : réception après au moins roll_min_air_s en l'air à au moins roll_min_speed_mps. Franchissement : en courant ou en marchant vite (vault_min_speed_mps) vers un obstacle bas presque de face (vault_max_angle_deg) repéré devant soi (entre vault_min_gap_m et vault_look_ahead_s × vitesse), haut de vault_min_height_m à vault_max_height_m et épais d'au plus vault_max_depth_m, avec un sol pour se recevoir au plus vault_max_drop_m plus bas que le dessus : saut par-dessus le long d'une courbe vérifiée sans contact (vault_samples segments ; montée d'abord, puis passage au-dessus, puis descente), à la vitesse de la course (durée bornée entre vault_min_duration_s et vault_max_duration_s), passant vault_clearance_m au-dessus. Un collisionneur marqué de la métadonnée « franchissable » à false n'est jamais franchi.",
+    "bump_min_speed_mps": 3.2,
+    "bump_max_angle_deg": 40.0,
+    "blocked_speed_mps": 0.25,
+    "roll_min_air_s": 0.75,
+    "roll_min_speed_mps": 3.0,
+    "vault_min_speed_mps": 2.4,
+    "vault_max_angle_deg": 35.0,
+    "vault_min_gap_m": 0.45,
+    "vault_look_ahead_s": 0.3,
+    "vault_min_height_m": 0.32,
+    "vault_max_height_m": 1.1,
+    "vault_max_depth_m": 1.0,
+    "vault_max_drop_m": 1.2,
+    "vault_clearance_m": 0.15,
+    "vault_min_duration_s": 0.4,
+    "vault_max_duration_s": 0.9,
+    "vault_samples": 8
+  }
+}

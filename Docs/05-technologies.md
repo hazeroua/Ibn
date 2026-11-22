@@ -85,6 +85,10 @@ Seul `_process` déplace les trois émetteurs avec la caméra, sans allocation.
 
 La mise à l'échelle 3D n'est **jamais** réglée dans `project.godot` : elle y deviendrait la valeur par défaut de toutes les `SubViewport`. La vue de 2 × 2 pixels que Terrain3D utilise pour viser le sol tomberait alors à 1 × 1 et, dès qu'un matériau lit l'écran (la chaleur), Godot échouerait à créer ses textures (« Too many mipmaps requested »). `graphics_settings.gd` l'applique à la seule fenêtre principale.
 
+### Personnage joueur (#65)
+
+Le personnage définitif est confié au binôme du porteur du projet. `Projet/player/` contient, à sa demande, une copie du personnage de la première version (`Game/player/`) : contrôleur `CharacterBody3D` (allures, arrêts, virages, saut, marches, pentes), machine d'animation, caméra à la troisième personne avec bras anti-collision. Le modèle est le mannequin de l'Universal Animation Library de Quaternius (CC0), préparé par Blender (`Projet/outils/blender/preparer_personnage.py`) pendant `valider.bat`. Blender est installé par `Tools/installer.ps1` (chemin noté dans `Tools/outils.json`) ; sa version entre dans l'empreinte qui décide de relancer la préparation. Pires cas repris de la première version : 1 000 obstacles autour du joueur (calcul d'une image : moyenne ≤ 1 ms, p95 ≤ 2 ms), images de 2 à 100 ms, changement de direction à chaque image.
+
 ## Pipeline : commande unique
 
 ```powershell

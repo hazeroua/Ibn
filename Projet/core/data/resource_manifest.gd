@@ -14,6 +14,9 @@ var errors: PackedStringArray = PackedStringArray()
 var _textures: Dictionary = {}
 ## Fichiers isolés : clé -> adresse.
 var _files: Dictionary = {}
+## Fichiers isolés : clé -> dossier de téléchargement (la clé, ou « dossier » quand plusieurs
+## fichiers doivent être côte à côte, comme un glTF et son .bin).
+var _file_folders: Dictionary = {}
 
 
 static func load_shipped() -> ResourceManifest:
@@ -51,6 +54,12 @@ static func from_dictionary(data: Dictionary) -> ResourceManifest:
 		if manifest._textures.has(key):
 			manifest.errors.append(context + " : clé déjà utilisée par une texture.")
 		manifest._files[key] = url
+		var folder: String = key
+		if entry.has("dossier"):
+			folder = JsonData.read_string(entry, "dossier", manifest.errors, context)
+			if not folder.is_valid_ascii_identifier() or folder.to_lower() != folder:
+				manifest.errors.append(context + " : « dossier » doit être en minuscules, chiffres et _.")
+		manifest._file_folders[key] = folder
 	return manifest
 
 
@@ -88,7 +97,12 @@ func file_url(key: String) -> String:
 
 ## Chemin res:// d'un fichier isolé téléchargé.
 func file_local_path(key: String) -> String:
-	return DOWNLOAD_ROOT.path_join(key).path_join(file_url(key).get_file())
+	return DOWNLOAD_ROOT.path_join(String(_file_folders[key])).path_join(file_url(key).get_file())
+
+
+## Dossier res:// d'un fichier isolé téléchargé.
+func file_folder(key: String) -> String:
+	return DOWNLOAD_ROOT.path_join(String(_file_folders[key]))
 
 
 ## Chemin res:// du fichier téléchargé pour une carte d'une texture.
