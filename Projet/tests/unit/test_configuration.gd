@@ -50,7 +50,8 @@ func test_shipped_input_bindings_register_every_action() -> void:
 	stick_left.axis = JOY_AXIS_LEFT_X
 	stick_left.axis_value = -1.0
 	assert_true(InputMap.event_is_action(stick_left, &"move_left"))
-	bindings.remove()
+	# Les actions restent déclarées, comme en jeu : les tests du personnage et du cheval les lisent
+	# (tests/support/avant_tests.gd les déclare aussi avant tous les tests).
 
 
 func test_invalid_input_events_are_rejected() -> void:

@@ -106,6 +106,20 @@
         { "type": "joypad_button", "button": 11 }
       ]
     },
+    "mount_horse": {
+      "deadzone": 0.5,
+      "events": [
+        { "type": "key", "key": "E" },
+        { "type": "joypad_button", "button": 2 }
+      ]
+    },
+    "horse_whistle": {
+      "deadzone": 0.5,
+      "events": [
+        { "type": "key", "key": "H" },
+        { "type": "joypad_button", "button": 13 }
+      ]
+    },
     "camera_zoom_out": {
       "deadzone": 0.5,
       "events": [

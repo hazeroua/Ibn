@@ -341,6 +341,49 @@ function Build-Characters($Tools, [string]$RunRoot) {
     }
 }
 
+# Prépare le cheval (ticket #106) avec Blender : forme, textures cuites, puis squelette et animations du cheval
+# de Quaternius (sources/cheval/). Résultat : generated/chevaux/cheval_sahara/cheval_sahara.glb. Rien n'est refait
+# si le résultat est à jour (empreinte des trois scripts, de la source d'animations et de la version de Blender).
+function Build-Horse($Tools, [string]$RunRoot) {
+    $ScriptDir = Join-Path $ProjectRoot 'outils/blender/cheval'
+    $Scripts = @('forme.py', 'textures.py', 'squelette.py') | ForEach-Object { Join-Path $ScriptDir $_ }
+    $Animations = Join-Path $ProjectRoot 'sources/cheval/animations_quaternius.glb'
+    foreach ($Required in $Scripts + @($Animations)) {
+        if (-not (Test-Path -LiteralPath $Required)) { throw "Cheval : fichier absent ($Required)." }
+    }
+    $Blender = Resolve-Blender $Tools
+    $Previous = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try { $VersionOutput = @(& $Blender --background --factory-startup --version 2>&1 | ForEach-Object { "$_" }) }
+    finally { $ErrorActionPreference = $Previous }
+    $BlenderVersion = (@($VersionOutput | Where-Object { $_ -match '^Blender \d' } | Select-Object -First 1) -join '').Trim()
+    $OutputDir = Join-Path $ProjectRoot 'generated/chevaux/cheval_sahara'
+    $WorkDir = Join-Path $ProjectRoot 'generated/chevaux/travail'
+    New-Item -ItemType Directory -Force -Path $OutputDir, $WorkDir | Out-Null
+    # Fichiers de travail (.blend) : Godot ne doit pas les importer (il chercherait Blender).
+    [IO.File]::WriteAllText((Join-Path $WorkDir '.gdignore'), '', $Utf8)
+    $Glb = Join-Path $OutputDir 'cheval_sahara.glb'
+    $StampPath = "$Glb.empreinte"
+    $Hashes = (@($Scripts + @($Animations)) | ForEach-Object { Get-FileSha $_ }) -join '|'
+    $Stamp = Get-TextHash "$Hashes|$BlenderVersion"
+    if ((Test-Path -LiteralPath $Glb) -and (Test-Path -LiteralPath $StampPath) -and ([IO.File]::ReadAllText($StampPath).Trim() -eq $Stamp)) {
+        Write-Host '  cheval_sahara : à jour'
+        return
+    }
+    if (Test-Path -LiteralPath $StampPath) { Remove-Item -LiteralPath $StampPath -Force }
+    $Common = @('--background', '--factory-startup', '--python-exit-code', '1', '--python')
+    $Forme = Join-Path $WorkDir 'forme.blend'
+    $Textures = Join-Path $WorkDir 'textures.blend'
+    Invoke-Blender $Blender ($Common + @($Scripts[0], '--', '--sortie', $WorkDir)) (Join-Path $RunRoot 'cheval-forme.log')
+    Invoke-Blender $Blender ($Common + @($Scripts[1], '--', '--entree', $Forme, '--sortie', $WorkDir)) (Join-Path $RunRoot 'cheval-textures.log')
+    Invoke-Blender $Blender ($Common + @(
+            $Scripts[2], '--', '--entree', $Textures, '--animations', $Animations, '--sortie', $Glb,
+            '--rapport', (Join-Path $RunRoot 'cheval.json'))) (Join-Path $RunRoot 'cheval-squelette.log')
+    if (-not (Test-Path -LiteralPath $Glb)) { throw "Blender n'a pas produit $Glb." }
+    [IO.File]::WriteAllText($StampPath, $Stamp, $Utf8)
+    Write-Host '  cheval_sahara : préparé par Blender (forme, textures, squelette)'
+}
+
 function Invoke-Godot([string[]]$Arguments, [string]$LogPath, [string]$Label) {
     & $script:Godot --path $ProjectRoot --log-file $LogPath @Arguments | Out-Host
     if ($LASTEXITCODE -ne 0) { throw "$Label : Godot a quitté avec le code $LASTEXITCODE (journal : $LogPath)." }
@@ -466,16 +509,17 @@ try {
     Install-Addon 'gut' $Versions.plugins.gut $Downloads
     Install-Addon 'sky_3d' $Versions.plugins.sky_3d $Downloads
 
-    Write-Step '2/8 Ressources libres (data/ressources.json) et personnage (Blender)'
+    Write-Step '2/8 Ressources libres (data/ressources.json), personnage et cheval (Blender)'
     Sync-Resources
     Build-Characters $Tools $RunRoot
+    Build-Horse $Tools $RunRoot
 
     Write-Step '3/8 Analyse et mise en forme du GDScript'
     Push-Location $ProjectRoot
     try {
-        & $GdLint core world player tests outils
+        & $GdLint core world player horse audio tests outils
         if ($LASTEXITCODE -ne 0) { throw 'gdlint a trouvé des problèmes.' }
-        & $GdFormat --check --line-length 140 core world player tests outils
+        & $GdFormat --check --line-length 140 core world player horse audio tests outils
         if ($LASTEXITCODE -ne 0) { throw 'gdformat : des fichiers ne sont pas mis en forme.' }
     }
     finally { Pop-Location }

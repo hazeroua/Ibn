@@ -89,6 +89,10 @@ La mise à l'échelle 3D n'est **jamais** réglée dans `project.godot` : elle y
 
 Le personnage définitif est confié au binôme du porteur du projet. `Projet/player/` contient, à sa demande, une copie du personnage de la première version (`Game/player/`) : contrôleur `CharacterBody3D` (allures, arrêts, virages, saut, marches, pentes), machine d'animation, caméra à la troisième personne avec bras anti-collision. Le modèle est le mannequin de l'Universal Animation Library de Quaternius (CC0), préparé par Blender (`Projet/outils/blender/preparer_personnage.py`) pendant `valider.bat`. Blender est installé par `Tools/installer.ps1` (chemin noté dans `Tools/outils.json`) ; sa version entre dans l'empreinte qui décide de relancer la préparation. Pires cas repris de la première version : 1 000 obstacles autour du joueur (calcul d'une image : moyenne ≤ 1 ms, p95 ≤ 2 ms), images de 2 à 100 ms, changement de direction à chaque image.
 
+### Cheval (#106)
+
+Cheval original (forme `outils/blender/cheval/forme.py`, textures cuites `textures.py`) animé par le squelette et les animations du cheval de Quaternius (`squelette.py`, `sources/cheval/`), préparé par Blender pendant `valider.bat` ; conduite, monte, sifflet, empreintes et sons copiés de la première version (`Projet/horse/`, `Projet/audio/`). Détails : `Docs/cheval-jouable.md`.
+
 ## Pipeline : commande unique
 
 ```powershell
