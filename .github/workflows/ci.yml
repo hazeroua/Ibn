@@ -1,13 +1,14 @@
 name: CI
 
-# À chaque envoi : installation (script réel du projet), qualité du GDScript, compilation C++,
-# import, construction des scènes, tests GUT, export Windows ; sous Linux, rendu logiciel pour
-# vérifier les captures et la chaîne de mesure (les chiffres de performance n'ont de valeur que
-# sur la machine de développement).
+# Validation du jeu (Projet/) par sa commande unique, Projet/outils/valider.ps1, sous Windows et
+# sous Linux. Les machines de GitHub n'ont pas de carte graphique : Windows s'arrête avant
+# l'export et la mesure ; Linux mesure avec le rendu logiciel (OpenGL sur llvmpipe), budgets
+# affichés sans bloquer. Les chiffres de performance n'ont de valeur que sur la machine cible
+# (Windows, Intel Arc). Détails : Docs/validation-multi-os.md.
 
 on:
   push:
-    branches: [main, "mvp-*", "mvp-*/**"]
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -15,132 +16,107 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # Blender utilisé par la CI pour préparer le personnage (sur les postes, c'est celui de
+  # l'installateur du système, noté dans Tools/outils.json).
+  BLENDER_SERIE: "5.0"
+  BLENDER_VERSION: "5.0.1"
+
 jobs:
   windows:
-    name: Windows (installation, compilation, tests, export)
+    name: Windows (Windows PowerShell 5.1, sans export ni mesure)
     runs-on: windows-latest
-    timeout-minutes: 75
+    timeout-minutes: 90
     env:
       GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Tests de quarantaine des archives 3D
-        shell: pwsh
-        run: ./Tools/tests/test-asset-quarantine.ps1
-
-      - name: Cache des téléchargements et de godot-cpp compilé
+      - name: Cache des téléchargements
         uses: actions/cache@v4
         with:
           path: |
             Tools/_telechargements
-            Extensions/godot-cpp
-          key: windows-${{ hashFiles('Tools/versions.json') }}-v1
+            Tools/blender
+            Projet/ressources/telechargees
+          key: windows-${{ hashFiles('Tools/versions.json', 'Projet/data/ressources.lock.json') }}-blender-${{ env.BLENDER_VERSION }}-v2
 
-      - name: Installation (Tools/installer.ps1, Windows PowerShell 5.1)
+      - name: Dépendances (Godot, gdtoolkit)
         shell: powershell
-        run: .\Tools\installer.ps1
+        run: .\Tools\dependances.ps1 -SansModelesExport
 
-      - name: Validation complète sans rendu
-        shell: powershell
-        run: .\Scripts\Pipeline\valider.ps1 -SansRendu
+      - name: Blender portable
+        shell: pwsh
+        run: |
+          $Dossier = "Tools/blender/blender-$env:BLENDER_VERSION-windows-x64"
+          if (-not (Test-Path "$Dossier/blender.exe")) {
+            New-Item -ItemType Directory -Force -Path Tools/blender | Out-Null
+            Invoke-WebRequest "https://download.blender.org/release/Blender$env:BLENDER_SERIE/blender-$env:BLENDER_VERSION-windows-x64.zip" -OutFile Tools/blender/blender.zip
+            Expand-Archive Tools/blender/blender.zip -DestinationPath Tools/blender -Force
+            Remove-Item Tools/blender/blender.zip
+          }
+          $Outils = Get-Content -Raw Tools/outils.json | ConvertFrom-Json
+          $Chemin = (Resolve-Path "$Dossier/blender.exe").Path
+          $Outils | Add-Member -NotePropertyName blender -NotePropertyValue ([ordered]@{ chemin = $Chemin; version = "Blender $env:BLENDER_VERSION" }) -Force
+          $Outils | ConvertTo-Json -Depth 6 | Set-Content -Encoding UTF8 Tools/outils.json
 
-      - name: Export Windows et démarrage de la version exportée
+      - name: Validation (comme valider.bat, sans export ni mesure)
         shell: powershell
-        run: .\Scripts\Pipeline\exporter.ps1
+        run: .\Projet\outils\valider.ps1 -SansExport
 
       - name: Rapports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: rapports-windows
-          path: Mesures/
+          path: Projet/rapports/
           if-no-files-found: ignore
 
-  linux-rendu:
-    name: Linux (rendu logiciel, captures, chaîne de mesure)
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
+  linux:
+    name: Linux (rendu logiciel, mesure sans budgets bloquants)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
     env:
       GITHUB_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cache des téléchargements et de godot-cpp compilé
+      - name: Cache des téléchargements
         uses: actions/cache@v4
         with:
           path: |
             Tools/_telechargements
-            Extensions/godot-cpp
-          key: linux-${{ hashFiles('Tools/versions.json') }}-v1
+            Tools/blender
+            Projet/ressources/telechargees
+          key: linux-${{ hashFiles('Tools/versions.json', 'Projet/data/ressources.lock.json') }}-blender-${{ env.BLENDER_VERSION }}-v2
 
-      - name: Rendu logiciel Vulkan (lavapipe) et affichage virtuel
+      - name: Rendu logiciel et affichage virtuel
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends mesa-vulkan-drivers libvulkan1 xvfb python3-venv blender python3-numpy
+          sudo apt-get install -y --no-install-recommends mesa-vulkan-drivers libgl1-mesa-dri libvulkan1 xvfb python3-venv xz-utils libxi6 libxkbcommon0 libsm6
 
-      - name: Dépendances (Tools/dependances.ps1)
+      - name: Dépendances (Godot, gdtoolkit)
         shell: pwsh
         run: ./Tools/dependances.ps1 -SansModelesExport
 
-      - name: Validation complète avec rendu logiciel (sans budgets)
-        run: xvfb-run -a -s "-screen 0 1920x1080x24" pwsh ./Scripts/Pipeline/valider.ps1 -SansBudgets
+      - name: Blender portable
+        run: |
+          if [ ! -x Tools/blender/blender ]; then
+            mkdir -p Tools/blender
+            curl -sSfL "https://download.blender.org/release/Blender${BLENDER_SERIE}/blender-${BLENDER_VERSION}-linux-x64.tar.xz" | tar xJ -C Tools/blender --strip-components=1
+          fi
+          Tools/blender/blender --background --factory-startup --version | head -1
 
-      - name: Vidéo du parcours
-        run: xvfb-run -a -s "-screen 0 1920x1080x24" pwsh ./Scripts/Pipeline/video.ps1 -Duree 4
+      - name: Validation complète avec rendu logiciel
+        run: >
+          xvfb-run -a -s "-screen 0 1920x1080x24"
+          pwsh -NoProfile -File ./Projet/outils/valider.ps1
+          -Renderer opengl3 -SansSon -DurationSeconds 10 -WarmupSeconds 1
 
-      - name: Captures, mesures et vidéo
+      - name: Rapports, captures et mesures
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: rendu-linux
-          path: Mesures/
+          name: rapports-linux
+          path: Projet/rapports/
           if-no-files-found: ignore
-
-  macos:
-    name: macOS Apple silicon (compilation et chargement)
-    runs-on: macos-15
-    timeout-minutes: 45
-    env:
-      GITHUB_TOKEN: ${{ github.token }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          lfs: true
-
-      - name: Tests de quarantaine des archives 3D
-        shell: pwsh
-        run: ./Tools/tests/test-asset-quarantine.ps1
-
-      - name: Cache des téléchargements et de godot-cpp compilé
-        uses: actions/cache@v4
-        with:
-          path: |
-            Tools/_telechargements
-            Extensions/godot-cpp
-          key: macos-${{ hashFiles('Tools/versions.json') }}-v1
-
-      - name: Vérification des outils de l'image arm64
-        run: |
-          pwsh --version
-          python3.12 --version
-          git lfs version
-
-      - name: Dépendances sans modèles d'export
-        shell: pwsh
-        run: ./Tools/dependances.ps1 -SansModelesExport -Python (Get-Command python3.12).Source
-
-      - name: Compilation C++ arm64
-        shell: pwsh
-        run: ./Scripts/Pipeline/compiler.ps1 -Cible debug
-
-      - name: Import et chargement de la GDExtension
-        shell: pwsh
-        run: ./Scripts/Pipeline/importer.ps1
-
-      - name: Démarrage headless de la scène principale
-        shell: pwsh
-        run: |
-          . ./Scripts/Pipeline/commun.ps1
-          $null = Invoke-Godot -Arguments @('--headless', '--path', $Jeu, '--quit-after', '120') `
-              -Journal (Join-Path $DossierMesures 'journaux/ci-macos-demarrage.log')

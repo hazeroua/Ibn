@@ -92,8 +92,10 @@ Le personnage définitif est confié au binôme du porteur du projet. `Projet/pl
 ## Pipeline : commande unique
 
 ```powershell
-Projet\valider.bat [-Scene terrain_test] [-Renderer vulkan|d3d12] [-DurationSeconds 30] [-SansMesure]
+Projet\valider.bat [-Scene terrain_test] [-Renderer vulkan|d3d12|opengl3] [-DurationSeconds 30] [-SansMesure] [-SansExport] [-SansSon]
 ```
+
+Le même script tourne sous macOS et Linux (`pwsh -NoProfile -File Projet/outils/valider.ps1`, pilote par défaut : Metal sur Apple silicon, Vulkan ailleurs). Hors Windows, les budgets sont affichés sans bloquer (`-BudgetsBloquants` pour bloquer) et, tant que le préréglage d'export du système manque (#100, #101), la mesure lance le projet avec Godot. Toutes les différences entre systèmes sont dans la table `$PlatformSpecs` du script ; explications et dépannage : `Docs/validation-multi-os.md` (#99).
 
 Étapes, avec arrêt à la première erreur ou à la première ligne `ERROR:` d'un journal :
 

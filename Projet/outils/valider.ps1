@@ -2,8 +2,9 @@
 param(
     # Scène du catalogue data/config/boot.json à mesurer ; vide = toutes les scènes.
     [string]$Scene = '',
-    [ValidateSet('vulkan', 'd3d12')]
-    [string]$Renderer = 'vulkan',
+    # Pilote de rendu de la mesure ; vide = celui du système (voir Docs/validation-multi-os.md).
+    [ValidateSet('', 'vulkan', 'd3d12', 'metal', 'opengl3')]
+    [string]$Renderer = '',
     [ValidateRange(5, 7200)]
     [int]$DurationSeconds = 30,
     [ValidateRange(0, 120)]
@@ -12,12 +13,21 @@ param(
     # puis le dépôt principal si ce dossier est un worktree Git.
     [string]$ToolchainRoot = '',
     # Arrête après l'export, sans lancer la mesure sur le GPU.
-    [switch]$SansMesure
+    [switch]$SansMesure,
+    # N'exporte pas le jeu (machines sans modèles d'export, CI) ; implique -SansMesure.
+    [switch]$SansExport,
+    # Rend les budgets bloquants hors de Windows (sous Windows, ils le sont toujours).
+    [switch]$BudgetsBloquants,
+    # Mesure sans sortie son (machines sans carte son, CI) : sinon Godot écrit une ligne ERROR:
+    # en ne trouvant aucun périphérique, ce qui ferait échouer la validation.
+    [switch]$SansSon
 )
 
-# Commande unique du projet : dépendances et ressources figées, analyse du GDScript,
-# import, construction des scènes, tests GUT, export Windows, mesure de chaque scène
-# sur la machine, captures et comparaison aux budgets. Arrêt à la première erreur.
+# Commande unique du projet, identique sous Windows, macOS et Linux : dépendances et
+# ressources figées, analyse du GDScript, import, construction des scènes, tests GUT,
+# export de la plateforme courante, mesure de chaque scène sur la machine, captures et
+# comparaison aux budgets. Arrêt à la première erreur. Fonctionnement détaillé et
+# différences entre systèmes : Docs/validation-multi-os.md.
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -31,6 +41,48 @@ $TranscriptPath = Join-Path $ReportsRoot 'derniere-validation.txt'
 Start-Transcript -Path $TranscriptPath -Force | Out-Null
 $Started = Get-Date
 $Utf8 = New-Object System.Text.UTF8Encoding $false
+
+# Système hôte. Compatible Windows PowerShell 5.1 (pas de $IsWindows) et PowerShell 7.
+$OnWindows = [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
+$OnMacOS = (-not $OnWindows) -and
+    [Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::OSX)
+$HostPlatform = if ($OnWindows) { 'windows' } elseif ($OnMacOS) { 'macos' } else { 'linux' }
+# Architecture : x64 ou arm64. Sous Windows PowerShell 5.1, RuntimeInformation n'est pas
+# toujours chargé : la variable d'environnement du processeur suffit.
+$HostArchitecture = if ($OnWindows) {
+    if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { 'arm64' } else { 'x64' }
+}
+else {
+    ([string][Runtime.InteropServices.RuntimeInformation]::OSArchitecture).ToLowerInvariant()
+}
+
+# Ce qui change d'un système à l'autre, et seulement cela. Preset : nom du préréglage de
+# export_presets.cfg ; Executable : fichier produit dans build/ (lancé pour la mesure) ;
+# Required : fichiers qui doivent accompagner l'export ; Renderers : pilotes acceptés,
+# le premier étant celui par défaut ; VenvBin : dossier des commandes de Tools/venv.
+$PlatformSpecs = @{
+    windows = @{
+        Preset = 'Windows Desktop'; Executable = 'IbnKhaldoun.exe'
+        Required = @('IbnKhaldoun.pck', 'libterrain.windows.release.x86_64.dll')
+        Renderers = @('vulkan', 'd3d12', 'opengl3'); VenvBin = 'Scripts'; CommandSuffix = '.exe'
+    }
+    linux = @{
+        Preset = 'Linux'; Executable = 'IbnKhaldoun.x86_64'
+        Required = @('IbnKhaldoun.pck', 'libterrain.linux.release.x86_64.so')
+        Renderers = @('vulkan', 'opengl3'); VenvBin = 'bin'; CommandSuffix = ''
+    }
+    macos = @{
+        Preset = 'macOS'; Executable = 'IbnKhaldoun.app/Contents/MacOS/IbnKhaldoun'
+        Required = @()
+        Renderers = @('metal', 'vulkan', 'opengl3'); VenvBin = 'bin'; CommandSuffix = ''
+    }
+}
+$Platform = $PlatformSpecs[$HostPlatform]
+# Metal n'existe dans Godot 4.7 que sur Apple silicon : les Mac Intel passent par Vulkan (MoltenVK).
+if ($OnMacOS -and $HostArchitecture -ne 'arm64') { $Platform.Renderers = @('vulkan', 'opengl3') }
+if (-not $Renderer) { $Renderer = $Platform.Renderers[0] }
+# Budgets : la cible du jeu est Windows sur Intel Arc ; ailleurs ils sont affichés sans bloquer.
+$BudgetsBlock = $OnWindows -or $BudgetsBloquants
 
 function Write-Step([string]$Text) {
     Write-Host ''
@@ -190,14 +242,26 @@ function Get-FileSha([string]$Path) {
     return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
 }
 
+# Blender : chemin noté par l'installateur dans Tools/outils.json, sinon emplacement habituel
+# du système, sinon commande « blender » du PATH.
 function Resolve-Blender($Tools) {
     $Property = $Tools.PSObject.Properties['blender']
     if ($Property -and $Property.Value -and $Property.Value.chemin -and (Test-Path -LiteralPath $Property.Value.chemin)) {
         return [string]$Property.Value.chemin
     }
+    $Candidates = @()
+    if ($OnMacOS) {
+        $Candidates += (Join-Path $Toolchain 'Tools/blender/Blender.app/Contents/MacOS/Blender')
+        $Candidates += '/Applications/Blender.app/Contents/MacOS/Blender'
+    }
+    elseif (-not $OnWindows) {
+        $Candidates += (Join-Path $Toolchain 'Tools/blender/blender')
+    }
+    foreach ($Candidate in $Candidates) { if (Test-Path -LiteralPath $Candidate) { return $Candidate } }
     $Command = Get-Command 'blender' -ErrorAction SilentlyContinue
     if ($Command) { return $Command.Source }
-    throw 'Blender introuvable : relancez Tools/installer.ps1 (il installe Blender et note son chemin dans Tools/outils.json).'
+    $Installer = if ($OnWindows) { 'Tools/installer.ps1' } elseif ($OnMacOS) { 'Tools/installer-macos.command' } else { 'votre gestionnaire de paquets' }
+    throw "Blender introuvable : installez-le avec $Installer (son chemin est noté dans Tools/outils.json)."
 }
 
 function Invoke-Blender([string]$Blender, [string[]]$Arguments, [string]$LogPath) {
@@ -283,17 +347,45 @@ function Invoke-Godot([string[]]$Arguments, [string]$LogPath, [string]$Label) {
     Assert-CleanLog $LogPath $Label
 }
 
+# Lance le jeu sans passer par un interpréteur de commandes. Les arguments sont transmis un à
+# un (ArgumentList, PowerShell 7) ; sous Windows PowerShell 5.1, qui ne l'a pas, ils sont
+# entourés de guillemets quand ils contiennent un espace.
+function Start-Game([string]$Executable, [string[]]$Arguments) {
+    $Info = New-Object System.Diagnostics.ProcessStartInfo
+    $Info.FileName = $Executable
+    $Info.UseShellExecute = $false
+    $Info.WorkingDirectory = Split-Path -Parent $Executable
+    if ($Info.PSObject.Properties['ArgumentList']) {
+        foreach ($Argument in $Arguments) { $Info.ArgumentList.Add($Argument) }
+    }
+    else {
+        $Info.Arguments = ($Arguments | ForEach-Object { if ($_ -match '\s') { '"' + $_ + '"' } else { $_ } }) -join ' '
+    }
+    $Process = [Diagnostics.Process]::Start($Info)
+    # Lire le handle tout de suite : sans lui, ExitCode peut rester vide après la sortie (Windows).
+    $null = $Process.Handle
+    return $Process
+}
+
+# Préréglage d'export présent dans export_presets.cfg ?
+function Test-ExportPreset([string]$Name) {
+    $Config = [IO.File]::ReadAllText((Join-Path $ProjectRoot 'export_presets.cfg'), $Utf8)
+    return $Config -match ('(?m)^name="' + [regex]::Escape($Name) + '"\s*$')
+}
+
 function Measure-Scene([string]$SceneId, [string]$Executable, [string]$RunRoot) {
     $RunDir = Join-Path $RunRoot $SceneId
     New-Item -ItemType Directory -Force -Path $RunDir | Out-Null
     $GameLog = Join-Path $RunDir 'jeu.log'
-    $Arguments = @(
-        '--rendering-driver', $Renderer, '--log-file', "`"$GameLog`"", '--',
-        '--measure', "--scene=$SceneId", "--duration=$DurationSeconds", "--warmup=$WarmupSeconds", "--report-dir=`"$RunDir`""
+    # Sans export (préréglage absent pour ce système), Godot lance le projet lui-même.
+    $Arguments = @()
+    if ($Executable -eq $script:Godot) { $Arguments += @('--path', $ProjectRoot) }
+    if ($SansSon) { $Arguments += @('--audio-driver', 'Dummy') }
+    $Arguments += @(
+        '--rendering-driver', $Renderer, '--log-file', $GameLog, '--',
+        '--measure', "--scene=$SceneId", "--duration=$DurationSeconds", "--warmup=$WarmupSeconds", "--report-dir=$RunDir"
     )
-    $Process = Start-Process -FilePath $Executable -ArgumentList $Arguments -PassThru
-    # Lire le handle tout de suite : sans lui, ExitCode peut rester vide après la sortie.
-    $null = $Process.Handle
+    $Process = Start-Game $Executable $Arguments
     $PeakWorkingSet = 0L
     $Deadline = (Get-Date).AddSeconds($DurationSeconds + $WarmupSeconds + 180)
     while (-not $Process.HasExited) {
@@ -311,11 +403,14 @@ function Measure-Scene([string]$SceneId, [string]$Executable, [string]$RunRoot) 
     if (-not (Test-Path -LiteralPath $ReportPath)) { throw "$SceneId : rapport absent (code $($Process.ExitCode), journal : $GameLog)." }
     $Report = Read-Json $ReportPath
     $Report | Add-Member -NotePropertyName 'peak_process_working_set_mib' -NotePropertyValue ([Math]::Round($PeakWorkingSet / 1MB, 1)) -Force
+    $Report | Add-Member -NotePropertyName 'validation_platform' -NotePropertyValue "$HostPlatform-$HostArchitecture" -Force
+    $Report | Add-Member -NotePropertyName 'budgets_blocking' -NotePropertyValue $BudgetsBlock -Force
     [IO.File]::WriteAllText($ReportPath, ($Report | ConvertTo-Json -Depth 8), $Utf8)
     if (-not (Test-Path -LiteralPath (Join-Path $RunDir 'capture.png'))) { throw "$SceneId : capture absente." }
 
     Write-Host ''
     Write-Host "  [$SceneId]"
+    Write-Host ("  Système             : {0} {1} ({2})" -f $Report.os_name, $Report.os_version, $Report.cpu_architecture)
     Write-Host ("  GPU                 : {0} ({1}, {2})" -f $Report.rendering_device, $Report.rendering_method, $Report.rendering_driver)
     Write-Host ("  Démarrage           : {0:N0} ms" -f $Report.startup_ms)
     Write-Host ("  Images mesurées     : {0} en {1:N1} s" -f $Report.frame_count, $Report.duration_seconds)
@@ -328,9 +423,10 @@ function Measure-Scene([string]$SceneId, [string]$Executable, [string]$RunRoot) 
     Write-Host ("  Collisions manquées : {0:N0}/{1:N0}" -f $Report.collision_failures, $Report.collision_checks)
     if ($Process.ExitCode -eq 2 -or -not $Report.budgets_passed) {
         foreach ($Failure in $Report.budget_failures) { Write-Host "  DÉPASSEMENT : $Failure" -ForegroundColor Red }
-        throw "$SceneId : budget de performance dépassé."
+        if ($BudgetsBlock) { throw "$SceneId : budget de performance dépassé." }
+        Write-Host "  Budgets non bloquants sous $HostPlatform (cible : Windows sur Intel Arc ; -BudgetsBloquants pour bloquer)." -ForegroundColor Yellow
     }
-    if ($Process.ExitCode -ne 0) { throw "$SceneId : le jeu a quitté avec le code $($Process.ExitCode) (journal : $GameLog)." }
+    elseif ($Process.ExitCode -ne 0) { throw "$SceneId : le jeu a quitté avec le code $($Process.ExitCode) (journal : $GameLog)." }
 }
 
 $ExitCode = 0
@@ -338,13 +434,21 @@ try {
     $Toolchain = Resolve-ToolchainRoot
     $Versions = Read-Json (Join-Path $RepositoryRoot 'Tools/versions.json')
     $Tools = Read-Json (Join-Path $Toolchain 'Tools/outils.json')
+    if ($Platform.Renderers -notcontains $Renderer) {
+        throw "Pilote de rendu « $Renderer » indisponible sous $HostPlatform-$HostArchitecture (acceptés : $($Platform.Renderers -join ', '))."
+    }
+    $ToolsPlatform = if ($Tools.PSObject.Properties['plateforme']) { [string]$Tools.plateforme } else { 'windows' }
+    if ($ToolsPlatform -ne $HostPlatform) {
+        throw "Tools/outils.json a été écrit sous $ToolsPlatform, pas sous $HostPlatform : relancez l'installateur de ce système."
+    }
     $script:Godot = [string]$Tools.godot.console
     if (-not (Test-Path -LiteralPath $script:Godot)) { throw "Godot absent : $script:Godot" }
     if ($Tools.godot.tag -ne $Versions.godot.tag) {
         throw "Godot installé ($($Tools.godot.tag)) différent de la version figée ($($Versions.godot.tag)) : relancez Tools/installer.ps1."
     }
-    $GdLint = Join-Path $Toolchain 'Tools/venv/Scripts/gdlint.exe'
-    $GdFormat = Join-Path $Toolchain 'Tools/venv/Scripts/gdformat.exe'
+    $GdLint = Join-Path $Toolchain "Tools/venv/$($Platform.VenvBin)/gdlint$($Platform.CommandSuffix)"
+    $GdFormat = Join-Path $Toolchain "Tools/venv/$($Platform.VenvBin)/gdformat$($Platform.CommandSuffix)"
+    foreach ($Command in @($GdLint, $GdFormat)) { if (-not (Test-Path -LiteralPath $Command)) { throw "gdtoolkit absent : $Command" } }
     $Catalog = Read-Json (Join-Path $ProjectRoot 'data/config/boot.json')
     $Scenes = @($Catalog.scenes.PSObject.Properties | ForEach-Object { $_.Name })
     if ($Scene) {
@@ -353,7 +457,7 @@ try {
     }
     $RunRoot = Join-Path $ReportsRoot ("{0}-{1}" -f (Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'), $Renderer)
     New-Item -ItemType Directory -Force -Path $RunRoot | Out-Null
-    Write-Host "Ibn Khaldoun : scènes $($Scenes -join ', '), $Renderer, Godot $($Versions.godot.tag)"
+    Write-Host "Ibn Khaldoun : scènes $($Scenes -join ', '), $Renderer, Godot $($Versions.godot.tag), $HostPlatform-$HostArchitecture"
     Write-Host "Rapports : $RunRoot"
 
     Write-Step '1/8 Dépendances figées (Tools/versions.json)'
@@ -386,19 +490,31 @@ try {
     Write-Step '6/8 Tests GUT'
     Invoke-Godot @('--headless', '-s', 'res://addons/gut/gut_cmdln.gd', '-gconfig=res://.gutconfig.json') (Join-Path $RunRoot 'tests.log') 'Tests'
 
-    Write-Step '7/8 Export Windows'
-    $BuildDir = Join-Path $ProjectRoot 'build'
-    if (Test-Path -LiteralPath $BuildDir) { Remove-Item -LiteralPath $BuildDir -Recurse -Force }
-    New-Item -ItemType Directory -Force -Path $BuildDir | Out-Null
-    $Executable = Join-Path $BuildDir 'IbnKhaldoun.exe'
-    Invoke-Godot @('--headless', '--export-release', 'Windows Desktop', $Executable) (Join-Path $RunRoot 'export.log') 'Export'
-    $TerrainLibrary = Join-Path $BuildDir 'libterrain.windows.release.x86_64.dll'
-    foreach ($Required in @($Executable, (Join-Path $BuildDir 'IbnKhaldoun.pck'), $TerrainLibrary)) {
-        if (-not (Test-Path -LiteralPath $Required)) { throw "Export incomplet : $Required absent." }
+    # Sans préréglage pour ce système (macOS : ticket #100, Linux : ticket #101), la mesure
+    # lance le projet directement avec Godot : mêmes scènes, même sonde, mêmes rapports.
+    $Executable = $script:Godot
+    if ($SansExport) {
+        Write-Step "7/8 Export $HostPlatform ignoré (-SansExport)"
+    }
+    elseif (-not (Test-ExportPreset $Platform.Preset)) {
+        Write-Step "7/8 Export $HostPlatform : préréglage « $($Platform.Preset) » absent, la mesure lancera le projet avec Godot"
+    }
+    else {
+        Write-Step "7/8 Export $HostPlatform ($($Platform.Preset))"
+        $BuildDir = Join-Path $ProjectRoot 'build'
+        if (Test-Path -LiteralPath $BuildDir) { Remove-Item -LiteralPath $BuildDir -Recurse -Force }
+        New-Item -ItemType Directory -Force -Path $BuildDir | Out-Null
+        $ExportTarget = if ($OnMacOS) { Join-Path $BuildDir 'IbnKhaldoun.app' } else { Join-Path $BuildDir $Platform.Executable }
+        Invoke-Godot @('--headless', '--export-release', $Platform.Preset, $ExportTarget) (Join-Path $RunRoot 'export.log') 'Export'
+        $Executable = Join-Path $BuildDir $Platform.Executable
+        foreach ($Required in @($Platform.Executable) + $Platform.Required) {
+            $RequiredPath = Join-Path $BuildDir $Required
+            if (-not (Test-Path -LiteralPath $RequiredPath)) { throw "Export incomplet : $RequiredPath absent." }
+        }
     }
 
-    if ($SansMesure) {
-        Write-Step '8/8 Mesure ignorée (-SansMesure)'
+    if ($SansMesure -or $SansExport) {
+        Write-Step '8/8 Mesure ignorée (-SansMesure ou -SansExport)'
     }
     else {
         Write-Step "8/8 Mesure sur le GPU : $WarmupSeconds s de préchauffage puis $DurationSeconds s par scène"

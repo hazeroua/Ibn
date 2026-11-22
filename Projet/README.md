@@ -14,7 +14,9 @@ Projet Godot du jeu, créé par le ticket [#63](https://github.com/hazeroua/Ibn/
   - T (bouton Y de la manette) : passer au matin, à midi ou à la fin de journée ;
   - Échap : libérer la souris ; un clic la reprend.
 
-Options de `valider.bat` : `-Scene <id>` (par défaut, toutes les scènes du catalogue), `-Renderer d3d12`, `-DurationSeconds 60`, `-SansMesure`.
+Options de `valider.bat` : `-Scene <id>` (par défaut, toutes les scènes du catalogue), `-Renderer d3d12`, `-DurationSeconds 60`, `-SansMesure`, `-SansExport`, `-SansSon`, `-BudgetsBloquants`.
+
+Sous macOS et Linux : `pwsh -NoProfile -File Projet/outils/valider.ps1` (même script, mêmes étapes ; budgets affichés sans bloquer). Différences et dépannage : `Docs/validation-multi-os.md`.
 
 ## Organisation
 
