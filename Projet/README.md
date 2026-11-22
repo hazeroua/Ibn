@@ -31,6 +31,9 @@ Projet/
 │   ├── log/                Journal (user://logs/ibn.log)
 │   └── perf/               Mesure automatique, statistiques, budgets
 ├── player/                 Personnage joueur et caméra à la troisième personne (copie de la première version)
+├── horse/                  Cheval : conduite, monte, sifflet, empreintes, sons (copie de la première version)
+├── audio/                  Sons de pas (copie de la première version) et bibliothèque des sons
+├── sources/                Sources libres versionnées (Git LFS) : squelette du cheval, sons du cheval
 ├── world/
 │   ├── common/             Atmosphère (Sky3D, poussière, chaleur), aide, corps de test des collisions
 │   ├── sahara/             Sahara : réglages, générateur, sols, constructeur, scène
@@ -74,6 +77,10 @@ Le personnage définitif est confié au binôme du porteur du projet (ticket #65
 Les sons de pas, l'eau et la monte de la première version ne sont pas repris : le signal `footstep` du personnage n'a pas encore d'auditeur.
 
 Pendant la mesure du Sahara, le personnage suit le corps de test du parcours, piloté comme au clavier : son coût (physique, animation) entre dans les budgets.
+
+## Le cheval (ticket #106)
+
+Cheval original (forme et textures du ticket #106) animé par le squelette du cheval de Quaternius, avec la conduite, les allures, le sifflet, la monte, les empreintes et les sons de la première version du jeu (`horse/`, `audio/`). E : monter ou descendre ; H : siffler ; Maj : galop de course ; Espace : sauter. Préparé par Blender pendant `valider.bat` (`outils/blender/cheval/`). Détails, réglages et dépannage : `Docs/cheval-jouable.md`.
 
 ## Lancement en ligne de commande
 

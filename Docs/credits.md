@@ -31,9 +31,19 @@ Ce document liste toutes les ressources tierces livrées avec le jeu (`Projet/`)
 | Ressource | Auteur | Licence | Utilisation |
 |---|---|---|---|
 | Universal Animation Library (version Standard, copie glTF de J-Ponzo) | Quaternius | CC0 1.0 | Mannequin et animations du personnage joueur |
+| Horse (squelette et animations) | Quaternius | CC0 1.0 | Squelette et animations du cheval (`Projet/sources/cheval/`) ; la forme et les textures du cheval sont originales (ticket #106) |
+
+## Sons
+
+| Ressource | Auteur | Licence | Utilisation |
+|---|---|---|---|
+| Fantozzi's Footsteps (Grass/Sand & Stone) | Fantozzi, publié par qubodup (OpenGameArt) | CC0 1.0 | Pas et sabots sur le sable et la pierre |
+| RPG Audio 1.0 | Kenney (kenney.nl) | CC0 1.0 | Pas et sabots sur la terre et le reg |
+| Neighing of a Horse #1 | DenisChardonnet (BigSoundBank) | CC0 1.0 | Hennissement |
+| Breath Horse #4 | Joseph Sardin (BigSoundBank) | CC0 1.0 | Souffle du cheval |
 
 Les adresses exactes et les empreintes SHA-256 sont dans `Projet/data/ressources.json` et `Projet/data/ressources.lock.json`. La version et l'empreinte de Sky3D sont dans `Tools/versions.json`.
 
 ## Texte de crédits à reprendre dans le jeu
 
-> Terrain3D et Sky3D par Tokisan Games (licence MIT). « The Milky Way panorama » par ESO/S. Brunier, sous licence CC BY 4.0, utilisée dans ses formes originale et modifiée. Textures Poly Haven (CC0). Particle Pack de Kenney (CC0). Personnage et animations : Universal Animation Library de Quaternius (CC0). Réalisé avec Godot Engine (licence MIT).
+> Terrain3D et Sky3D par Tokisan Games (licence MIT). « The Milky Way panorama » par ESO/S. Brunier, sous licence CC BY 4.0, utilisée dans ses formes originale et modifiée. Textures Poly Haven (CC0). Particle Pack de Kenney (CC0). Personnage et animations : Universal Animation Library de Quaternius (CC0). Squelette et animations du cheval : Quaternius (CC0). Sons : Fantozzi, Kenney, BigSoundBank (CC0). Réalisé avec Godot Engine (licence MIT).

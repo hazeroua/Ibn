@@ -1,5 +1,6 @@
 extends SceneTree
-## Lance les constructeurs des scènes du catalogue (data/config/boot.json, clé « builder »).
+## Copie les sons (SoundLibrary), puis lance les constructeurs des scènes du catalogue
+## (data/config/boot.json, clé « builder »).
 ## Usage : godot --headless --path Projet -s res://outils/construire.gd
 ## Code de sortie : 0 si toutes les constructions réussissent, 1 sinon.
 
@@ -13,6 +14,11 @@ func _initialize() -> void:
 func _run() -> void:
 	var catalog: SceneCatalog = SceneCatalog.from_dictionary(JsonData.load_dictionary(BOOT_CONFIG_PATH))
 	var errors: PackedStringArray = catalog.errors.duplicate()
+	# Sons communs à toutes les scènes (generated/sons/), avant les constructeurs.
+	var resources: ResourceManifest = ResourceManifest.load_shipped()
+	errors.append_array(resources.errors)
+	if resources.errors.is_empty():
+		errors.append_array(SoundLibrary.copy_sources(resources))
 	if errors.is_empty():
 		for scene_id: String in catalog.scene_ids():
 			var builder_path: String = catalog.builder_path(scene_id)

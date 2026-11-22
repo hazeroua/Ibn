@@ -1,0 +1,97 @@
+{
+  "description": "Réglages des sons de pas (FootstepSystem, res://audio/footsteps/footsteps.gd), repris de la première version du jeu. Les variantes sont des identifiants de SoundLibrary (generated/sons/<id>.ogg, téléchargés par valider.bat d'après data/ressources.json). Surfaces du Sahara : sable, terre, galets (reg), pierre (roche). Volumes en décibels, vitesses en mètres par seconde, distances en mètres.",
+  "bus": {
+    "name": "Footsteps",
+    "send": "Master",
+    "volume_db": 0.0
+  },
+  "voices": {
+    "max_voices": 16,
+    "max_distance": 30.0,
+    "unit_size": 3.0,
+    "max_db": 3.0,
+    "min_steal_age_ms": 40.0,
+    "attenuation": "inverse_square",
+    "panning_strength": 1.0
+  },
+  "default_surface": "sable",
+  "terrain_search_depth": 4,
+  "gaits": [
+    {
+      "id": "walk_slow",
+      "min_speed": 0.0,
+      "volume_db": -6.0,
+      "pitch_scale": 0.97
+    },
+    {
+      "id": "walk",
+      "min_speed": 1.3,
+      "volume_db": -2.0,
+      "pitch_scale": 1.0
+    },
+    {
+      "id": "run",
+      "min_speed": 3.0,
+      "volume_db": 1.5,
+      "pitch_scale": 1.04
+    }
+  ],
+  "surfaces": {
+    "sable": {
+      "volume_db": 2.0,
+      "volume_variation_db": 1.5,
+      "pitch_variation_semitones": 1.0,
+      "variants": [
+        "footstep_sand_01",
+        "footstep_sand_02",
+        "footstep_sand_03",
+        "footstep_sand_04",
+        "footstep_sand_05",
+        "footstep_sand_06"
+      ]
+    },
+    "pierre": {
+      "volume_db": -2.0,
+      "volume_variation_db": 1.5,
+      "pitch_variation_semitones": 0.8,
+      "variants": [
+        "footstep_stone_01",
+        "footstep_stone_02",
+        "footstep_stone_03",
+        "footstep_stone_04",
+        "footstep_stone_05",
+        "footstep_stone_06"
+      ]
+    },
+    "terre": {
+      "volume_db": -1.0,
+      "volume_variation_db": 2.0,
+      "pitch_variation_semitones": 1.2,
+      "variants": [
+        "footstep_dirt_01",
+        "footstep_dirt_02",
+        "footstep_dirt_03",
+        "footstep_dirt_04",
+        "footstep_dirt_05",
+        "footstep_dirt_06",
+        "footstep_dirt_07",
+        "footstep_dirt_08",
+        "footstep_dirt_09",
+        "footstep_dirt_10"
+      ]
+    },
+    "galets": {
+      "volume_db": -1.0,
+      "volume_variation_db": 2.0,
+      "pitch_variation_semitones": 1.8,
+      "variants": [
+        "footstep_stone_01",
+        "footstep_stone_03",
+        "footstep_stone_05",
+        "footstep_dirt_02",
+        "footstep_dirt_05",
+        "footstep_dirt_08"
+      ]
+    }
+  }
+}

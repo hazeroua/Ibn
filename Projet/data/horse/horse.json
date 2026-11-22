@@ -1,0 +1,176 @@
+{
+  "description": "Réglages du cheval (Barq), repris de la première version du jeu ; modèle : cheval original du ticket #106 (generated/chevaux/cheval_sahara/cheval_sahara.glb, préparé par Blender pendant valider.bat) avec le squelette et les animations du cheval de Quaternius. Vitesses en m/s, endurance en secondes et distances en mètres.",
+  "body": {
+    "radius_m": 0.4,
+    "height_m": 1.5,
+    "collision_layer": 3,
+    "collision_mask": [
+      1,
+      2
+    ],
+    "safe_margin_m": 0.01,
+    "floor_max_angle_deg": 45.0,
+    "max_slides": 6,
+    "description": "Deux formes : une capsule verticale étroite sous le ventre (appui au sol, marches) et une capsule couchée le long du corps (poitrail et croupe heurtent les murs), dont le bas reste au-dessus des marches enjambées. Barq est sur la couche 3 : le personnage (couche 2) le heurte et ne le traverse plus ; Barq heurte le sol (1) et le personnage (2). Pendant la monte, le personnage n'a plus de collision.",
+    "torso_radius_m": 0.42,
+    "torso_length_m": 2.3,
+    "torso_bottom_m": 0.6
+  },
+  "gaits": {
+    "walk": {
+      "speed_mps": 1.7,
+      "acceleration_mps2": 3.0,
+      "deceleration_mps2": 4.0,
+      "stride_m": 1.4,
+      "energy_per_second": 0.0,
+      "beats_per_stride": 4.0
+    },
+    "trot": {
+      "speed_mps": 3.6,
+      "acceleration_mps2": 4.5,
+      "deceleration_mps2": 5.5,
+      "stride_m": 2.1,
+      "energy_per_second": 0.8,
+      "beats_per_stride": 2.0
+    },
+    "canter": {
+      "speed_mps": 6.8,
+      "acceleration_mps2": 5.5,
+      "deceleration_mps2": 7.0,
+      "stride_m": 3.1,
+      "energy_per_second": 1.7,
+      "beats_per_stride": 3.0
+    },
+    "sprint": {
+      "speed_mps": 11.5,
+      "acceleration_mps2": 7.0,
+      "deceleration_mps2": 10.0,
+      "stride_m": 4.4,
+      "energy_per_second": 3.8,
+      "beats_per_stride": 4.0
+    }
+  },
+  "endurance": {
+    "maximum": 100.0,
+    "recovery_per_second": 9.0,
+    "sprint_minimum": 8.0,
+    "sprint_recovery_gait": "canter"
+  },
+  "terrain": {
+    "description": "Prudence de Barq. Le relief est lu sur la heightfield le long du trajet, un point tous les sample_spacing_m jusqu'à la distance d'arrêt (vitesse × look_ahead_time_s, bornée) : il refuse une pente plus raide que max_slope_deg (la même que le personnage) ou un à-pic (dénivelé de plus de cliff_drop_m entre deux points voisins). Les obstacles posés (rochers, murets, troncs) sont sondés par une sphère qui suit le relief, sa base à obstacle_clearance_m au-dessus du sol : tout ce qui est plus bas que step_max_height_m est enjambé (montée de marche), seul ce qui dépasse l'arrête.",
+    "max_slope_deg": 45.0,
+    "cliff_drop_m": 1.15,
+    "sample_spacing_m": 1.0,
+    "look_ahead_time_s": 0.45,
+    "look_ahead_min_m": 1.5,
+    "look_ahead_max_m": 7.0,
+    "obstacle_probe_radius_m": 0.38,
+    "obstacle_clearance_m": 0.5,
+    "obstacle_probe_distance_m": 1.0,
+    "step_max_height_m": 0.45,
+    "step_min_height_m": 0.03,
+    "step_clearance_m": 0.01,
+    "step_surface_inset_m": 0.06,
+    "step_retry_delay_s": 0.25
+  },
+  "call": {
+    "description": "Sifflet : Barq vient par un chemin (A* sur une grille de grid_cell_m calculée une fois sur le relief ; cases trop raides, falaises et eau plus profonde que max_wade_depth_m exclues), au galop loin du joueur (gallop_distance_m), au trot puis au pas en approchant, et s'arrête à arrival_distance_m (portée de la monte). Le chemin est recalculé si le joueur s'est éloigné de replan_distance_m de la cible du chemin (au plus toutes les replan_interval_s). Près du joueur (direct_distance_m), Barq va droit vers lui. Au-delà de max_distance_m, il n'entend pas le sifflet.",
+    "arrival_distance_m": 2.6,
+    "max_distance_m": 4500.0,
+    "grid_cell_m": 8.0,
+    "max_wade_depth_m": 0.6,
+    "nearest_walkable_search_cells": 6,
+    "waypoint_reach_m": 5.0,
+    "direct_distance_m": 20.0,
+    "replan_distance_m": 20.0,
+    "replan_interval_s": 1.5,
+    "gallop_distance_m": 45.0,
+    "trot_distance_m": 6.0,
+    "gallop_input": 1.0,
+    "trot_input": 0.6,
+    "walk_input": 0.37
+  },
+  "traces": {
+    "description": "Empreintes de sabots sur le sable : un seul MultiMesh en anneau (pool_size), opaques, couchées sur le relief, effacées par tramage pendant les fade_s dernières secondes de leur vie.",
+    "pool_size": 256,
+    "lifetime_s": 45.0,
+    "fade_s": 8.0,
+    "width_m": 0.16,
+    "length_m": 0.19,
+    "lift_m": 0.012,
+    "color": "#a3835a",
+    "sand_surface": "sable"
+  },
+  "audio": {
+    "description": "Sabots : sons de pas du jeu (selon la surface), plus graves et plus forts.",
+    "hoof_pitch_scale": 0.62,
+    "hoof_volume_offset_db": 4.0
+  },
+  "model": {
+    "description": "Cheval original du ticket #106 (forme, textures) animé par le squelette du cheval de Quaternius (CC0) : outils/blender/cheval/. height_m : hauteur réelle du sommet des oreilles au repos ; le modèle est déjà en mètres (échelle 1). yaw_offset_deg : le modèle regarde vers +X, Godot vers -Z. Sans section « coat » : le modèle garde ses textures.",
+    "path": "res://generated/chevaux/cheval_sahara/cheval_sahara.glb",
+    "height_m": 2.503,
+    "yaw_offset_deg": 90.0,
+    "width_scale": 1.0,
+    "looped_clips": [
+      "Idle",
+      "WalkSlow",
+      "Walk",
+      "Run"
+    ]
+  },
+  "animations": {
+    "description": "Clip du modèle par allure. reference_speed_mps : vitesse au sol du clip (mesurée sur les sabots posés, modèle à l'échelle) ; la lecture est accélérée ou ralentie dans [speed_scale_min, speed_scale_max] pour que les sabots ne glissent pas. idle_speed_mps : en dessous, Barq est à l'arrêt. Vitesses de référence du cheval du ticket #106 : celles de Barq multipliées par 1,25 (membres plus longs, même squelette).",
+    "idle": {
+      "clip": "Idle"
+    },
+    "walk": {
+      "clip": "WalkSlow",
+      "reference_speed_mps": 0.95
+    },
+    "trot": {
+      "clip": "WalkSlow",
+      "reference_speed_mps": 0.95
+    },
+    "canter": {
+      "clip": "Run",
+      "reference_speed_mps": 5.1
+    },
+    "sprint": {
+      "clip": "Run",
+      "reference_speed_mps": 5.1
+    },
+    "jump": {
+      "clip": "Jump"
+    },
+    "idle_speed_mps": 0.15,
+    "speed_scale_min": 0.6,
+    "speed_scale_max": 2.8,
+    "blend_s": 0.25
+  },
+  "jump": {
+    "description": "Saut de Barq monté (barre d'espace, bouton A) : seulement au sol et en mouvement. speed_mps : vitesse verticale au départ ; gravity_mps2 : pesanteur appliquée à Barq en l'air ; min_speed_mps : vitesse au sol minimale pour sauter.",
+    "speed_mps": 4.2,
+    "gravity_mps2": 9.81,
+    "min_speed_mps": 1.0,
+    "cooldown_s": 0.4
+  },
+  "rider": {
+    "description": "Cavalier. Os de selle et décalage (repère de Barq, mètres réels) du point de selle : le bassin du cavalier y est posé et suit les mouvements du dos. Montée par la gauche : le cavalier se place à mount_side_m à gauche du point de selle, au sol ; ces valeurs sont aussi celles des animations mount et dismount (characters.json). approach_s : glissement vers le point de montée. gallop_lean_gaits : allures où le cavalier se penche en avant. Cheval du ticket #106 : os de selle « Torso » au repos à 1,36 m ; dessus de la selle à 1,78 m, 5 cm en avant de l'os.",
+    "saddle_bone": "Torso",
+    "seat_offset_m": [
+      0.0,
+      0.44,
+      -0.05
+    ],
+    "mount_side_m": 0.8,
+    "mount_seat_height_m": 1.78,
+    "approach_s": 0.3,
+    "mount_range_m": 3.5,
+    "gallop_lean_gaits": [
+      "canter",
+      "sprint"
+    ],
+    "blend_s": 0.3
+  }
+}

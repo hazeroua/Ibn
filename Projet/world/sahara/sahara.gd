@@ -2,12 +2,13 @@ extends Node3D
 ## Sahara de 4 × 4 km : charge les régions Terrain3D construites par SaharaBuilder,
 ## les quatre sols (sable, terre sèche, reg, roche) et leurs réglages d'anti-répétition,
 ## puis l'atmosphère (ciel Sky3D, brume, poussière, chaleur) au moment de la journée choisi.
-## En jeu : personnage joueur (repris de la première version, ticket #65) et caméra à la
-## troisième personne, touche T pour changer de moment. Avec la sonde de mesure :
+## En jeu : personnage joueur (repris de la première version, ticket #65), caméra à la troisième
+## personne, cheval à monter (ticket #106 : E pour monter ou descendre, H pour le siffler), sons de pas,
+## touche T pour changer de moment. Avec la sonde de mesure :
 ## tournée de captures (chaque moment depuis chaque point de vue, avec le temps d'image
 ## de chacun), planche comparative, puis parcours de collision à pied, en course et à
-## pleine vitesse, en passant par les trois moments, caméra en poursuite ; le personnage
-## joueur, piloté comme au clavier, suit le corps de test pour que son coût soit mesuré.
+## pleine vitesse, en passant par les trois moments, caméra en poursuite ; le personnage, monté sur le
+## cheval piloté comme au clavier, suit le corps de test pour que leur coût soit mesuré.
 
 const DATA_PATH: String = "res://data/sahara/sahara.json"
 const ATMOSPHERE_PATH: String = "res://data/sahara/atmosphere.json"
@@ -20,8 +21,8 @@ const SETTLE_SECONDS: float = 2.0
 const VIEWPOINT_SETTLE_SECONDS: float = 0.4
 const THUMBNAIL_SIZE: Vector2i = Vector2i(384, 216)
 const PLAYER_CHARACTER_ID: String = "ibn_khaldoun_jeune"
-## Pendant la mesure : le personnage court vers le corps de test au-delà de cette distance,
-## marche en deçà, s'arrête tout près, et le rejoint d'un coup s'il est distancé (pleine vitesse).
+## Pendant la mesure : le cheval monté galope vers le corps de test au-delà de cette distance,
+## avance en deçà, s'arrête tout près, et le rejoint d'un coup s'il est distancé (pleine vitesse).
 const FOLLOW_RUN_DISTANCE_METERS: float = 4.0
 const FOLLOW_STOP_DISTANCE_METERS: float = 1.5
 const FOLLOW_TELEPORT_DISTANCE_METERS: float = 25.0
@@ -30,6 +31,9 @@ var _terrain: Terrain3D
 var _camera: FreeCamera
 var _player: PlayerCharacter
 var _player_camera: ThirdPersonCamera
+var _ground: HorseGround
+var _footsteps: FootstepSystem
+var _mount: HorseMountSystem
 var _runner: RouteRunner
 var _probe: PerformanceProbe
 var _atmosphere: Atmosphere
@@ -66,7 +70,11 @@ func _ready() -> void:
 		var camera_data: Dictionary = JsonData.read_dictionary(scene, "camera", errors, CONTEXT)
 		if _probe != null:
 			_create_camera(camera_data, generation, errors)
+		_ground = HorseGround.new(_terrain, generation.half_extent(), generation.base_height_meters)
+		_create_footsteps()
 		_create_player(camera_data, errors)
+	if errors.is_empty():
+		_create_horse()
 	if errors.is_empty():
 		_create_atmosphere(errors)
 	if errors.is_empty() and _probe != null:
@@ -128,7 +136,7 @@ func _physics_process(delta: float) -> void:
 	if not _probe.is_measuring() or _probe.is_warming_up():
 		return
 	_runner.step(delta, _probe.measured_fraction())
-	_drive_player_toward_runner()
+	_drive_horse_toward_runner()
 	_collision_timer += delta
 	if _collision_timer < COLLISION_CHECK_INTERVAL_SECONDS:
 		return
@@ -284,6 +292,7 @@ func _create_player(data: Dictionary, errors: PackedStringArray) -> void:
 	var ground: Vector3 = Vector3(spawn.x, _terrain.data.get_height(spawn), spawn.z)
 	var facing: Vector3 = look_at_xz - spawn
 	_player.teleport_to(ground, atan2(-facing.x, -facing.z))
+	_footsteps.connect_emitter(_player)
 	if _probe != null:
 		_player.input.simulate(Vector2.ZERO)
 		return
@@ -296,23 +305,45 @@ func _create_player(data: Dictionary, errors: PackedStringArray) -> void:
 	_terrain.collision_target = _player
 
 
-## Mesure : le personnage suit le corps de test, piloté comme au clavier par rapport à la caméra
-## de poursuite (allure selon la distance). Quelques opérations vectorielles, sans allocation.
-func _drive_player_toward_runner() -> void:
-	var offset: Vector3 = _runner.global_position - _player.global_position
+## Sons de pas du personnage et des sabots (un seul système pour la scène).
+func _create_footsteps() -> void:
+	_footsteps = FootstepSystem.new()
+	_footsteps.name = "Pas"
+	add_child(_footsteps)
+
+
+## Cheval à côté du personnage ; pendant la mesure, le personnage le monte aussitôt.
+func _create_horse() -> void:
+	_mount = HorseMountSystem.new()
+	_mount.name = "Monte"
+	add_child(_mount)
+	_mount.setup(_player, _player_camera, _ground)
+	if _probe != null:
+		_mount.mount()
+
+
+## Surface sonore sous un point du terrain : les sons de pas la cherchent sur les parents du collisionneur
+## touché (collision de Terrain3D → Terrain3D → cette scène).
+func surface_at(world_position: Vector3) -> StringName:
+	return _ground.surface_at(world_position)
+
+
+## Mesure : le cheval monté suit le corps de test, piloté comme au clavier (allure selon la distance).
+## Quelques opérations vectorielles, sans allocation.
+func _drive_horse_toward_runner() -> void:
+	var horse: HorseController = _mount.horse
+	var offset: Vector3 = _runner.global_position - horse.global_position
 	offset.y = 0.0
 	var distance: float = offset.length()
 	if distance > FOLLOW_TELEPORT_DISTANCE_METERS:
-		_player.teleport_to(_runner.global_position - _runner.heading() * FOLLOW_RUN_DISTANCE_METERS, _player.rotation.y)
+		var target: Vector3 = _runner.global_position - _runner.heading() * FOLLOW_RUN_DISTANCE_METERS
+		target.y = _ground.height_at(target.x, target.z)
+		horse.global_position = target
 		return
 	if distance < FOLLOW_STOP_DISTANCE_METERS:
-		_player.input.simulate(Vector2.ZERO)
+		_mount.simulate(Vector2.ZERO, false)
 		return
-	var direction: Vector3 = offset / distance
-	var right: Vector3 = _camera.global_basis.x
-	var forward: Vector3 = -_camera.global_basis.z
-	var move: Vector2 = Vector2(direction.dot(right), direction.dot(forward))
-	_player.input.simulate(move.normalized(), distance > FOLLOW_RUN_DISTANCE_METERS)
+	_mount.simulate(Vector2(offset.x, offset.z) / distance, distance > FOLLOW_RUN_DISTANCE_METERS)
 
 
 func _create_atmosphere(errors: PackedStringArray) -> void:

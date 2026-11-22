@@ -29,6 +29,8 @@ Ces documents décrivent la vision du jeu final. Ils restent valables pendant le
 | Document | Rôle |
 |---|---|
 | [direction-artistique-sahara.md](direction-artistique-sahara.md) | Palette, références visuelles et trois moments du Sahara (#66) |
+| [cheval-jouable.md](cheval-jouable.md) | Cheval monté dans le jeu : origine des pièces, préparation Blender, réglages, dépannage (#106) |
+| [cheval-sahara-iteration-3.md](cheval-sahara-iteration-3.md) | Textures du cheval (#106) |
 | [validation-multi-os.md](validation-multi-os.md) | Validation du jeu sous Windows, macOS et Linux : différences, essais, dépannage (#99) |
 | [credits.md](credits.md) | Crédits et licences de toutes les ressources livrées avec le jeu |
 | [catalogue-assets-3d-reboot.md](catalogue-assets-3d-reboot.md) | Candidats 3D, licences, sécurité et ordre d'évaluation |

@@ -95,6 +95,182 @@
       "dossier": "quaternius_ual",
       "usage": "licence CC0 livrée avec la source du personnage joueur",
       "url": "https://raw.githubusercontent.com/J-Ponzo/gltf-universal-animation-library/e24c23cf2a1323488a3faa226ea7ea21f644b73e/LICENSE"
+    },
+    "footstep_sand_01": {
+      "source": "Fantozzi's Footsteps (Grass/Sand & Stone) — Fantozzi (publié par qubodup)",
+      "page": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur le sable (personnage et sabots du cheval)",
+      "url": "https://raw.githubusercontent.com/petroulacl/fps-asset-kit/a19b7458a593598211c95ec46ef4eb4b6d1f94d7/sfx/footsteps/Fantozzi-footsteps/ogg/Fantozzi-SandL1.ogg"
+    },
+    "footstep_sand_02": {
+      "source": "Fantozzi's Footsteps (Grass/Sand & Stone) — Fantozzi (publié par qubodup)",
+      "page": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur le sable (personnage et sabots du cheval)",
+      "url": "https://raw.githubusercontent.com/petroulacl/fps-asset-kit/a19b7458a593598211c95ec46ef4eb4b6d1f94d7/sfx/footsteps/Fantozzi-footsteps/ogg/Fantozzi-SandR1.ogg"
+    },
+    "footstep_sand_03": {
+      "source": "Fantozzi's Footsteps (Grass/Sand & Stone) — Fantozzi (publié par qubodup)",
+      "page": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur le sable (personnage et sabots du cheval)",
+      "url": "https://raw.githubusercontent.com/petroulacl/fps-asset-kit/a19b7458a593598211c95ec46ef4eb4b6d1f94d7/sfx/footsteps/Fantozzi-footsteps/ogg/Fantozzi-SandL2.ogg"
+    },
+    "footstep_sand_04": {
+      "source": "Fantozzi's Footsteps (Grass/Sand & Stone) — Fantozzi (publié par qubodup)",
+      "page": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur le sable (personnage et sabots du cheval)",
+      "url": "https://raw.githubusercontent.com/petroulacl/fps-asset-kit/a19b7458a593598211c95ec46ef4eb4b6d1f94d7/sfx/footsteps/Fantozzi-footsteps/ogg/Fantozzi-SandR2.ogg"
+    },
+    "footstep_sand_05": {
+      "source": "Fantozzi's Footsteps (Grass/Sand & Stone) — Fantozzi (publié par qubodup)",
+      "page": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur le sable (personnage et sabots du cheval)",
+      "url": "https://raw.githubusercontent.com/petroulacl/fps-asset-kit/a19b7458a593598211c95ec46ef4eb4b6d1f94d7/sfx/footsteps/Fantozzi-footsteps/ogg/Fantozzi-SandL3.ogg"
+    },
+    "footstep_sand_06": {
+      "source": "Fantozzi's Footsteps (Grass/Sand & Stone) — Fantozzi (publié par qubodup)",
+      "page": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur le sable (personnage et sabots du cheval)",
+      "url": "https://raw.githubusercontent.com/petroulacl/fps-asset-kit/a19b7458a593598211c95ec46ef4eb4b6d1f94d7/sfx/footsteps/Fantozzi-footsteps/ogg/Fantozzi-SandR3.ogg"
+    },
+    "footstep_stone_01": {
+      "source": "Fantozzi's Footsteps (Grass/Sand & Stone) — Fantozzi (publié par qubodup)",
+      "page": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur la pierre (personnage et sabots du cheval)",
+      "url": "https://raw.githubusercontent.com/petroulacl/fps-asset-kit/a19b7458a593598211c95ec46ef4eb4b6d1f94d7/sfx/footsteps/Fantozzi-footsteps/ogg/Fantozzi-StoneL1.ogg"
+    },
+    "footstep_stone_02": {
+      "source": "Fantozzi's Footsteps (Grass/Sand & Stone) — Fantozzi (publié par qubodup)",
+      "page": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur la pierre (personnage et sabots du cheval)",
+      "url": "https://raw.githubusercontent.com/petroulacl/fps-asset-kit/a19b7458a593598211c95ec46ef4eb4b6d1f94d7/sfx/footsteps/Fantozzi-footsteps/ogg/Fantozzi-StoneR1.ogg"
+    },
+    "footstep_stone_03": {
+      "source": "Fantozzi's Footsteps (Grass/Sand & Stone) — Fantozzi (publié par qubodup)",
+      "page": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur la pierre (personnage et sabots du cheval)",
+      "url": "https://raw.githubusercontent.com/petroulacl/fps-asset-kit/a19b7458a593598211c95ec46ef4eb4b6d1f94d7/sfx/footsteps/Fantozzi-footsteps/ogg/Fantozzi-StoneL2.ogg"
+    },
+    "footstep_stone_04": {
+      "source": "Fantozzi's Footsteps (Grass/Sand & Stone) — Fantozzi (publié par qubodup)",
+      "page": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur la pierre (personnage et sabots du cheval)",
+      "url": "https://raw.githubusercontent.com/petroulacl/fps-asset-kit/a19b7458a593598211c95ec46ef4eb4b6d1f94d7/sfx/footsteps/Fantozzi-footsteps/ogg/Fantozzi-StoneR2.ogg"
+    },
+    "footstep_stone_05": {
+      "source": "Fantozzi's Footsteps (Grass/Sand & Stone) — Fantozzi (publié par qubodup)",
+      "page": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur la pierre (personnage et sabots du cheval)",
+      "url": "https://raw.githubusercontent.com/petroulacl/fps-asset-kit/a19b7458a593598211c95ec46ef4eb4b6d1f94d7/sfx/footsteps/Fantozzi-footsteps/ogg/Fantozzi-StoneL3.ogg"
+    },
+    "footstep_stone_06": {
+      "source": "Fantozzi's Footsteps (Grass/Sand & Stone) — Fantozzi (publié par qubodup)",
+      "page": "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur la pierre (personnage et sabots du cheval)",
+      "url": "https://raw.githubusercontent.com/petroulacl/fps-asset-kit/a19b7458a593598211c95ec46ef4eb4b6d1f94d7/sfx/footsteps/Fantozzi-footsteps/ogg/Fantozzi-StoneR3.ogg"
+    },
+    "footstep_dirt_01": {
+      "source": "RPG Audio 1.0 — Kenney (www.kenney.nl)",
+      "page": "https://kenney.nl/assets/rpg-audio",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur la terre (personnage et sabots du cheval)",
+      "url": "https://media.githubusercontent.com/media/series-ai/jam-ready-assets/5e209a64a641624046c6b7a2600855bea60896bf/kenney-rpg-audio/audio/Audio/footstep00.ogg"
+    },
+    "footstep_dirt_02": {
+      "source": "RPG Audio 1.0 — Kenney (www.kenney.nl)",
+      "page": "https://kenney.nl/assets/rpg-audio",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur la terre (personnage et sabots du cheval)",
+      "url": "https://media.githubusercontent.com/media/series-ai/jam-ready-assets/5e209a64a641624046c6b7a2600855bea60896bf/kenney-rpg-audio/audio/Audio/footstep01.ogg"
+    },
+    "footstep_dirt_03": {
+      "source": "RPG Audio 1.0 — Kenney (www.kenney.nl)",
+      "page": "https://kenney.nl/assets/rpg-audio",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur la terre (personnage et sabots du cheval)",
+      "url": "https://media.githubusercontent.com/media/series-ai/jam-ready-assets/5e209a64a641624046c6b7a2600855bea60896bf/kenney-rpg-audio/audio/Audio/footstep02.ogg"
+    },
+    "footstep_dirt_04": {
+      "source": "RPG Audio 1.0 — Kenney (www.kenney.nl)",
+      "page": "https://kenney.nl/assets/rpg-audio",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur la terre (personnage et sabots du cheval)",
+      "url": "https://media.githubusercontent.com/media/series-ai/jam-ready-assets/5e209a64a641624046c6b7a2600855bea60896bf/kenney-rpg-audio/audio/Audio/footstep03.ogg"
+    },
+    "footstep_dirt_05": {
+      "source": "RPG Audio 1.0 — Kenney (www.kenney.nl)",
+      "page": "https://kenney.nl/assets/rpg-audio",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur la terre (personnage et sabots du cheval)",
+      "url": "https://media.githubusercontent.com/media/series-ai/jam-ready-assets/5e209a64a641624046c6b7a2600855bea60896bf/kenney-rpg-audio/audio/Audio/footstep04.ogg"
+    },
+    "footstep_dirt_06": {
+      "source": "RPG Audio 1.0 — Kenney (www.kenney.nl)",
+      "page": "https://kenney.nl/assets/rpg-audio",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur la terre (personnage et sabots du cheval)",
+      "url": "https://media.githubusercontent.com/media/series-ai/jam-ready-assets/5e209a64a641624046c6b7a2600855bea60896bf/kenney-rpg-audio/audio/Audio/footstep05.ogg"
+    },
+    "footstep_dirt_07": {
+      "source": "RPG Audio 1.0 — Kenney (www.kenney.nl)",
+      "page": "https://kenney.nl/assets/rpg-audio",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur la terre (personnage et sabots du cheval)",
+      "url": "https://media.githubusercontent.com/media/series-ai/jam-ready-assets/5e209a64a641624046c6b7a2600855bea60896bf/kenney-rpg-audio/audio/Audio/footstep06.ogg"
+    },
+    "footstep_dirt_08": {
+      "source": "RPG Audio 1.0 — Kenney (www.kenney.nl)",
+      "page": "https://kenney.nl/assets/rpg-audio",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur la terre (personnage et sabots du cheval)",
+      "url": "https://media.githubusercontent.com/media/series-ai/jam-ready-assets/5e209a64a641624046c6b7a2600855bea60896bf/kenney-rpg-audio/audio/Audio/footstep07.ogg"
+    },
+    "footstep_dirt_09": {
+      "source": "RPG Audio 1.0 — Kenney (www.kenney.nl)",
+      "page": "https://kenney.nl/assets/rpg-audio",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur la terre (personnage et sabots du cheval)",
+      "url": "https://media.githubusercontent.com/media/series-ai/jam-ready-assets/5e209a64a641624046c6b7a2600855bea60896bf/kenney-rpg-audio/audio/Audio/footstep08.ogg"
+    },
+    "footstep_dirt_10": {
+      "source": "RPG Audio 1.0 — Kenney (www.kenney.nl)",
+      "page": "https://kenney.nl/assets/rpg-audio",
+      "licence": "CC0 1.0",
+      "dossier": "sons",
+      "usage": "Pas sur la terre (personnage et sabots du cheval)",
+      "url": "https://media.githubusercontent.com/media/series-ai/jam-ready-assets/5e209a64a641624046c6b7a2600855bea60896bf/kenney-rpg-audio/audio/Audio/footstep09.ogg"
     }
   }
 }
