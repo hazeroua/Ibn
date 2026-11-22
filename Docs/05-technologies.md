@@ -10,6 +10,7 @@ Le jeu se trouve dans `Projet/`, socle créé par le ticket #63. Le prototype `R
 |---|---|
 | Godot | 4.7.2 stable |
 | Terrain3D | 1.1.0 |
+| Sky3D | 2.1.0 (ciel, soleil, nuages ; empreinte dans `Tools/versions.json`) |
 | Rendu | Forward+ sous Vulkan (choisi au ticket #62) |
 | Physique | Jolt |
 | Mise à l'échelle | FSR 2, rendu interne à 67 % |
@@ -24,7 +25,7 @@ Les versions sont définies dans `Tools/versions.json`. Elles ne changent pas sa
 
 ```text
 Projet/                       Le jeu (Godot 4.7.2, Terrain3D 1.1.0)
-├── project.godot             Forward+, Vulkan, Jolt, 1080p, FSR 2 à 67 %
+├── project.godot             Forward+, Vulkan, Jolt, 1080p (FSR 2 à 67 % appliqué à la fenêtre par data/config/graphics.json)
 ├── core/
 │   ├── boot/                 Démarrage, options de lancement, catalogue des scènes
 │   ├── config/               Configuration graphique (data/config/graphics.json)
@@ -70,6 +71,20 @@ Terrain3D doit gérer :
 
 Le relief est déterministe : une même graine et une même version doivent produire le même terrain. Aucun travail lourd ni allocation évitable ne doit être effectué à chaque image.
 
+### Atmosphère (#66)
+
+`world/common/atmosphere.gd` (classe `Atmosphere`) donne son identité visuelle à une scène extérieure, à partir de `data/<scène>/atmosphere.json` :
+
+- **ciel, soleil, nuages** : Sky3D à heure fixe (temps arrêté), position solaire calculée pour 33° N, 8° E, le 15 avril 1352 ; lune, étoiles et Voie lactée éteintes ; ombres du soleil limitées à 250 m ;
+- **brume sèche** : brouillard de profondeur de Godot (début, fin, courbe, opacité maximale, couleur, diffusion solaire, perspective aérienne par moment), calculé dans le rendu des objets ; le brouillard plein écran de Sky3D est désactivé (passe et copie de profondeur en moins) ;
+- **moments** : matin, midi, fin de journée ; chacun fixe l'heure, l'énergie et les couleurs du soleil, les teintes du ciel, les nuages, la brume, l'étalonnage (saturation, contraste), la densité et la couleur de la poussière, et l'intensité de la chaleur ; touche T en jeu, `-- --moment=<id>` au lancement ;
+- **poussière** : trois `GPUParticles3D` (voiles, grains, poussière fine, shader `dust_particle.gdshader` sans lecture de l'écran ni de la profondeur) de 96, 220 et 400 particules au plus, portés par le vent, avec fondu près de la caméra et au loin ; la densité d'un moment agit sur `amount_ratio`, sans réallocation ;
+- **chaleur** : quadrilatère plein écran (`heat_haze.gdshader`) qui déforme l'image seulement au-delà de 180 m et près de l'horizon ; masqué quand l'intensité est nulle, ce qui supprime la copie de l'écran.
+
+Seul `_process` déplace les trois émetteurs avec la caméra, sans allocation.
+
+La mise à l'échelle 3D n'est **jamais** réglée dans `project.godot` : elle y deviendrait la valeur par défaut de toutes les `SubViewport`. La vue de 2 × 2 pixels que Terrain3D utilise pour viser le sol tomberait alors à 1 × 1 et, dès qu'un matériau lit l'écran (la chaleur), Godot échouerait à créer ses textures (« Too many mipmaps requested »). `graphics_settings.gd` l'applique à la seule fenêtre principale.
+
 ## Pipeline : commande unique
 
 ```powershell
@@ -79,7 +94,7 @@ Projet\valider.bat [-Scene terrain_test] [-Renderer vulkan|d3d12] [-DurationSeco
 Étapes, avec arrêt à la première erreur ou à la première ligne `ERROR:` d'un journal :
 
 1. installation de Terrain3D et GUT aux versions de `Tools/versions.json` ;
-2. téléchargement des ressources de `data/ressources.json`, vérifiées par leurs empreintes SHA-256 (`data/ressources.lock.json`, enregistrées au premier téléchargement) ;
+2. téléchargement des ressources de `data/ressources.json` (textures à quatre cartes et fichiers isolés), vérifiées par leurs empreintes SHA-256 (`data/ressources.lock.json`, enregistrées au premier téléchargement) ;
 3. gdlint et gdformat (140 colonnes) ;
 4. import du projet ;
 5. constructeurs des scènes (`outils/construire.gd`, clé `builder` du catalogue), puis import de ce qu'ils produisent ; un constructeur ne refait rien si ses données, ses ressources et son code n'ont pas changé ;

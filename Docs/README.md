@@ -28,6 +28,8 @@ Ces documents décrivent la vision du jeu final. Ils restent valables pendant le
 
 | Document | Rôle |
 |---|---|
+| [direction-artistique-sahara.md](direction-artistique-sahara.md) | Palette, références visuelles et trois moments du Sahara (#66) |
+| [credits.md](credits.md) | Crédits et licences de toutes les ressources livrées avec le jeu |
 | [catalogue-assets-3d-reboot.md](catalogue-assets-3d-reboot.md) | Candidats 3D, licences, sécurité et ordre d'évaluation |
 | [oasis-zab-guide-historique.md](oasis-zab-guide-historique.md) | Espèces plausibles, zones et grille de tri visuelle pour la petite oasis |
 | [licences/quaternius.md](licences/quaternius.md) | Décision conservatrice, droits et preuves des sept packs Quaternius |

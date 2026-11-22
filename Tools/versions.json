@@ -30,6 +30,13 @@
       "version": "v1.1.0-stable",
       "url": "https://github.com/TokisanGames/Terrain3D/releases/download/v1.1.0-stable/Terrain3D_v1.1.0-stable.zip",
       "dossier": "terrain_3d"
+    },
+    "sky_3d": {
+      "version": "v2.1.0",
+      "url": "https://github.com/TokisanGames/Sky3D/releases/download/v2.1.0/Sky3D_v2.1.0.zip",
+      "dossier": "sky_3d",
+      "sha256": "3d7d9f989097efab3a2eb3b5d515c4024e86130eeff2c46fe408bbf54586e990",
+      "licence": "MIT ; carte des étoiles ESO/S. Brunier CC BY 4.0 (crédit obligatoire, voir Docs/credits.md)"
     }
   },
   "scons": {

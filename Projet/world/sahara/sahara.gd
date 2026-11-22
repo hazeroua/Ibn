@@ -1,24 +1,38 @@
 extends Node3D
 ## Sahara de 4 × 4 km : charge les régions Terrain3D construites par SaharaBuilder,
-## les quatre sols (sable, terre sèche, gravier, roche) et leurs réglages d'anti-répétition.
-## En jeu : caméra libre. Avec la sonde de mesure : tournée de captures depuis les points
-## de vue, puis parcours de collision à pied, en course et à pleine vitesse, caméra en poursuite.
+## les quatre sols (sable, terre sèche, reg, roche) et leurs réglages d'anti-répétition,
+## puis l'atmosphère (ciel Sky3D, brume, poussière, chaleur) au moment de la journée choisi.
+## En jeu : caméra libre, touche T pour changer de moment. Avec la sonde de mesure :
+## tournée de captures (chaque moment depuis chaque point de vue, avec le temps d'image
+## de chacun), planche comparative, puis parcours de collision à pied, en course et à
+## pleine vitesse, en passant par les trois moments, caméra en poursuite.
 
 const DATA_PATH: String = "res://data/sahara/sahara.json"
+const ATMOSPHERE_PATH: String = "res://data/sahara/atmosphere.json"
 const CONTEXT: String = "sahara.json › scene"
 const LOG_CATEGORY: String = "sahara"
 const COLLISION_CHECK_INTERVAL_SECONDS: float = 1.0
 const COLLISION_RAY_LENGTH_METERS: float = 1000.0
 const SETTLE_SECONDS: float = 2.0
+## Temps laissé à chaque point de vue avant de chronométrer ses images (ombres, LOD, particules).
+const VIEWPOINT_SETTLE_SECONDS: float = 0.4
+const THUMBNAIL_SIZE: Vector2i = Vector2i(384, 216)
 
 var _terrain: Terrain3D
 var _camera: FreeCamera
 var _runner: RouteRunner
 var _probe: PerformanceProbe
+var _atmosphere: Atmosphere
 var _viewpoints: Array[Dictionary] = []
 var _viewpoint_seconds: float = 1.0
-var _viewpoint_index: int = -1
-var _viewpoint_timer: float = 0.0
+## Prise de vue courante dans la tournée : moment × point de vue.
+var _shot_index: int = -1
+var _shot_timer: float = 0.0
+var _shot_frame_ms_sum: float = 0.0
+var _shot_frame_count: int = 0
+var _worst_shot_ms: float = 0.0
+var _worst_shot_name: String = ""
+var _thumbnails: Array[Image] = []
 var _chase_distance: float = 7.0
 var _chase_height: float = 2.5
 var _chase_smoothing: float = 8.0
@@ -36,10 +50,11 @@ func _ready() -> void:
 	errors.append_array(generation.errors)
 	var scene: Dictionary = JsonData.read_dictionary(data, "scene", errors, "sahara.json")
 	if errors.is_empty():
-		SceneEnvironment.build(self, JsonData.read_dictionary(scene, "environment", errors, CONTEXT), errors, CONTEXT + " › environment")
 		_create_terrain(generation, scene, errors)
 	if errors.is_empty():
 		_create_camera(JsonData.read_dictionary(scene, "camera", errors, CONTEXT), generation, errors)
+		_create_atmosphere(errors)
+	if errors.is_empty():
 		_probe = get_tree().get_first_node_in_group(PerformanceProbe.GROUP) as PerformanceProbe
 		if _probe != null:
 			_prepare_measure(scene, errors)
@@ -52,21 +67,30 @@ func _ready() -> void:
 		SceneEnvironment.add_help(self, JsonData.read_string(scene, "help_text", errors, CONTEXT))
 		set_process(false)
 		set_physics_process(false)
+	else:
+		set_process_unhandled_input(false)
 	(
 		GameLog
 		. info(
 			LOG_CATEGORY,
 			(
-				"Sahara chargé en %.0f ms : %d régions Terrain3D, %d sols (%s)."
+				"Sahara chargé en %.0f ms : %d régions Terrain3D, %d sols, moment « %s » (%s)."
 				% [
 					float(Time.get_ticks_usec() - start_usec) / 1000.0,
 					_terrain.data.get_region_count(),
 					_terrain.assets.get_texture_count(),
+					_atmosphere.moment_label(_atmosphere.current_moment_id),
 					"parcours de mesure" if _probe != null else "caméra libre",
 				]
 			)
 		)
 	)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed(&"cycle_moment"):
+		_atmosphere.cycle_moment()
+		get_viewport().set_input_as_handled()
 
 
 func _process(delta: float) -> void:
@@ -75,6 +99,11 @@ func _process(delta: float) -> void:
 	if _probe.is_warming_up():
 		_run_viewpoint_tour(delta)
 		return
+	# Le parcours passe par chaque moment pendant une part égale de la mesure.
+	var order: PackedStringArray = _atmosphere.moment_order
+	var moment_index: int = mini(int(_probe.measured_fraction() * float(order.size())), order.size() - 1)
+	if order[moment_index] != _atmosphere.current_moment_id:
+		_atmosphere.apply_moment(order[moment_index])
 	_follow_runner(delta)
 
 
@@ -217,6 +246,21 @@ func _create_camera(data: Dictionary, generation: SaharaSettings, errors: Packed
 	_place_camera(spawn, spawn_height, JsonData.read_vector3(data, "look_at", errors, context))
 
 
+func _create_atmosphere(errors: PackedStringArray) -> void:
+	_atmosphere = Atmosphere.new()
+	_atmosphere.name = "Atmosphere"
+	add_child(_atmosphere)
+	_atmosphere.configure(JsonData.load_dictionary(ATMOSPHERE_PATH), _camera, SaharaBuilder.PARTICLE_DIR, errors)
+	if not errors.is_empty():
+		return
+	var options: LaunchOptions = get_meta(&"launch_options") as LaunchOptions if has_meta(&"launch_options") else null
+	if options != null and not options.moment_id.is_empty():
+		if not _atmosphere.has_moment(options.moment_id):
+			errors.append("Moment inconnu : « %s » (%s)." % [options.moment_id, ", ".join(_atmosphere.moment_order)])
+			return
+		_atmosphere.apply_moment(options.moment_id)
+
+
 func _place_camera(position_xz: Vector3, height_above_ground: float, look_at_xz: Vector3) -> void:
 	_camera.global_position = Vector3(position_xz.x, _terrain.data.get_height(position_xz) + height_above_ground, position_xz.z)
 	var target: Vector3 = Vector3(look_at_xz.x, _terrain.data.get_height(look_at_xz) + 2.0, look_at_xz.z)
@@ -246,7 +290,8 @@ func _prepare_measure(scene: Dictionary, errors: PackedStringArray) -> void:
 				}
 			)
 		)
-	_probe.extend_warmup(_viewpoint_seconds * float(_viewpoints.size()) + SETTLE_SECONDS)
+	var shots: int = _viewpoints.size() * _atmosphere.moment_order.size()
+	_probe.extend_warmup(_viewpoint_seconds * float(shots) + SETTLE_SECONDS)
 
 	var route: Dictionary = JsonData.read_dictionary(scene, "measure_route", errors, CONTEXT)
 	var chase: Dictionary = JsonData.read_dictionary(route, "chase_camera", errors, CONTEXT + " › measure_route")
@@ -267,28 +312,73 @@ func _prepare_measure(scene: Dictionary, errors: PackedStringArray) -> void:
 
 
 func _run_viewpoint_tour(delta: float) -> void:
-	if _viewpoint_index >= _viewpoints.size():
+	var shots: int = _viewpoints.size() * _atmosphere.moment_order.size()
+	if _shot_index >= shots:
 		_follow_runner(delta)
 		return
-	if _viewpoint_index < 0:
-		_viewpoint_index = 0
-		_show_viewpoint()
+	if _shot_index < 0:
+		_start_shot(0)
 		return
-	_viewpoint_timer += delta
-	if _viewpoint_timer < _viewpoint_seconds:
+	_shot_timer += delta
+	if _shot_timer < VIEWPOINT_SETTLE_SECONDS:
 		return
-	_probe.save_named_capture("vue_%s.png" % _viewpoints[_viewpoint_index]["name"])
-	_viewpoint_index += 1
-	_viewpoint_timer = 0.0
-	if _viewpoint_index < _viewpoints.size():
-		_show_viewpoint()
-	else:
-		_follow_runner(1.0)
+	if _shot_timer < _viewpoint_seconds:
+		_shot_frame_ms_sum += delta * 1000.0
+		_shot_frame_count += 1
+		return
+	var name_of_shot: String = _shot_name(_shot_index)
+	var average_ms: float = _shot_frame_ms_sum / maxf(float(_shot_frame_count), 1.0)
+	if average_ms > _worst_shot_ms:
+		_worst_shot_ms = average_ms
+		_worst_shot_name = name_of_shot
+	var capture: Image = _probe.save_named_capture("vue_%s.png" % name_of_shot)
+	if capture == null:
+		return
+	capture.resize(THUMBNAIL_SIZE.x, THUMBNAIL_SIZE.y, Image.INTERPOLATE_BILINEAR)
+	_thumbnails.append(capture)
+	if _shot_index + 1 < shots:
+		_start_shot(_shot_index + 1)
+		return
+	_shot_index = shots
+	_finish_tour()
 
 
-func _show_viewpoint() -> void:
-	var viewpoint: Dictionary = _viewpoints[_viewpoint_index]
+func _start_shot(index: int) -> void:
+	_shot_index = index
+	_shot_timer = 0.0
+	_shot_frame_ms_sum = 0.0
+	_shot_frame_count = 0
+	var moment_id: String = _atmosphere.moment_order[_moment_index_of(index)]
+	if moment_id != _atmosphere.current_moment_id:
+		_atmosphere.apply_moment(moment_id)
+	var viewpoint: Dictionary = _viewpoints[index % _viewpoints.size()]
 	_place_camera(viewpoint["position"], viewpoint["height"], viewpoint["look_at"])
+
+
+func _moment_index_of(shot_index: int) -> int:
+	return floori(float(shot_index) / float(_viewpoints.size()))
+
+
+func _shot_name(index: int) -> String:
+	return "%s_%s" % [_atmosphere.moment_order[_moment_index_of(index)], _viewpoints[index % _viewpoints.size()]["name"]]
+
+
+## Planche comparative : une ligne par moment, une colonne par point de vue.
+func _finish_tour() -> void:
+	var columns: int = _viewpoints.size()
+	var rows: int = _atmosphere.moment_order.size()
+	var sheet: Image = Image.create_empty(THUMBNAIL_SIZE.x * columns, THUMBNAIL_SIZE.y * rows, false, Image.FORMAT_RGB8)
+	for index: int in _thumbnails.size():
+		var thumbnail: Image = _thumbnails[index]
+		thumbnail.convert(Image.FORMAT_RGB8)
+		var target: Vector2i = Vector2i((index % columns) * THUMBNAIL_SIZE.x, floori(float(index) / float(columns)) * THUMBNAIL_SIZE.y)
+		sheet.blit_rect(thumbnail, Rect2i(Vector2i.ZERO, THUMBNAIL_SIZE), target)
+	_probe.save_image("planche_moments.png", sheet)
+	_thumbnails.clear()
+	_probe.report_metric("worst_viewpoint_frame_ms", _worst_shot_ms)
+	GameLog.info(LOG_CATEGORY, "Point de vue le plus coûteux : « %s », %.2f ms par image." % [_worst_shot_name, _worst_shot_ms])
+	_atmosphere.apply_moment(_atmosphere.moment_order[0])
+	_follow_runner(1.0)
 
 
 func _follow_runner(delta: float) -> void:
