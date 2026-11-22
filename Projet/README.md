@@ -11,6 +11,7 @@ Projet Godot du jeu, créé par le ticket [#63](https://github.com/hazeroua/Ibn/
   - Maj : aller très vite ;
   - E ou Espace : monter ;
   - A ou Ctrl : descendre ;
+  - T (bouton Y de la manette) : passer au matin, à midi ou à la fin de journée ;
   - Échap : libérer la souris.
 
 Options de `valider.bat` : `-Scene <id>` (par défaut, toutes les scènes du catalogue), `-Renderer d3d12`, `-DurationSeconds 60`, `-SansMesure`.
@@ -28,7 +29,7 @@ Projet/
 │   ├── log/                Journal (user://logs/ibn.log)
 │   └── perf/               Mesure automatique, statistiques, budgets
 ├── world/
-│   ├── common/             Éclairage, aide, corps de test des collisions
+│   ├── common/             Atmosphère (Sky3D, poussière, chaleur), aide, corps de test des collisions
 │   ├── sahara/             Sahara : réglages, générateur, sols, constructeur, scène
 │   └── terrain_test/       Scène de test du socle (#63)
 ├── data/                   Toutes les données : config, scènes, budgets, ressources
@@ -54,15 +55,19 @@ Le constructeur refuse un relief dont une cellule praticable est trop tordue pou
 
 Textures : `data/ressources.json` (adresses, licence) et `data/ressources.lock.json` (empreintes SHA-256 enregistrées au premier téléchargement, vérifiées ensuite).
 
+## L'atmosphère (ticket #66)
+
+Ciel, soleil, nuages et brume Sky3D, poussière portée par le vent et chaleur qui fait trembler l'horizon, réglés pour trois moments (matin, midi, fin de journée) dans `data/sahara/atmosphere.json`. Intention, palette et références : `Docs/direction-artistique-sahara.md` ; crédits : `Docs/credits.md`.
+
 ## Lancement en ligne de commande
 
 ```text
-IbnKhaldoun.exe -- [--scene=<id>] [--measure --report-dir=<dossier> [--duration=30] [--warmup=5]]
+IbnKhaldoun.exe -- [--scene=<id>] [--moment=<matin|midi|fin_de_journee>] [--measure --report-dir=<dossier> [--duration=30] [--warmup=5]]
 ```
 
 Codes de sortie : 0 = réussi, 1 = erreur de configuration ou d'exécution, 2 = budget dépassé.
 
-En mesure, le Sahara fait d'abord une tournée de captures (`vue_*.png` : vue générale, erg au sol, oued, gara, reg), puis un parcours de collision : une capsule de personnage marche, court puis file à 70 m/s sur une boucle qui traverse dunes, oued et éboulis, caméra en poursuite.
+En mesure, le Sahara fait d'abord une tournée de captures : chaque moment depuis chaque point de vue (`vue_<moment>_<point>.png` : vue générale, erg au sol, oued, gara, reg), chronométrée, et une planche comparative `planche_moments.png`. Il fait ensuite un parcours de collision qui passe par les trois moments : une capsule de personnage marche, court puis file à 70 m/s sur une boucle qui traverse dunes, oued et éboulis, caméra en poursuite.
 
 ## Pires cas couverts
 

@@ -1,7 +1,7 @@
 class_name SceneEnvironment
 extends RefCounted
 ## Ciel uni, lumière ambiante et soleil d'une scène, lus dans sa section « environment ».
-## L'identité visuelle complète (ciel, brume, poussière) est l'objet du ticket #66.
+## Les scènes extérieures à identité visuelle (Sahara) utilisent Atmosphere à la place.
 
 
 static func build(parent: Node3D, data: Dictionary, errors: PackedStringArray, context: String) -> DirectionalLight3D:

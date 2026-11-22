@@ -1,5 +1,5 @@
 {
-  "description": "Ressources libres téléchargées par Projet/outils/valider.ps1 dans Projet/ressources/telechargees/<clé>/. Les empreintes SHA-256 sont figées dans ressources.lock.json au premier téléchargement puis vérifiées à chaque validation.",
+  "description": "Ressources libres téléchargées par Projet/outils/valider.ps1 dans Projet/ressources/telechargees/<clé>/. Les empreintes SHA-256 sont figées dans ressources.lock.json au premier téléchargement puis vérifiées à chaque validation. « textures » : sols Terrain3D (quatre cartes) ; « fichiers » : fichiers isolés (une adresse).",
   "textures": {
     "sable": {
       "source": "Poly Haven",
@@ -48,6 +48,29 @@
         "roughness": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/red_laterite_soil_stones/red_laterite_soil_stones_rough_2k.jpg",
         "height": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/red_laterite_soil_stones/red_laterite_soil_stones_disp_2k.png"
       }
+    }
+  },
+  "fichiers": {
+    "poussiere_voile": {
+      "source": "Kenney (Particle Pack 1.1, empaqueté par Calinou)",
+      "page": "https://kenney.nl/assets/particle-pack",
+      "licence": "CC0 1.0",
+      "usage": "voiles de poussière portés par le vent",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-particle-pack/ab7086639ee73be31abd87feb21bf1402d4e8144/addons/kenney_particle_pack/smoke_07.png"
+    },
+    "poussiere_grains": {
+      "source": "Kenney (Particle Pack 1.1, empaqueté par Calinou)",
+      "page": "https://kenney.nl/assets/particle-pack",
+      "licence": "CC0 1.0",
+      "usage": "grains de sable soulevés au ras du sol",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-particle-pack/ab7086639ee73be31abd87feb21bf1402d4e8144/addons/kenney_particle_pack/dirt_02.png"
+    },
+    "poussiere_fine": {
+      "source": "Kenney (Particle Pack 1.1, empaqueté par Calinou)",
+      "page": "https://kenney.nl/assets/particle-pack",
+      "licence": "CC0 1.0",
+      "usage": "poussière fine en suspension dans la lumière",
+      "url": "https://raw.githubusercontent.com/Calinou/kenney-particle-pack/ab7086639ee73be31abd87feb21bf1402d4e8144/addons/kenney_particle_pack/circle_05.png"
     }
   }
 }

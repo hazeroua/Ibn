@@ -75,12 +75,24 @@ func extend_warmup(seconds: float) -> void:
 	_warmup_seconds = maxf(_warmup_seconds, seconds)
 
 
-## Enregistre une capture nommée dans le dossier du rapport (hors mesure uniquement).
-func save_named_capture(file_name: String) -> bool:
+## Enregistre une capture nommée dans le dossier du rapport (hors mesure uniquement)
+## et la renvoie (null en cas d'échec).
+func save_named_capture(file_name: String) -> Image:
 	if not is_warming_up():
 		GameLog.warning("mesure", "Capture « %s » refusée pendant la mesure." % file_name)
-		return false
+		return null
 	return _write_capture(file_name)
+
+
+## Enregistre une image composée par la scène (planche de captures) dans le dossier du rapport.
+func save_image(file_name: String, image: Image) -> bool:
+	var path: String = _report_dir.path_join(file_name)
+	var save_error: Error = image.save_png(path)
+	if save_error != OK:
+		_abort("Impossible d'écrire %s : %s" % [path, error_string(save_error)])
+		return false
+	GameLog.info("mesure", "Image écrite : " + path)
+	return true
 
 
 ## Enregistre ou met à jour une mesure propre à la scène.
@@ -138,19 +150,19 @@ func _save_capture() -> void:
 	_capture_saved = true
 
 
-func _write_capture(file_name: String) -> bool:
+func _write_capture(file_name: String) -> Image:
 	var capture_path: String = _report_dir.path_join(file_name)
 	DirAccess.make_dir_recursive_absolute(_report_dir)
 	var image: Image = get_viewport().get_texture().get_image()
 	if image == null or image.is_empty():
 		_abort("Capture impossible : aucun rendu disponible (mode sans affichage ?).")
-		return false
+		return null
 	var save_error: Error = image.save_png(capture_path)
 	if save_error != OK:
 		_abort("Impossible d'écrire la capture %s : %s" % [capture_path, error_string(save_error)])
-		return false
+		return null
 	GameLog.info("mesure", "Capture %d × %d écrite : %s" % [image.get_width(), image.get_height(), capture_path])
-	return true
+	return image
 
 
 func build_report() -> Dictionary:

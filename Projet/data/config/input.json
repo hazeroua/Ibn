@@ -77,6 +77,13 @@
         { "type": "key", "key": "Escape" },
         { "type": "joypad_button", "button": 6 }
       ]
+    },
+    "cycle_moment": {
+      "deadzone": 0.5,
+      "events": [
+        { "type": "key", "key": "T" },
+        { "type": "joypad_button", "button": 3 }
+      ]
     }
   }
 }

@@ -74,6 +74,7 @@ func _ready() -> void:
 		_check_errors(PackedStringArray(["Scène illisible : " + catalog.scene_path(scene_id)]))
 		return
 	var scene_root: Node = packed_scene.instantiate()
+	scene_root.set_meta(&"launch_options", options)
 
 	if options.measure:
 		var budget: PerformanceBudget = PerformanceBudget.from_dictionary(JsonData.load_dictionary(catalog.budget_path(scene_id)))

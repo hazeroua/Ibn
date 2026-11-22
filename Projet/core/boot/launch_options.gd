@@ -2,6 +2,7 @@ class_name LaunchOptions
 extends RefCounted
 ## Options de lancement lues après « -- » sur la ligne de commande.
 ## Exemple : IbnKhaldoun.exe -- --measure --scene=terrain_test --duration=30 --report-dir=C:/rapports
+## Les options sont transmises à la scène dans sa métadonnée « launch_options ».
 
 const MIN_DURATION_SECONDS: float = 5.0
 const DEFAULT_DURATION_SECONDS: float = 30.0
@@ -14,6 +15,8 @@ var measure: bool = false
 var duration_seconds: float = DEFAULT_DURATION_SECONDS
 var warmup_seconds: float = DEFAULT_WARMUP_SECONDS
 var report_dir: String = ""
+## Moment de la journée imposé (scènes extérieures) ; vide = moment par défaut des données.
+var moment_id: String = ""
 var errors: PackedStringArray = PackedStringArray()
 
 
@@ -28,6 +31,8 @@ static func parse(arguments: PackedStringArray) -> LaunchOptions:
 			options.duration_seconds = options._parse_seconds(argument, "--duration=", MIN_DURATION_SECONDS)
 		elif argument.begins_with("--warmup="):
 			options.warmup_seconds = options._parse_seconds(argument, "--warmup=", 0.0)
+		elif argument.begins_with("--moment="):
+			options.moment_id = argument.trim_prefix("--moment=")
 		elif argument.begins_with("--report-dir="):
 			options.report_dir = argument.trim_prefix("--report-dir=").trim_prefix('"').trim_suffix('"')
 		else:

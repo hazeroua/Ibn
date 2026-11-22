@@ -11,6 +11,7 @@
     "body_below_ground_events": { "max": 0 },
     "body_stuck_events": { "max": 0 },
     "route_distance_meters": { "min": 500 },
-    "frame_count": { "min": 1 }
+    "frame_count": { "min": 1 },
+    "worst_viewpoint_frame_ms": { "max": 16.6 }
   }
 }

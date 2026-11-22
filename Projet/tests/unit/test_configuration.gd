@@ -14,7 +14,11 @@ func test_project_settings_match_the_target_platform() -> void:
 	assert_eq(ProjectSettings.get_setting("rendering/renderer/rendering_method"), "forward_plus")
 	assert_eq(ProjectSettings.get_setting("rendering/rendering_device/driver.windows"), "vulkan")
 	assert_eq(ProjectSettings.get_setting("physics/3d/physics_engine"), "Jolt Physics")
-	assert_eq(ProjectSettings.get_setting("rendering/scaling_3d/mode"), Viewport.SCALING_3D_MODE_FSR2)
+	# La mise à l'échelle 3D (FSR 2) est appliquée à la seule fenêtre par graphics.json. Réglée dans
+	# project.godot, elle deviendrait la valeur par défaut de toutes les SubViewport : celle de 2 × 2
+	# pixels de Terrain3D tomberait à 1 × 1 et Godot échouerait à créer ses textures d'écran.
+	assert_eq(ProjectSettings.get_setting("rendering/scaling_3d/mode"), Viewport.SCALING_3D_MODE_BILINEAR)
+	assert_almost_eq(float(ProjectSettings.get_setting("rendering/scaling_3d/scale")), 1.0, 0.0001)
 
 
 func test_invalid_graphics_values_are_rejected() -> void:
@@ -82,6 +86,7 @@ func test_shipped_resource_manifest_is_valid_and_covers_the_sahara() -> void:
 	for texture: Dictionary in scene["textures"]:
 		assert_true(manifest.has_texture(texture["resource"]), texture["resource"])
 	assert_eq(manifest.local_path("sable", "albedo"), "res://ressources/telechargees/sable/sandy_gravel_02_diff_2k.jpg")
+	assert_eq(manifest.file_local_path("poussiere_voile"), "res://ressources/telechargees/poussiere_voile/smoke_07.png")
 
 
 func test_resource_lock_holds_sha256_fingerprints() -> void:
@@ -92,6 +97,8 @@ func test_resource_lock_holds_sha256_fingerprints() -> void:
 	for key: String in manifest.texture_keys():
 		for map_name: String in ResourceManifest.TEXTURE_MAPS:
 			known_urls[manifest.url(key, map_name)] = true
+	for key: String in manifest.file_keys():
+		known_urls[manifest.file_url(key)] = true
 	for url: String in lock["files"]:
 		assert_true(known_urls.has(url), "empreinte orpheline : " + url)
 		var fingerprint: String = lock["files"][url]

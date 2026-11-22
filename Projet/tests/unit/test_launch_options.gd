@@ -39,3 +39,9 @@ func test_too_short_or_invalid_duration_is_rejected() -> void:
 func test_unknown_argument_is_rejected() -> void:
 	var options: LaunchOptions = LaunchOptions.parse(PackedStringArray(["--fast"]))
 	assert_eq(options.errors.size(), 1)
+
+
+func test_moment_option() -> void:
+	var options: LaunchOptions = LaunchOptions.parse(PackedStringArray(["--moment=midi"]))
+	assert_true(options.errors.is_empty())
+	assert_eq(options.moment_id, "midi")

@@ -12,6 +12,8 @@ const OUTPUT_DIR: String = "res://generated/sahara"
 const TERRAIN_DIR: String = "res://generated/sahara/terrain"
 const TEXTURE_DIR: String = "res://generated/sahara/textures"
 const STAMP_PATH: String = "res://generated/sahara/empreinte.txt"
+const ATMOSPHERE_PATH: String = "res://data/sahara/atmosphere.json"
+const PARTICLE_DIR: String = "res://generated/sahara/particules"
 const LOG_CATEGORY: String = "construction"
 const TEXTURE_SIZE: int = 2048
 ## Fichiers dont dépend le résultat : toute modification relance la construction.
@@ -57,6 +59,11 @@ static func normal_path(ground: String) -> String:
 	return TEXTURE_DIR.path_join(ground + "_normale_rugosite.png")
 
 
+## Chemin de la texture de particules copiée depuis une ressource isolée du manifeste.
+static func particle_path(resource_key: String) -> String:
+	return PARTICLE_DIR.path_join(resource_key + ".png")
+
+
 static func build(tree: SceneTree) -> PackedStringArray:
 	var errors: PackedStringArray = PackedStringArray()
 	var data: Dictionary = JsonData.load_dictionary(DATA_PATH)
@@ -65,6 +72,11 @@ static func build(tree: SceneTree) -> PackedStringArray:
 	var manifest: ResourceManifest = ResourceManifest.load_shipped()
 	errors.append_array(manifest.errors)
 	var textures: Array = JsonData.read_dictionary(data, "scene", errors, "sahara.json").get("textures", [])
+	if not errors.is_empty():
+		return errors
+	# Les textures de particules ne dépendent pas du relief : copiées à chaque construction
+	# si leur contenu a changé, sans relancer la génération du terrain.
+	errors.append_array(_copy_particle_textures(manifest))
 	if not errors.is_empty():
 		return errors
 
@@ -110,6 +122,37 @@ static func build(tree: SceneTree) -> PackedStringArray:
 	stamp_file.close()
 	for landmark: Dictionary in field.landmarks:
 		GameLog.info(LOG_CATEGORY, "Repère « %s » : sommet à %s." % [landmark["name"], str(landmark["position"])])
+	return errors
+
+
+static func _copy_particle_textures(manifest: ResourceManifest) -> PackedStringArray:
+	var errors: PackedStringArray = PackedStringArray()
+	var atmosphere: Dictionary = JsonData.load_dictionary(ATMOSPHERE_PATH)
+	var dust: Dictionary = JsonData.read_dictionary(atmosphere, "dust", errors, "atmosphere.json")
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(PARTICLE_DIR))
+	for layer_name: String in dust.get("layers", {}):
+		var resource_key: String = String((dust["layers"][layer_name] as Dictionary).get("texture", ""))
+		if not manifest.has_file(resource_key):
+			errors.append("atmosphere.json › dust › %s : ressource « %s » absente du manifeste." % [layer_name, resource_key])
+			continue
+		var source: String = ProjectSettings.globalize_path(manifest.file_local_path(resource_key))
+		if not FileAccess.file_exists(source):
+			errors.append("Fichier absent : %s (lancez valider.bat pour le télécharger)." % source)
+			continue
+		var target: String = particle_path(resource_key)
+		var bytes: PackedByteArray = FileAccess.get_file_as_bytes(source)
+		if FileAccess.file_exists(target) and FileAccess.get_file_as_bytes(target) == bytes:
+			continue
+		var file: FileAccess = FileAccess.open(target, FileAccess.WRITE)
+		var import_file: FileAccess = FileAccess.open(target + ".import", FileAccess.WRITE)
+		if file == null or import_file == null:
+			errors.append("Impossible d'écrire " + target)
+			continue
+		file.store_buffer(bytes)
+		file.close()
+		import_file.store_string(IMPORT_SETTINGS)
+		import_file.close()
+		GameLog.info(LOG_CATEGORY, "Texture de particules copiée : " + target)
 	return errors
 
 

@@ -71,6 +71,14 @@ function Install-Addon($Name, $Spec, [string]$Downloads) {
         Write-Host "  téléchargement de $($Spec.url)"
         Invoke-WebRequest -Uri $Spec.url -OutFile $Zip -UseBasicParsing
     }
+    # Empreinte figée dans Tools/versions.json quand elle est connue.
+    if ($Spec.PSObject.Properties['sha256']) {
+        $Hash = (Get-FileHash -LiteralPath $Zip -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($Hash -ne $Spec.sha256) {
+            Remove-Item -LiteralPath $Zip -Force
+            throw "Empreinte inattendue pour $Zip (attendue $($Spec.sha256), obtenue $Hash) : archive supprimée."
+        }
+    }
     $Temporary = Join-Path ([IO.Path]::GetTempPath()) ("ibn-addon-" + [guid]::NewGuid().ToString('N'))
     try {
         Expand-Archive -LiteralPath $Zip -DestinationPath $Temporary
@@ -102,12 +110,20 @@ function Sync-Resources {
     $Count = 0
     $Wanted = @{}
     $DownloadRoot = Join-Path $ProjectRoot 'ressources/telechargees'
+    # Liste (clé, adresse) : quatre cartes par texture, une adresse par fichier isolé.
+    $Entries = @()
     foreach ($Texture in $Manifest.textures.PSObject.Properties) {
-        foreach ($File in $Texture.Value.files.PSObject.Properties) {
-            $Url = [string]$File.Value
+        foreach ($File in $Texture.Value.files.PSObject.Properties) { $Entries += , @($Texture.Name, [string]$File.Value) }
+    }
+    if ($Manifest.PSObject.Properties['fichiers']) {
+        foreach ($Single in $Manifest.fichiers.PSObject.Properties) { $Entries += , @($Single.Name, [string]$Single.Value.url) }
+    }
+    foreach ($Entry in $Entries) {
+        $Key = $Entry[0]
+        $Url = $Entry[1]
             $Wanted[$Url] = $true
             $FileName = [IO.Path]::GetFileName(([Uri]$Url).AbsolutePath)
-            $Target = Join-Path $ProjectRoot "ressources/telechargees/$($Texture.Name)/$FileName"
+            $Target = Join-Path $ProjectRoot "ressources/telechargees/$Key/$FileName"
             if (-not (Test-Path -LiteralPath $Target)) {
                 New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Target) | Out-Null
                 Write-Host "  téléchargement de $Url"
@@ -128,7 +144,6 @@ function Sync-Resources {
                 Write-Host "  empreinte enregistrée : $FileName"
             }
             $Count += 1
-        }
     }
     # Ressources retirées du manifeste : empreintes et fichiers supprimés.
     $Removed = 0
@@ -137,15 +152,14 @@ function Sync-Resources {
     }
     if (Test-Path -LiteralPath $DownloadRoot) {
         foreach ($Folder in Get-ChildItem -LiteralPath $DownloadRoot -Directory) {
-            if (-not $Manifest.textures.PSObject.Properties[$Folder.Name]) {
+            $Expected = @($Entries | Where-Object { $_[0] -eq $Folder.Name } | ForEach-Object { [IO.Path]::GetFileName(([Uri]$_[1]).AbsolutePath) })
+            if ($Expected.Count -eq 0) {
                 Remove-Item -LiteralPath $Folder.FullName -Recurse -Force
                 Write-Host "  ressource retirée : $($Folder.Name)"
                 continue
             }
             foreach ($Old in Get-ChildItem -LiteralPath $Folder.FullName -File) {
-                $Known = $Manifest.textures.PSObject.Properties[$Folder.Name].Value.files.PSObject.Properties |
-                    Where-Object { [IO.Path]::GetFileName(([Uri]([string]$_.Value)).AbsolutePath) -eq $Old.Name }
-                if (-not $Known) { Remove-Item -LiteralPath $Old.FullName -Force; Write-Host "  fichier retiré : $($Folder.Name)/$($Old.Name)" }
+                if ($Expected -notcontains $Old.Name) { Remove-Item -LiteralPath $Old.FullName -Force; Write-Host "  fichier retiré : $($Folder.Name)/$($Old.Name)" }
             }
         }
     }
@@ -240,6 +254,7 @@ try {
     $Downloads = Join-Path $Toolchain 'Tools/_telechargements'
     Install-Addon 'terrain_3d' $Versions.plugins.terrain_3d $Downloads
     Install-Addon 'gut' $Versions.plugins.gut $Downloads
+    Install-Addon 'sky_3d' $Versions.plugins.sky_3d $Downloads
 
     Write-Step '2/8 Ressources libres (data/ressources.json)'
     Sync-Resources
