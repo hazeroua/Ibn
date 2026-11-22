@@ -1,0 +1,224 @@
+{
+  "schema_version": 1,
+  "pack": "Quaternius Stylized Nature MegaKit — Standard",
+  "archive_sha256": "298f6732b872e4cf7b30e6e7abf9641c7f6dc6b326df37ac089533ed7e3d58c9",
+  "source_root": "res://assets_local/quaternius-stylized-nature-standard/glTF",
+  "distribution": "metadata_only_sources_excluded_from_git",
+  "families": {
+    "large_rocks": {
+      "models": [
+        "Rock_Medium_1",
+        "Rock_Medium_2",
+        "Rock_Medium_3"
+      ],
+      "decision": "adapt",
+      "adaptations": [
+        "use_included_Rocks_Desert_Diffuse_texture",
+        "ground_offset",
+        "scale_0_6_to_1_0"
+      ],
+      "instances_budget": 45,
+      "collision": "one_convex_or_box_per_near_instance",
+      "lod": [
+        {
+          "name": "lod0",
+          "max_distance_m": 30,
+          "triangle_ratio": 1.0
+        },
+        {
+          "name": "lod1",
+          "max_distance_m": 65,
+          "max_triangles": 180
+        },
+        {
+          "name": "lod2",
+          "max_distance_m": 120,
+          "max_triangles": 64
+        },
+        {
+          "name": "impostor",
+          "max_distance_m": 220,
+          "triangles": 2
+        }
+      ],
+      "required_ground_offsets_m": {
+        "Rock_Medium_1": 0.271131,
+        "Rock_Medium_2": 0.050842,
+        "Rock_Medium_3": 0.315644
+      }
+    },
+    "round_pebbles": {
+      "models": [
+        "Pebble_Round_1",
+        "Pebble_Round_2",
+        "Pebble_Round_3",
+        "Pebble_Round_4",
+        "Pebble_Round_5"
+      ],
+      "decision": "adapt",
+      "adaptations": [
+        "terrain_tint",
+        "random_rotation",
+        "scale_variation",
+        "irregular_clusters"
+      ],
+      "instances_budget": 240,
+      "collision": "none",
+      "required_ground_offsets_m": {
+        "Pebble_Round_1": 0.007798,
+        "Pebble_Round_2": 0.002980,
+        "Pebble_Round_3": 0.001753,
+        "Pebble_Round_4": 0.005632,
+        "Pebble_Round_5": 0.004146
+      },
+      "lod": [
+        {
+          "name": "lod0",
+          "max_distance_m": 12,
+          "triangle_ratio": 1.0
+        },
+        {
+          "name": "lod1",
+          "max_distance_m": 25,
+          "max_triangles": 40
+        },
+        {
+          "name": "lod2",
+          "max_distance_m": 40,
+          "max_triangles": 12
+        },
+        {
+          "name": "impostor",
+          "max_distance_m": 55,
+          "triangle_ratio": 0.0
+        }
+      ]
+    },
+    "irrigated_grasses": {
+      "models": [
+        "Grass_Common_Short",
+        "Grass_Common_Tall"
+      ],
+      "decision": "adapt",
+      "adaptations": [
+        "desaturate",
+        "remove_red_accents",
+        "irrigated_band_only",
+        "atlas",
+        "gpu_multimesh"
+      ],
+      "instances_budget": 800,
+      "collision": "none",
+      "required_ground_offsets_m": {
+        "Grass_Common_Short": 0.022385,
+        "Grass_Common_Tall": 0.031362
+      },
+      "lod": [
+        {
+          "name": "lod0",
+          "max_distance_m": 12,
+          "triangle_ratio": 1.0
+        },
+        {
+          "name": "lod1",
+          "max_distance_m": 25,
+          "max_triangles": 96
+        },
+        {
+          "name": "lod2",
+          "max_distance_m": 45,
+          "max_triangles": 12
+        },
+        {
+          "name": "impostor",
+          "max_distance_m": 70,
+          "triangles": 2
+        }
+      ]
+    },
+    "dry_grasses": {
+      "models": [
+        "Grass_Wispy_Short",
+        "Grass_Wispy_Tall"
+      ],
+      "decision": "keep",
+      "adaptations": [
+        "light_desaturation",
+        "beige_grey_green_variants",
+        "atlas",
+        "gpu_multimesh"
+      ],
+      "instances_budget": 1000,
+      "collision": "none",
+      "required_ground_offsets_m": {
+        "Grass_Wispy_Short": 0.085750,
+        "Grass_Wispy_Tall": 0.036052
+      },
+      "lod": [
+        {
+          "name": "lod0",
+          "max_distance_m": 12,
+          "triangle_ratio": 1.0
+        },
+        {
+          "name": "lod1",
+          "max_distance_m": 25,
+          "max_triangles": 96
+        },
+        {
+          "name": "lod2",
+          "max_distance_m": 45,
+          "max_triangles": 12
+        },
+        {
+          "name": "impostor",
+          "max_distance_m": 70,
+          "triangles": 2
+        }
+      ]
+    },
+    "generic_shrub": {
+      "models": [
+        "Bush_Common"
+      ],
+      "decision": "adapt",
+      "adaptations": [
+        "replace_red_foliage",
+        "desaturate",
+        "ground_offset",
+        "historical_visual_review"
+      ],
+      "instances_budget": 80,
+      "collision": "none",
+      "lod": [
+        {
+          "name": "lod0",
+          "max_distance_m": 20,
+          "triangle_ratio": 1.0
+        },
+        {
+          "name": "lod1",
+          "max_distance_m": 45,
+          "max_triangles": 300
+        },
+        {
+          "name": "lod2",
+          "max_distance_m": 85,
+          "max_triangles": 80
+        },
+        {
+          "name": "impostor",
+          "max_distance_m": 160,
+          "triangles": 2
+        }
+      ],
+      "required_ground_offsets_m": {
+        "Bush_Common": 0.234695
+      }
+    }
+  },
+  "missing_required_assets": [
+    "phoenix_dactylifera_date_palm",
+    "reeds_or_riparian_vegetation"
+  ]
+}

@@ -1,6 +1,6 @@
 # Catalogue des assets 3D du reboot
 
-État au 21 novembre 2026. Ce document recense les ressources candidates pour le reboot Terrain3D. Il ne vaut ni autorisation d'achat, ni autorisation de téléchargement, ni validation historique. Aucun des packs ci-dessous n'a été téléchargé ou exécuté dans le cadre de cette étude.
+État au 21 novembre 2026. Ce document recense les ressources candidates pour le reboot Terrain3D. Il ne vaut ni autorisation d'achat, ni autorisation de téléchargement, ni validation historique. Les deux packs Nature ont depuis été acquis avec autorisation, inspectés et importés localement ; les autres restent non acquis.
 
 ## Décision immédiate
 
@@ -35,8 +35,8 @@ Le pack 3D Tudor utilise une licence commerciale propriétaire décrite sur sa f
 
 | Priorité | Ressource officielle | Contenu utile | Formats annoncés | Licence affichée | Décision pour le reboot |
 |---|---|---|---|---|---|
-| P0 | [Stylized Nature MegaKit](https://quaternius.com/packs/stylizednaturemegakit.html) | Rochers, arbres, plantes et fleurs ; candidat principal pour l'oasis et les zones rocheuses | FBX, OBJ, Blend, glTF | CC0 sur la fiche ; QAL globale à clarifier | Évaluer en premier, en glTF uniquement ; retenir seulement les espèces et silhouettes compatibles avec un Sahara stylisé |
-| P0 | [Ultimate Stylized Nature Pack](https://quaternius.com/packs/ultimatestylizednature.html) | Rochers, arbres, plantes, textures et normales ; variantes de complément | FBX, OBJ, Blend, glTF | CC0 sur la fiche ; QAL globale à clarifier | Évaluer après le MegaKit ; éviter les doublons et mesurer le coût des matériaux |
+| P0 | [Stylized Nature MegaKit](https://quaternius.com/packs/stylizednaturemegakit.html) | 68 glTF dans l'édition Standard inspectée : rochers, arbres, plantes et fleurs | FBX, OBJ, Blend, glTF | CC0 sur la fiche ; aucune licence interne, donc QAL conservatrice | [Évalué](evaluation-stylized-nature-megakit.md) : 2 modèles conservés, 11 à adapter, 55 refusés ; aucun palmier-dattier |
+| P0 | [Ultimate Stylized Nature Pack](https://quaternius.com/packs/ultimatestylizednature.html) | 63 FBX officiels ; cinq palmiers et cinq rochers inspectés en détail | FBX, OBJ, Blend, glTF | CC0 sur la fiche ; licence absente des ZIP, donc QAL conservatrice | [Évalué](evaluation-ultimate-stylized-nature.md) : palmiers adaptés, un repère sombre, doublons refusés, sources hors Git |
 | P1 | [Fantasy Props MegaKit](https://quaternius.com/packs/fantasypropsmegakit.html) | Mobilier, outils, contenants et accessoires pouvant fournir quelques objets de camp | FBX, OBJ, Blend, glTF | CC0 sur la fiche ; QAL globale à clarifier | N'importer que des objets quotidiens plausibles après validation historique ; écarter armes, objets magiques et ornements fantasy |
 | P2 | [Arabic Desert City — 3D Tudor](https://3dtudor.itch.io/arabic-desert-city-modular-pack) | 143 objets annoncés : murs, portes, tours, arches, balcons, toits, marché et accessoires | GLB, FBX + textures, Blend, projet UE5 | Licence commerciale propriétaire de la fiche | Achat manuel requis ; différer après le jalon Sahara ; peut servir de kit de prototypage, jamais de preuve d'authenticité pour Tunis ou Fès |
 | P2 | [Medieval Village MegaKit](https://quaternius.com/packs/medievalvillagemegakit.html) | Modules de murs, sols, escaliers, toits et accessoires | FBX, OBJ, Blend, glTF | CC0 sur la fiche ; QAL globale à clarifier | Réserve de formes neutres uniquement ; l'étiquette « médiéval » ne le rend pas maghrébin |
