@@ -1,0 +1,93 @@
+{
+  "description": "Réglages de la caméra à la troisième personne (ThirdPersonCamera). Angles en degrés, distances en mètres, vitesses en mètres par seconde. Les « lissages » sont des taux de convergence exponentielle par seconde : plus la valeur est grande, plus la caméra rattrape vite son objectif, au même rythme quelle que soit la fréquence d'images.",
+  "orbit": {
+    "initial_yaw_deg": 0.0,
+    "initial_pitch_deg": 14.0,
+    "pitch_min_deg": -40.0,
+    "pitch_max_deg": 70.0,
+    "rotation_smoothing": 28.0
+  },
+  "mouse": {
+    "sensitivity_deg_per_pixel": 0.11,
+    "invert_x": false,
+    "invert_y": false,
+    "capture_on_start": true
+  },
+  "stick": {
+    "speed_deg_per_s": 170.0,
+    "response_exponent": 1.6,
+    "invert_x": false,
+    "invert_y": false
+  },
+  "framing": {
+    "pivot_height_m": 1.55,
+    "probe_origin_height_m": 0.9,
+    "shoulder_offset_m": 0.42
+  },
+  "follow": {
+    "position_smoothing": 14.0,
+    "max_lag_m": 0.6,
+    "teleport_distance_m": 8.0
+  },
+  "zoom": {
+    "min_distance_m": 1.6,
+    "max_distance_m": 6.0,
+    "initial_distance_m": 3.4,
+    "step_m": 0.55,
+    "smoothing": 9.0
+  },
+  "collision": {
+    "layers": [
+      1,
+      4
+    ],
+    "probe_radius_m": 0.22,
+    "contact_skin_m": 0.02,
+    "return_smoothing": 4.0
+  },
+  "fov": {
+    "base_deg": 70.0,
+    "run_bonus_deg": 6.0,
+    "speed_start_mps": 3.0,
+    "speed_full_mps": 6.5,
+    "speed_smoothing": 6.0,
+    "fov_smoothing": 3.0
+  },
+  "lens": {
+    "near_m": 0.05,
+    "far_m": 6000.0
+  },
+  "target_fade": {
+    "start_distance_m": 0.95,
+    "end_distance_m": 0.5,
+    "smoothing": 12.0
+  },
+  "mounted": {
+    "description": "Caméra à cheval : remplace seulement les clés données ici (même format que le reste du fichier). Point visé à hauteur du cavalier, recul plus grand pour voir Barq en entier, retard un peu plus souple et champ qui s'ouvre jusqu'au galop de course (vitesses de Barq). À la monte et à la descente, la caméra garde son orientation et rejoint en douceur le nouveau cadrage.",
+    "framing": {
+      "pivot_height_m": 2.45,
+      "probe_origin_height_m": 1.7,
+      "shoulder_offset_m": 0.0
+    },
+    "follow": {
+      "position_smoothing": 10.0,
+      "max_lag_m": 1.1,
+      "teleport_distance_m": 12.0
+    },
+    "zoom": {
+      "min_distance_m": 3.6,
+      "max_distance_m": 9.0,
+      "initial_distance_m": 5.6,
+      "step_m": 0.7,
+      "smoothing": 6.0
+    },
+    "fov": {
+      "base_deg": 70.0,
+      "run_bonus_deg": 10.0,
+      "speed_start_mps": 3.5,
+      "speed_full_mps": 11.5,
+      "speed_smoothing": 4.0,
+      "fov_smoothing": 2.0
+    }
+  }
+}

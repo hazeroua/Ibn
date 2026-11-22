@@ -2,10 +2,12 @@ extends Node3D
 ## Sahara de 4 × 4 km : charge les régions Terrain3D construites par SaharaBuilder,
 ## les quatre sols (sable, terre sèche, reg, roche) et leurs réglages d'anti-répétition,
 ## puis l'atmosphère (ciel Sky3D, brume, poussière, chaleur) au moment de la journée choisi.
-## En jeu : caméra libre, touche T pour changer de moment. Avec la sonde de mesure :
+## En jeu : personnage joueur (repris de la première version, ticket #65) et caméra à la
+## troisième personne, touche T pour changer de moment. Avec la sonde de mesure :
 ## tournée de captures (chaque moment depuis chaque point de vue, avec le temps d'image
 ## de chacun), planche comparative, puis parcours de collision à pied, en course et à
-## pleine vitesse, en passant par les trois moments, caméra en poursuite.
+## pleine vitesse, en passant par les trois moments, caméra en poursuite ; le personnage
+## joueur, piloté comme au clavier, suit le corps de test pour que son coût soit mesuré.
 
 const DATA_PATH: String = "res://data/sahara/sahara.json"
 const ATMOSPHERE_PATH: String = "res://data/sahara/atmosphere.json"
@@ -17,9 +19,17 @@ const SETTLE_SECONDS: float = 2.0
 ## Temps laissé à chaque point de vue avant de chronométrer ses images (ombres, LOD, particules).
 const VIEWPOINT_SETTLE_SECONDS: float = 0.4
 const THUMBNAIL_SIZE: Vector2i = Vector2i(384, 216)
+const PLAYER_CHARACTER_ID: String = "ibn_khaldoun_jeune"
+## Pendant la mesure : le personnage court vers le corps de test au-delà de cette distance,
+## marche en deçà, s'arrête tout près, et le rejoint d'un coup s'il est distancé (pleine vitesse).
+const FOLLOW_RUN_DISTANCE_METERS: float = 4.0
+const FOLLOW_STOP_DISTANCE_METERS: float = 1.5
+const FOLLOW_TELEPORT_DISTANCE_METERS: float = 25.0
 
 var _terrain: Terrain3D
 var _camera: FreeCamera
+var _player: PlayerCharacter
+var _player_camera: ThirdPersonCamera
 var _runner: RouteRunner
 var _probe: PerformanceProbe
 var _atmosphere: Atmosphere
@@ -51,13 +61,16 @@ func _ready() -> void:
 	var scene: Dictionary = JsonData.read_dictionary(data, "scene", errors, "sahara.json")
 	if errors.is_empty():
 		_create_terrain(generation, scene, errors)
+	_probe = get_tree().get_first_node_in_group(PerformanceProbe.GROUP) as PerformanceProbe
 	if errors.is_empty():
-		_create_camera(JsonData.read_dictionary(scene, "camera", errors, CONTEXT), generation, errors)
-		_create_atmosphere(errors)
-	if errors.is_empty():
-		_probe = get_tree().get_first_node_in_group(PerformanceProbe.GROUP) as PerformanceProbe
+		var camera_data: Dictionary = JsonData.read_dictionary(scene, "camera", errors, CONTEXT)
 		if _probe != null:
-			_prepare_measure(scene, errors)
+			_create_camera(camera_data, generation, errors)
+		_create_player(camera_data, errors)
+	if errors.is_empty():
+		_create_atmosphere(errors)
+	if errors.is_empty() and _probe != null:
+		_prepare_measure(scene, errors)
 	if not errors.is_empty():
 		for message: String in errors:
 			GameLog.error(LOG_CATEGORY, message)
@@ -80,7 +93,7 @@ func _ready() -> void:
 					_terrain.data.get_region_count(),
 					_terrain.assets.get_texture_count(),
 					_atmosphere.moment_label(_atmosphere.current_moment_id),
-					"parcours de mesure" if _probe != null else "caméra libre",
+					"parcours de mesure" if _probe != null else "personnage joueur",
 				]
 			)
 		)
@@ -90,6 +103,10 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"cycle_moment"):
 		_atmosphere.cycle_moment()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed(&"toggle_mouse_capture"):
+		# Libère la souris ; un clic dans la fenêtre la reprend (ThirdPersonCamera).
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		get_viewport().set_input_as_handled()
 
 
@@ -111,6 +128,7 @@ func _physics_process(delta: float) -> void:
 	if not _probe.is_measuring() or _probe.is_warming_up():
 		return
 	_runner.step(delta, _probe.measured_fraction())
+	_drive_player_toward_runner()
 	_collision_timer += delta
 	if _collision_timer < COLLISION_CHECK_INTERVAL_SECONDS:
 		return
@@ -246,11 +264,63 @@ func _create_camera(data: Dictionary, generation: SaharaSettings, errors: Packed
 	_place_camera(spawn, spawn_height, JsonData.read_vector3(data, "look_at", errors, context))
 
 
+## Personnage joueur au point d'apparition, regard vers « look_at ». En jeu, la caméra à la
+## troisième personne le suit et Terrain3D centre sur lui sa géométrie et ses collisions.
+func _create_player(data: Dictionary, errors: PackedStringArray) -> void:
+	var context: String = CONTEXT + " › camera"
+	var spawn: Vector3 = JsonData.read_vector3(data, "spawn", errors, context)
+	var look_at_xz: Vector3 = JsonData.read_vector3(data, "look_at", errors, context)
+	var scene: PackedScene = CharacterCatalog.load_scene(PLAYER_CHARACTER_ID)
+	if scene == null:
+		errors.append("Personnage « %s » absent : lancez valider.bat." % PLAYER_CHARACTER_ID)
+		return
+	_player = PlayerCharacter.new()
+	_player.name = "Joueur"
+	add_child(_player)
+	var model: Node3D = scene.instantiate() as Node3D
+	model.name = "Modele"
+	_player.add_child(model)
+	_player.animation_player = CharacterCatalog.find_animation_player(model)
+	var ground: Vector3 = Vector3(spawn.x, _terrain.data.get_height(spawn), spawn.z)
+	var facing: Vector3 = look_at_xz - spawn
+	_player.teleport_to(ground, atan2(-facing.x, -facing.z))
+	if _probe != null:
+		_player.input.simulate(Vector2.ZERO)
+		return
+	_player_camera = ThirdPersonCamera.new()
+	_player_camera.name = "CameraJoueur"
+	add_child(_player_camera)
+	_player_camera.set_target(_player)
+	_player_camera.snap()
+	_terrain.clipmap_target = _player
+	_terrain.collision_target = _player
+
+
+## Mesure : le personnage suit le corps de test, piloté comme au clavier par rapport à la caméra
+## de poursuite (allure selon la distance). Quelques opérations vectorielles, sans allocation.
+func _drive_player_toward_runner() -> void:
+	var offset: Vector3 = _runner.global_position - _player.global_position
+	offset.y = 0.0
+	var distance: float = offset.length()
+	if distance > FOLLOW_TELEPORT_DISTANCE_METERS:
+		_player.teleport_to(_runner.global_position - _runner.heading() * FOLLOW_RUN_DISTANCE_METERS, _player.rotation.y)
+		return
+	if distance < FOLLOW_STOP_DISTANCE_METERS:
+		_player.input.simulate(Vector2.ZERO)
+		return
+	var direction: Vector3 = offset / distance
+	var right: Vector3 = _camera.global_basis.x
+	var forward: Vector3 = -_camera.global_basis.z
+	var move: Vector2 = Vector2(direction.dot(right), direction.dot(forward))
+	_player.input.simulate(move.normalized(), distance > FOLLOW_RUN_DISTANCE_METERS)
+
+
 func _create_atmosphere(errors: PackedStringArray) -> void:
 	_atmosphere = Atmosphere.new()
 	_atmosphere.name = "Atmosphere"
 	add_child(_atmosphere)
-	_atmosphere.configure(JsonData.load_dictionary(ATMOSPHERE_PATH), _camera, SaharaBuilder.PARTICLE_DIR, errors)
+	var view: Camera3D = _camera if _probe != null else _player_camera.camera
+	_atmosphere.configure(JsonData.load_dictionary(ATMOSPHERE_PATH), view, SaharaBuilder.PARTICLE_DIR, errors)
 	if not errors.is_empty():
 		return
 	var options: LaunchOptions = get_meta(&"launch_options") as LaunchOptions if has_meta(&"launch_options") else null

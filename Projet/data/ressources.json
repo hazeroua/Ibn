@@ -1,5 +1,5 @@
 {
-  "description": "Ressources libres téléchargées par Projet/outils/valider.ps1 dans Projet/ressources/telechargees/<clé>/. Les empreintes SHA-256 sont figées dans ressources.lock.json au premier téléchargement puis vérifiées à chaque validation. « textures » : sols Terrain3D (quatre cartes) ; « fichiers » : fichiers isolés (une adresse).",
+  "description": "Ressources libres téléchargées par Projet/outils/valider.ps1 dans Projet/ressources/telechargees/<clé>/ (ou <dossier>/ quand « dossier » est donné, pour garder côte à côte les fichiers d'une même source). Les empreintes SHA-256 sont figées dans ressources.lock.json au premier téléchargement puis vérifiées à chaque validation. « textures » : sols Terrain3D (quatre cartes) ; « fichiers » : fichiers isolés (une adresse).",
   "textures": {
     "sable": {
       "source": "Poly Haven",
@@ -71,6 +71,30 @@
       "licence": "CC0 1.0",
       "usage": "poussière fine en suspension dans la lumière",
       "url": "https://raw.githubusercontent.com/Calinou/kenney-particle-pack/ab7086639ee73be31abd87feb21bf1402d4e8144/addons/kenney_particle_pack/circle_05.png"
+    },
+    "ual_gltf": {
+      "source": "Quaternius, Universal Animation Library (version Standard), copie glTF figée de J-Ponzo",
+      "page": "https://quaternius.com/packs/universalanimationlibrary.html",
+      "licence": "CC0 1.0",
+      "dossier": "quaternius_ual",
+      "usage": "mannequin, squelette et animations du personnage joueur",
+      "url": "https://raw.githubusercontent.com/J-Ponzo/gltf-universal-animation-library/e24c23cf2a1323488a3faa226ea7ea21f644b73e/glTF/AnimationLibrary_Godot_Standard.gltf"
+    },
+    "ual_bin": {
+      "source": "Quaternius, Universal Animation Library (version Standard), copie glTF figée de J-Ponzo",
+      "page": "https://quaternius.com/packs/universalanimationlibrary.html",
+      "licence": "CC0 1.0",
+      "dossier": "quaternius_ual",
+      "usage": "données binaires du glTF du personnage joueur",
+      "url": "https://raw.githubusercontent.com/J-Ponzo/gltf-universal-animation-library/e24c23cf2a1323488a3faa226ea7ea21f644b73e/glTF/AnimationLibrary_Godot_Standard.bin"
+    },
+    "ual_licence": {
+      "source": "Quaternius, Universal Animation Library (version Standard), copie glTF figée de J-Ponzo",
+      "page": "https://quaternius.com/packs/universalanimationlibrary.html",
+      "licence": "CC0 1.0",
+      "dossier": "quaternius_ual",
+      "usage": "licence CC0 livrée avec la source du personnage joueur",
+      "url": "https://raw.githubusercontent.com/J-Ponzo/gltf-universal-animation-library/e24c23cf2a1323488a3faa226ea7ea21f644b73e/LICENSE"
     }
   }
 }

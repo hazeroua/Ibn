@@ -18,6 +18,9 @@
     "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/sandy_gravel_02/sandy_gravel_02_disp_2k.png": "c3bc477d7b24a836e04a300a32b30c72077294e3fe77bbc72ce98f20749e0c01",
     "https://raw.githubusercontent.com/Calinou/kenney-particle-pack/ab7086639ee73be31abd87feb21bf1402d4e8144/addons/kenney_particle_pack/circle_05.png": "616c989de83cd805c80ed78f692c5a4cb754151edbb1d3550f20cc3a2857b706",
     "https://raw.githubusercontent.com/Calinou/kenney-particle-pack/ab7086639ee73be31abd87feb21bf1402d4e8144/addons/kenney_particle_pack/dirt_02.png": "ffd9d893775a42fa9d9d471cdd6d6fed15ed6ebf266f227274cd3ffeea7eaf05",
-    "https://raw.githubusercontent.com/Calinou/kenney-particle-pack/ab7086639ee73be31abd87feb21bf1402d4e8144/addons/kenney_particle_pack/smoke_07.png": "b18497db9e6acfa194bace6d417e7e2d480df3b54d6d5c9b3e07fabc6398345a"
+    "https://raw.githubusercontent.com/Calinou/kenney-particle-pack/ab7086639ee73be31abd87feb21bf1402d4e8144/addons/kenney_particle_pack/smoke_07.png": "b18497db9e6acfa194bace6d417e7e2d480df3b54d6d5c9b3e07fabc6398345a",
+    "https://raw.githubusercontent.com/J-Ponzo/gltf-universal-animation-library/e24c23cf2a1323488a3faa226ea7ea21f644b73e/LICENSE": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+    "https://raw.githubusercontent.com/J-Ponzo/gltf-universal-animation-library/e24c23cf2a1323488a3faa226ea7ea21f644b73e/glTF/AnimationLibrary_Godot_Standard.bin": "6e65377d81558333c4093dbb144a48fd19019343d82b1a3a7992a98ec0e0543c",
+    "https://raw.githubusercontent.com/J-Ponzo/gltf-universal-animation-library/e24c23cf2a1323488a3faa226ea7ea21f644b73e/glTF/AnimationLibrary_Godot_Standard.gltf": "0ff075c7ad6855c5c2c37a171592ee8f0d6ab2f58259e2be77a9b63dd8027765"
   }
 }
